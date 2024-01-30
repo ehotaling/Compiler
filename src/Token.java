@@ -3,10 +3,19 @@ import java.util.Objects;
 // Token class - represents a token for the lexer
 public class Token {
 
-    private TokenType tokenType; // as defined in TokenType enum.
+    // TokenType enum defines the types of tokens that can be identified during lexical analysis.
+    // Each type represents a distinct category of token found in the source code.
+    // WORD: Represents a sequence of characters that form a word.
+    // NUMBER: Represents a numeric value, either integer or floating point.
+    // ENDOFLINE: Represents the end of a line in the text.
+    public enum TokenType {
+        WORD, NUMBER, IF, PRINT, READ, INPUT, DATA, GOSUB, FOR, TO, STEP, NEXT, RETURN, THEN, FUNCTION, WHILE,
+        END, ENDOFLINE
+    }
+    private final TokenType tokenType; // as defined in TokenType enum.
     private String val; // Value of the token. It can be null for tokens where value is not applicable, like ENDOFLINE.
-    private int lineNo; // Line number in the source code where the token is located.
-    private int position; // Position within its line, as an index.
+    private final int lineNo; // Line number in the source code where the token is located.
+    private final int position; // Position within its line, as an index.
 
     // Constructor for a Token without value.
     // Useful for tokens where a specific value is not applicable.
@@ -27,7 +36,7 @@ public class Token {
     // The format is "TokenType" or "TokenType(Value)" if there is a value inside the token.
     @Override
     public String toString() {
-        if (tokenType == TokenType.WORD || tokenType == TokenType.NUMBER) {
+        if (val != null) {
             return String.format("%s(%s)", tokenType, val);
         } else {
             return tokenType.toString();
@@ -64,13 +73,3 @@ public class Token {
 }
 
 
-// TokenType enum defines the types of tokens that can be identified during lexical analysis.
-// Each type represents a distinct category of token found in the source code.
-// WORD: Represents a sequence of characters that form a word.
-// NUMBER: Represents a numeric value, either integer or floating point.
-// ENDOFLINE: Represents the end of a line in the text.
-enum TokenType {
-    WORD,
-    NUMBER,
-    ENDOFLINE
-}

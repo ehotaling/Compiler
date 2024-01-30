@@ -3,7 +3,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 // CodeHandlerTest class contains unit tests for testing various functionalities of the CodeHandler class.
 public class CodeHandlerTest {
@@ -12,7 +12,7 @@ public class CodeHandlerTest {
     // at the specified index from the beginning of the file content.
     @Test
     public void testPeek() throws IOException {
-        Path path = Files.createTempFile("test", ".txt");
+        Path path = Files.createTempFile("test.txt", ".txt");
         Files.writeString(path, "Hello, World!");
 
         CodeHandler handler = new CodeHandler(path.toString());
@@ -26,7 +26,7 @@ public class CodeHandlerTest {
     // of a specified length from the beginning of the file content.
     @Test
     public void testPeekString() throws IOException {
-        Path path = Files.createTempFile("test", ".txt");
+        Path path = Files.createTempFile("test.txt", ".txt");
         Files.writeString(path, "Hello, World!");
 
         CodeHandler handler = new CodeHandler(path.toString());
@@ -39,7 +39,7 @@ public class CodeHandlerTest {
     // character and then advances the index.
     @Test
     public void testGetChar() throws IOException {
-        Path path = Files.createTempFile("test", ".txt");
+        Path path = Files.createTempFile("test.txt", ".txt");
         Files.writeString(path, "Hello, World!");
 
         CodeHandler handler = new CodeHandler(path.toString());
@@ -53,7 +53,7 @@ public class CodeHandlerTest {
     // by the specified number of characters.
     @Test
     public void testSwallow() throws IOException {
-        Path path = Files.createTempFile("test", ".txt");
+        Path path = Files.createTempFile("test.txt", ".txt");
         Files.writeString(path, "Hello, World!");
 
         CodeHandler handler = new CodeHandler(path.toString());
@@ -67,12 +67,12 @@ public class CodeHandlerTest {
     // of the file content has been reached.
     @Test
     public void testIsDone() throws IOException {
-        Path path = Files.createTempFile("test", ".txt");
+        Path path = Files.createTempFile("test.txt", ".txt");
         Files.writeString(path, "Hello, World!");
 
         CodeHandler handler = new CodeHandler(path.toString());
         handler.swallow(13);
-        assertEquals(true, handler.isDone(), "isDone should return true after processing all characters");
+        assertTrue(handler.isDone(), "isDone should return true after processing all characters");
 
         Files.delete(path);
     }
@@ -81,7 +81,7 @@ public class CodeHandlerTest {
     // portion of the file content.
     @Test
     public void testRemainder() throws IOException {
-        Path path = Files.createTempFile("test", ".txt");
+        Path path = Files.createTempFile("test.txt", ".txt");
         Files.writeString(path, "Hello, World!");
 
         CodeHandler handler = new CodeHandler(path.toString());
