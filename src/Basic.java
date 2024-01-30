@@ -5,20 +5,20 @@ import java.util.LinkedList;
 public class Basic {
 
     // Starting point to initiate the tokenization process.
-    // Command line arguments, expects single argument: the file name which has to be tokenized.
+    // Command line arguments expect single argument: the file name which has to be tokenized.
     public static void main(String[] args) {
 
         // Validate that exactly one argument (filename) is provided
         if (args.length != 1) {
             System.out.println("Error: A single filename is required as an argument.");
-            System.exit(1); // Cleanly exiting with an error status
+            System.exit(1); //  Exiting with an error status
         }
 
-        // Initialize Lexer with the provided filename
-        Lexer lexer = new Lexer(args[0]);
+
+        Lexer lexer = new Lexer();
 
         // Perform lexical analysis on the file and store the resulting tokens
-        LinkedList<Token> tokens = lexer.lex();
+        LinkedList<Token> tokens = lexer.lex(args[0]);
 
         // Iterating through each of the tokens and printing their string representation
         for (Token token : tokens) {

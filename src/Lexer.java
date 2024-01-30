@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedList;
 
 // Lexer class is responsible for tokenizing source code into a series of tokens.
@@ -6,21 +7,34 @@ import java.util.LinkedList;
 public class Lexer {
 
     private CodeHandler handler; // Handles the reading and navigation of the source code.
-    private LinkedList<Token> tokens; // Stores the identified tokens.
     private int lineNo; // Tracks the current line number in the source code.
     private int position; // Tracks the current position within the current line.
 
+    private final HashMap<String, Token.TokenType> knownWords;
+
     // Constructor for the Lexer. Initializes the lexer with the source code file.
     // throws RuntimeException if an IOException occurs while reading the file.
-    public Lexer(String filename) {
-        try {
-            handler = new CodeHandler(filename);
-            tokens = new LinkedList<>();
-            lineNo = 1;
-            position = 0;
-        } catch (IOException e) {
-            throw new RuntimeException("Error reading file: " + filename, e);
-        }
+    public Lexer() {
+        knownWords = new HashMap<>();
+        populateKnownWords(knownWords);
+    }
+
+    private void populateKnownWords(HashMap<String, Token.TokenType> knownWords) {
+        knownWords.put("if", Token.TokenType.IF);
+        knownWords.put("print", Token.TokenType.PRINT);
+        knownWords.put("read", Token.TokenType.READ);
+        knownWords.put("input", Token.TokenType.INPUT);
+        knownWords.put("data", Token.TokenType.DATA);
+        knownWords.put("gosub", Token.TokenType.GOSUB);
+        knownWords.put("for", Token.TokenType.FOR);
+        knownWords.put("to", Token.TokenType.TO);
+        knownWords.put("step", Token.TokenType.STEP);
+        knownWords.put("next", Token.TokenType.NEXT);
+        knownWords.put("return", Token.TokenType.RETURN);
+        knownWords.put("then", Token.TokenType.THEN);
+        knownWords.put("function", Token.TokenType.FUNCTION);
+        knownWords.put("while", Token.TokenType.WHILE);
+        knownWords.put("end", Token.TokenType.END);
     }
 
     // The 'processWord' function starts the identification of a word token.
@@ -29,20 +43,19 @@ public class Lexer {
         char currentChar = handler.peek(0);
         if (Character.isLetter(currentChar)) { // Checking for a Letter only at beginning
             // Building the token with a starting letter
-            tokenBuilder = appendCharFromHandler(tokenBuilder);
+            tokenBuilder.append(handler.getChar());
         } else {
             throw new RuntimeException("Unrecognized word start: " + currentChar);
         }
         // Continue to append the remaining characters to form the complete token.
         appendTokenCharacters(tokenBuilder);
-        return new Token(TokenType.WORD, tokenBuilder.toString(), lineNo, position - tokenBuilder.length());
-    }
-
-    // The 'appendCharFromHandler' function is for incrementing character and updating position counter.
-    private StringBuilder appendCharFromHandler(StringBuilder tokenBuilder) {
-        tokenBuilder.append(handler.getChar());
-        position++;
-        return tokenBuilder;
+        // Convert the tokenBuilder to a String and check if it's in the knownWords map.
+        String token = tokenBuilder.toString();
+        if (knownWords.containsKey(token)) { //If so, return a Token with corresponding TokenType, lineNo, position.
+            return new Token(knownWords.get(token), lineNo, position);
+        } else { // If not, create a new WORD Token with the word as its value.
+            return new Token(Token.TokenType.WORD, tokenBuilder.toString(), lineNo, position - tokenBuilder.length());
+        }
     }
 
     // The 'appendTokenCharacters' appends valid token characters till a non-valid character or end.
@@ -53,7 +66,8 @@ public class Lexer {
             // Checking for valid characters for a Java Identifier (Letter, Digit, _, $, %)
             if (Character.isLetterOrDigit(currentChar) || currentChar == '_' || currentChar == '$' || currentChar == '%') {
                 // Append the character and update position
-                tokenBuilder = appendCharFromHandler(tokenBuilder);
+                tokenBuilder.append(handler.getChar());
+                position++;
                 // If a token has ended with $ or %, stop appending more characters
                 if (currentChar == '$' || currentChar == '%') {
                     break; // breaking after appending $ or %
@@ -85,42 +99,59 @@ public class Lexer {
             handler.getChar();
             position++;
         }
-        return new Token(TokenType.NUMBER, numberBuilder.toString(), lineNo, position - numberBuilder.length());
+        return new Token(Token.TokenType.NUMBER, numberBuilder.toString(), lineNo, position - numberBuilder.length());
+    }
+
+    // This method handles whitespace and line delimiters.
+    private void handleWhitespace(char curChar, LinkedList<Token> tokens) {
+        if (Character.isSpaceChar(curChar)) {
+            position++;
+        } else if (curChar == '\n') { // If current character is a newline character add a ENDOFLINE token to token list.
+            tokens.add(new Token(Token.TokenType.ENDOFLINE, lineNo, position));
+            lineNo++;
+            position = 0;
+        } else if (curChar == '\r') {
+            // Do nothing.
+        }
+        handler.getChar();
     }
 
     // Performs the lexing of the source code.
     // It reads the source code character by character, identifying and collecting tokens.
     // Returns a LinkedList of tokens identified in the source code.
-    public LinkedList<Token> lex() {
+    public LinkedList<Token> lex(String filename) {
+        // Stores the identified tokens.
+        LinkedList<Token> tokens;
+        try {
+            handler = new CodeHandler(filename);
+            tokens = new LinkedList<>();
+            lineNo = 1;
+            position = 0;
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading file: " + filename, e);
+        }
+
         while (!handler.isDone()) {
             char curChar = handler.peek(0);
             if (Character.isWhitespace(curChar)) {
-                if (!Character.isSpaceChar(curChar)) {
-                    if (curChar == '\n') {
-                        tokens.add(new Token(TokenType.ENDOFLINE, lineNo, position));
-                        lineNo++;
-                        position = 0;
-                    }
-                } else {
-                    position++; // Increment position for spaces.
-                }
-                handler.getChar();
-                continue;
-            }
-            else if (Character.isLetter(curChar)) {
+                handleWhitespace(curChar, tokens);
+            } else if (Character.isLetter(curChar)) {
                 tokens.add(processWord());
-            } else if (Character.isDigit(curChar)) {
+            } else if (Character.isDigit(curChar) || (curChar == '.' && Character.isDigit(handler.peek(1)))) {
                 tokens.add(processNumber());
             } else {
                 throw new RuntimeException("Unrecognized character: " + curChar);
             }
         }
 
-        // Add end-of-line token if the last token is not an end-of-line.
-        if (!tokens.isEmpty() && tokens.getLast().getTokenType() != TokenType.ENDOFLINE) {
-            tokens.add(new Token(TokenType.ENDOFLINE, lineNo, position));
+        // If the token list is not empty and the last token is not an end of line token,
+        // add an end of line token at the current line number and character position to the list of tokens.
+        if (!tokens.isEmpty() && tokens.getLast().getTokenType() != Token.TokenType.ENDOFLINE) {
+            tokens.add(new Token(Token.TokenType.ENDOFLINE, lineNo, position));
         }
 
         return tokens;
     }
+
 }
+

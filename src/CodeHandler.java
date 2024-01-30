@@ -6,7 +6,7 @@ import java.nio.file.Paths;
 // CodeHandler class to manage and navigate through the content of a code document.
 public class CodeHandler {
 
-    private String document; // Stores the content of the code document.
+    private final String document; // Stores the content of the code document.
     private int index; // Current position within the code document for navigation and processing.
 
     // Constructs a CodeHandler by reading and storing the content of the file specified by filename.
