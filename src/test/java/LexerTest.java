@@ -1,15 +1,19 @@
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedList;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 // LexerTest class contains unit tests for the Lexer class.
 // It tests the Lexer's ability to tokenize various strings into correct sequences of tokens.
 public class LexerTest {
+
+    Lexer lex = new Lexer();
 
     // Helper method to run the lexer on a given text.
     // Creates a temporary file with the text and uses the Lexer to tokenize it.
@@ -25,8 +29,8 @@ public class LexerTest {
     @Test
     public void testMultiLineStrings() throws IOException {
         LinkedList<Token> tokens = runLexerOnText("Hello\nWorld\n12345");
-        assertEquals(new Token(Token.TokenType.WORD, "Hello", 1, 0), tokens.get(0));
-        assertEquals(new Token(Token.TokenType.ENDOFLINE, 1, 5), tokens.get(1));
+        Assertions.assertEquals(new Token(Token.TokenType.WORD, "Hello", 1, 0), tokens.get(0));
+        Assertions.assertEquals(new Token(Token.TokenType.ENDOFLINE, 1, 5), tokens.get(1));
         assertEquals(new Token(Token.TokenType.WORD, "World", 2, 0), tokens.get(2));
         assertEquals(new Token(Token.TokenType.ENDOFLINE, 2, 5), tokens.get(3));
         assertEquals(new Token(Token.TokenType.NUMBER, "12345", 3, 0), tokens.get(4));
@@ -46,6 +50,13 @@ public class LexerTest {
     @Test
     public void testNumbersThenWords() throws IOException {
         LinkedList<Token> tokens = runLexerOnText("12345 Hello");
+        assertEquals(new Token(Token.TokenType.NUMBER, "12345", 1, 0), tokens.get(0));
+        assertEquals(new Token(Token.TokenType.WORD, "Hello", 1, 6), tokens.get(1));
+    }
+
+    @Test
+    public void test() throws IOException {
+        LinkedList<Token> tokens = lex.lex("src/test/resources/hello_world.bas");
         assertEquals(new Token(Token.TokenType.NUMBER, "12345", 1, 0), tokens.get(0));
         assertEquals(new Token(Token.TokenType.WORD, "Hello", 1, 6), tokens.get(1));
     }
