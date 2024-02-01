@@ -49,4 +49,16 @@ public class LexerTest {
         assertEquals(new Token(Token.TokenType.NUMBER, "12345", 1, 0), tokens.get(0));
         assertEquals(new Token(Token.TokenType.WORD, "Hello", 1, 6), tokens.get(1));
     }
+
+    @Test
+    public void testStringLiteral() throws IOException {
+        LinkedList<Token> tokens = runLexerOnText("\"Hello there\"");
+        assertEquals(new Token(Token.TokenType.STRINGLITERAL, "Hello there", 1, 0), tokens.get(0));
+    }
+
+    @Test
+    public void testEmptyStringLiteral() throws IOException {
+        LinkedList<Token> tokens = runLexerOnText("\"\"");
+        assertEquals(new Token(Token.TokenType.STRINGLITERAL, "", 1, 0), tokens.get(0));
+    }
 }

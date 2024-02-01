@@ -44,6 +44,7 @@ public class Lexer {
         if (Character.isLetter(currentChar)) { // Checking for a Letter only at beginning
             // Building the token with a starting letter
             tokenBuilder.append(handler.getChar());
+            position++;
         } else {
             throw new RuntimeException("Unrecognized word start: " + currentChar);
         }
@@ -54,7 +55,8 @@ public class Lexer {
         if (knownWords.containsKey(token)) { //If so, return a Token with corresponding TokenType, lineNo, position.
             return new Token(knownWords.get(token), lineNo, position);
         } else { // If not, create a new WORD Token with the word as its value.
-            return new Token(Token.TokenType.WORD, tokenBuilder.toString(), lineNo, position - tokenBuilder.length());
+            return new Token(Token.TokenType.WORD, tokenBuilder.toString(), lineNo,
+                    position - tokenBuilder.length());
         }
     }
 
@@ -99,7 +101,8 @@ public class Lexer {
             handler.getChar();
             position++;
         }
-        return new Token(Token.TokenType.NUMBER, numberBuilder.toString(), lineNo, position - numberBuilder.length());
+        return new Token(Token.TokenType.NUMBER, numberBuilder.toString(), lineNo,
+                position - numberBuilder.length());
     }
 
     // This method handles whitespace and line delimiters.
@@ -114,6 +117,31 @@ public class Lexer {
             // Do nothing.
         }
         handler.getChar();
+    }
+
+    private Token HandleStringLiteral() {
+        StringBuilder stringLiteralBuilder = new StringBuilder();
+        char currentChar;
+        boolean escapeNextChar = false;
+        handler.getChar();
+        position++;
+        while (!handler.isDone()) {
+            currentChar = handler.getChar();
+            position++;
+            if (escapeNextChar) {
+                stringLiteralBuilder.append(currentChar);
+                escapeNextChar = false;
+            } else if (currentChar == '\\') {
+                escapeNextChar = true;
+            } else if (currentChar == '\"') {
+                return new Token(Token.TokenType.STRINGLITERAL, stringLiteralBuilder.toString(), lineNo,
+                        position - stringLiteralBuilder.length()- 2); // To account for the pair of missing quotes
+            } else {
+                stringLiteralBuilder.append(currentChar);
+            }
+
+        }
+        throw new RuntimeException("Unterminated string literal at line " + lineNo);
     }
 
     // Performs the lexing of the source code.
@@ -139,6 +167,10 @@ public class Lexer {
                 tokens.add(processWord());
             } else if (Character.isDigit(curChar) || (curChar == '.' && Character.isDigit(handler.peek(1)))) {
                 tokens.add(processNumber());
+
+            } else if (curChar == '\"') {
+                tokens.add(HandleStringLiteral());
+
             } else {
                 throw new RuntimeException("Unrecognized character: " + curChar);
             }
@@ -152,6 +184,8 @@ public class Lexer {
 
         return tokens;
     }
+
+
 
 }
 
