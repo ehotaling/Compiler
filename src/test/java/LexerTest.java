@@ -29,8 +29,8 @@ public class LexerTest {
     @Test
     public void testMultiLineStrings() throws IOException {
         LinkedList<Token> tokens = runLexerOnText("Hello\nWorld\n12345");
-        Assertions.assertEquals(new Token(Token.TokenType.WORD, "Hello", 1, 0), tokens.get(0));
-        Assertions.assertEquals(new Token(Token.TokenType.ENDOFLINE, 1, 5), tokens.get(1));
+        assertEquals(new Token(Token.TokenType.WORD, "Hello", 1, 0), tokens.get(0));
+        assertEquals(new Token(Token.TokenType.ENDOFLINE, 1, 5), tokens.get(1));
         assertEquals(new Token(Token.TokenType.WORD, "World", 2, 0), tokens.get(2));
         assertEquals(new Token(Token.TokenType.ENDOFLINE, 2, 5), tokens.get(3));
         assertEquals(new Token(Token.TokenType.NUMBER, "12345", 3, 0), tokens.get(4));
