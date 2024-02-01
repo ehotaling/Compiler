@@ -51,7 +51,8 @@ public class Token {
         if (this == o) return true;
         if (!(o instanceof Token)) return false;
         Token token = (Token) o;
-        return
+        return lineNo == token.lineNo &&
+                position == token.position &&
                 tokenType == token.tokenType &&
                 Objects.equals(val, token.val);
     }
