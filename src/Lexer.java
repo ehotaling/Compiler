@@ -26,13 +26,21 @@ public class Lexer {
         twoCharacterSymbols = new HashMap<>();
         populateTwoCharacterSymbols();
     }
-    // This method populates the hash map with all two character symbols in BASIC
+
+    /*
+     * Populates the twoCharacterSymbols HashMap with predefined two-character symbols and their corresponding token types.
+     * The keys represent the symbol characters, and the values represent the corresponding TokenType enum.
+     */
     private void populateTwoCharacterSymbols() {
         twoCharacterSymbols.put("<=", Token.TokenType.LESSTHANEQUALTO);
         twoCharacterSymbols.put(">=", Token.TokenType.GREATERTHANEQUALTO);
         twoCharacterSymbols.put("<>", Token.TokenType.NOTEQUALS);
     }
-    // This method populates all one character symbols in BASIC
+
+    /*
+     * Populates the oneCharacterSymbols HashMap with predefined one-character symbols and their corresponding token types.
+     * The keys represent the symbol characters, and the values represent the corresponding TokenType enum.
+     */
     private void populateOneCharacterSymbols() {
         oneCharacterSymbols.put("=", Token.TokenType.EQUALS);
         oneCharacterSymbols.put("<", Token.TokenType.LESSTHAN);
@@ -45,6 +53,7 @@ public class Lexer {
         oneCharacterSymbols.put("/", Token.TokenType.DIVIDE);
     }
 
+     // Populates the knownWords HashMap with predefined words and their corresponding token types.
     private void populateKnownWords() {
         knownWords.put("if", Token.TokenType.IF);
         knownWords.put("print", Token.TokenType.PRINT);
@@ -63,7 +72,15 @@ public class Lexer {
         knownWords.put("end", Token.TokenType.END);
     }
 
-    // The 'processWord' function starts the identification of a word token.
+
+    /*
+     * Process a word token.
+     * This method reads characters from the source code and constructs a word token
+     * by appending valid characters to a StringBuilder. It checks if the constructed token
+     * is present in the knownWords map. If it is, it creates a Token object with the corresponding
+     * TokenType, line number, and position. If the token is not known, it creates a Token object
+     * with TokenType.WORD and the word as its value.
+     */
     private Token processWord() {
         StringBuilder tokenBuilder = new StringBuilder();
         char currentChar = handler.peek(0);
@@ -80,10 +97,15 @@ public class Lexer {
         String token = tokenBuilder.toString();
         if (knownWords.containsKey(token)) { //If so, return a Token with corresponding TokenType, lineNo, position.
             return new Token(knownWords.get(token), lineNo, position);
+        } else if (token.charAt(token.length() - 1) == ':') {
+            return new Token(Token.TokenType.LABEL, token, lineNo,
+                    position - tokenBuilder.length());
         } else { // If not, create a new WORD Token with the word as its value.
-            return new Token(Token.TokenType.WORD, tokenBuilder.toString(), lineNo,
+            return new Token(Token.TokenType.WORD, token, lineNo,
                     position - tokenBuilder.length());
         }
+
+
     }
 
     // The 'appendTokenCharacters' appends valid token characters till a non-valid character or end.
@@ -92,13 +114,14 @@ public class Lexer {
         while (!handler.isDone()) {
             currentChar = handler.peek(0);
             // Checking for valid characters for a Java Identifier (Letter, Digit, _, $, %)
-            if (Character.isLetterOrDigit(currentChar) || currentChar == '_' || currentChar == '$' || currentChar == '%') {
+            if (Character.isLetterOrDigit(currentChar) || currentChar == '_' || currentChar == '$' ||
+                    currentChar == '%' || currentChar == ':') {
                 // Append the character and update position
                 tokenBuilder.append(handler.getChar());
                 position++;
-                // If a token has ended with $ or %, stop appending more characters
-                if (currentChar == '$' || currentChar == '%') {
-                    break; // breaking after appending $ or %
+                // If a token has ended with $, %, or : , stop appending more characters
+                if (currentChar == '$' || currentChar == '%' || currentChar == ':') {
+                    break; // breaking after appending $, %, or :
                 }
             } else {
                 // If an invalid character for a Java Identifier is encountered, stop appending
@@ -131,7 +154,13 @@ public class Lexer {
                 position - numberBuilder.length());
     }
 
-    // This method handles whitespace and line delimiters.
+    /*
+     * Handles whitespace characters in the source code.
+     * If the current character is a space character, it advances the position by one.
+     * If the current character is a newline character, it adds an ENDOFLINE token to the list of tokens
+     * and updates the line number and position values accordingly.
+     * If the current character is a carriage return character, it does nothing.
+     */
     private void handleWhitespace(char curChar, LinkedList<Token> tokens) {
         if (Character.isSpaceChar(curChar)) {
             position++;
@@ -145,6 +174,10 @@ public class Lexer {
         handler.getChar();
     }
 
+
+    // This method handles a string literal token in the source code. It reads characters until it encounters
+    // a closing double quote ("). It takes care of escape sequences and constructs the string literal value.
+    // If it encounters an unterminated string literal, it throws a RuntimeException.
     private Token HandleStringLiteral() {
         StringBuilder stringLiteralBuilder = new StringBuilder();
         char currentChar;
@@ -170,11 +203,13 @@ public class Lexer {
         throw new RuntimeException("Unterminated string literal at line " + lineNo);
     }
 
+    /*
+     * This method processes a symbol character and returns a Token object representing the symbol.
+     * It checks if the symbol is a two-character symbol or a one-character symbol
+     * and returns the corresponding TokenType and symbol value.
+     * This method can throw a RuntimeException if the symbol character is not recognized.
+     */
     private Token processSymbol() {
-        // take two characters, check if they exist together in the two CharacterSymbols hashmap, if so increment
-        // position by two and return token
-        // then take one character check if it exists in the oneCharacterSymbols Hash Map, if so increment position
-        // by one and return token
         StringBuilder symbolBuilder = new StringBuilder();
         while (!handler.isDone()) {
 
@@ -187,6 +222,7 @@ public class Lexer {
                 symbolBuilder.append(handler.getChar());
                 position++;
                 return new Token(oneCharacterSymbols.get(symbolBuilder.toString()), symbolBuilder.toString(), lineNo, position - symbolBuilder.length());
+
             }
         }
         throw new RuntimeException("Undetermined symbol at line " + lineNo);

@@ -79,5 +79,13 @@ public class LexerTest {
         assertEquals(new Token(Token.TokenType.MULTIPLY, "*", 1, 23), tokens.get(10));
         assertEquals(new Token(Token.TokenType.DIVIDE, "/", 1, 25), tokens.get(11));
     }
+
+    @Test
+    public void testLabels() throws IOException {
+        String text = "Hello: World: Testing testing";
+        LinkedList<Token> tokens = runLexerOnText(text);
+        assertEquals(new Token(Token.TokenType.LABEL, "Hello:", 1, 0), tokens.get(0));
+        assertEquals(new Token(Token.TokenType.LABEL, "World:", 1, 7), tokens.get(1));
+    }
 }
 

@@ -11,7 +11,7 @@ public class Token {
     public enum TokenType {
         WORD, NUMBER, IF, PRINT, READ, INPUT, DATA, GOSUB, FOR, TO, STEP, NEXT, RETURN, THEN, FUNCTION, WHILE,
         END, ENDOFLINE, STRINGLITERAL, GREATERTHANEQUALTO, LESSTHANEQUALTO, NOTEQUALS, EQUALS, LESSTHAN, GREATERTHAN,
-        LPAREN, RPAREN, PLUS, MINUS, MULTIPLY, DIVIDE
+        LPAREN, RPAREN, PLUS, MINUS, MULTIPLY, DIVIDE, LABEL
     }
     private final TokenType tokenType; // as defined in TokenType enum.
     private String val; // Value of the token. It can be null for tokens where value is not applicable, like ENDOFLINE.
@@ -70,6 +70,14 @@ public class Token {
     // Return the token's type
     public TokenType getTokenType() {
         return this.tokenType;
+    }
+    // Getter for position, returns tokens position
+    public int getPosition() {
+        return this.position;
+    }
+    // Getter for line number, returns tokens line number
+    public int getLineNo() {
+        return this.lineNo;
     }
 
 }
