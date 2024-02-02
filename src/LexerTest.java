@@ -61,4 +61,23 @@ public class LexerTest {
         LinkedList<Token> tokens = runLexerOnText("\"\"");
         assertEquals(new Token(Token.TokenType.STRINGLITERAL, "", 1, 0), tokens.get(0));
     }
+
+    @Test
+    public void testProcessSymbol() throws IOException {
+        String text = "<= >= <> = < > ( ) + - * ///";
+        LinkedList<Token> tokens = runLexerOnText(text);
+        assertEquals(new Token(Token.TokenType.LESSTHANEQUALTO, "<=", 1, 0), tokens.get(0));
+        assertEquals(new Token(Token.TokenType.GREATERTHANEQUALTO, ">=", 1, 3), tokens.get(1));
+        assertEquals(new Token(Token.TokenType.NOTEQUALS, "<>", 1, 6), tokens.get(2));
+        assertEquals(new Token(Token.TokenType.EQUALS, "=", 1, 9), tokens.get(3));
+        assertEquals(new Token(Token.TokenType.LESSTHAN, "<", 1, 11), tokens.get(4));
+        assertEquals(new Token(Token.TokenType.GREATERTHAN, ">", 1, 13), tokens.get(5));
+        assertEquals(new Token(Token.TokenType.LPAREN, "(", 1, 15), tokens.get(6));
+        assertEquals(new Token(Token.TokenType.RPAREN, ")", 1, 17), tokens.get(7));
+        assertEquals(new Token(Token.TokenType.PLUS, "+", 1, 19), tokens.get(8));
+        assertEquals(new Token(Token.TokenType.MINUS, "-", 1, 21), tokens.get(9));
+        assertEquals(new Token(Token.TokenType.MULTIPLY, "*", 1, 23), tokens.get(10));
+        assertEquals(new Token(Token.TokenType.DIVIDE, "/", 1, 25), tokens.get(11));
+    }
 }
+

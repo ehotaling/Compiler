@@ -12,14 +12,40 @@ public class Lexer {
 
     private final HashMap<String, Token.TokenType> knownWords;
 
+    private final HashMap<String, Token.TokenType> oneCharacterSymbols;
+
+    private final HashMap<String, Token.TokenType> twoCharacterSymbols;
+
     // Constructor for the Lexer. Initializes the lexer with the source code file.
     // throws RuntimeException if an IOException occurs while reading the file.
     public Lexer() {
         knownWords = new HashMap<>();
-        populateKnownWords(knownWords);
+        populateKnownWords();
+        oneCharacterSymbols = new HashMap<>();
+        populateOneCharacterSymbols();
+        twoCharacterSymbols = new HashMap<>();
+        populateTwoCharacterSymbols();
+    }
+    // This method populates the hash map with all two character symbols in BASIC
+    private void populateTwoCharacterSymbols() {
+        twoCharacterSymbols.put("<=", Token.TokenType.LESSTHANEQUALTO);
+        twoCharacterSymbols.put(">=", Token.TokenType.GREATERTHANEQUALTO);
+        twoCharacterSymbols.put("<>", Token.TokenType.NOTEQUALS);
+    }
+    // This method populates all one character symbols in BASIC
+    private void populateOneCharacterSymbols() {
+        oneCharacterSymbols.put("=", Token.TokenType.EQUALS);
+        oneCharacterSymbols.put("<", Token.TokenType.LESSTHAN);
+        oneCharacterSymbols.put(">", Token.TokenType.GREATERTHAN);
+        oneCharacterSymbols.put("(", Token.TokenType.LPAREN);
+        oneCharacterSymbols.put(")", Token.TokenType.RPAREN);
+        oneCharacterSymbols.put("+", Token.TokenType.PLUS);
+        oneCharacterSymbols.put("-", Token.TokenType.MINUS);
+        oneCharacterSymbols.put("*", Token.TokenType.MULTIPLY);
+        oneCharacterSymbols.put("/", Token.TokenType.DIVIDE);
     }
 
-    private void populateKnownWords(HashMap<String, Token.TokenType> knownWords) {
+    private void populateKnownWords() {
         knownWords.put("if", Token.TokenType.IF);
         knownWords.put("print", Token.TokenType.PRINT);
         knownWords.put("read", Token.TokenType.READ);
@@ -144,6 +170,28 @@ public class Lexer {
         throw new RuntimeException("Unterminated string literal at line " + lineNo);
     }
 
+    private Token processSymbol() {
+        // take two characters, check if they exist together in the two CharacterSymbols hashmap, if so increment
+        // position by two and return token
+        // then take one character check if it exists in the oneCharacterSymbols Hash Map, if so increment position
+        // by one and return token
+        StringBuilder symbolBuilder = new StringBuilder();
+        while (!handler.isDone()) {
+
+            if (twoCharacterSymbols.containsKey(handler.peek(0) + "" + handler.peek(1))) {
+                symbolBuilder.append(handler.getChar());
+                symbolBuilder.append(handler.getChar());
+                position += 2;
+                return new Token(twoCharacterSymbols.get(symbolBuilder.toString()), symbolBuilder.toString(), lineNo, position - symbolBuilder.length());
+            } else if (oneCharacterSymbols.containsKey(handler.peek(0) + "")) {
+                symbolBuilder.append(handler.getChar());
+                position++;
+                return new Token(oneCharacterSymbols.get(symbolBuilder.toString()), symbolBuilder.toString(), lineNo, position - symbolBuilder.length());
+            }
+        }
+        throw new RuntimeException("Undetermined symbol at line " + lineNo);
+    }
+
     // Performs the lexing of the source code.
     // It reads the source code character by character, identifying and collecting tokens.
     // Returns a LinkedList of tokens identified in the source code.
@@ -171,8 +219,8 @@ public class Lexer {
             } else if (curChar == '\"') {
                 tokens.add(HandleStringLiteral());
 
-            } else {
-                throw new RuntimeException("Unrecognized character: " + curChar);
+            }  else {
+                tokens.add(processSymbol());
             }
         }
 
@@ -184,8 +232,6 @@ public class Lexer {
 
         return tokens;
     }
-
-
 
 }
 

@@ -14,7 +14,6 @@ public class Basic {
             System.exit(1); //  Exiting with an error status
         }
 
-
         Lexer lexer = new Lexer();
 
         // Perform lexical analysis on the file and store the resulting tokens

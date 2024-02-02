@@ -10,7 +10,8 @@ public class Token {
     // ENDOFLINE: Represents the end of a line in the text.
     public enum TokenType {
         WORD, NUMBER, IF, PRINT, READ, INPUT, DATA, GOSUB, FOR, TO, STEP, NEXT, RETURN, THEN, FUNCTION, WHILE,
-        END, ENDOFLINE, STRINGLITERAL
+        END, ENDOFLINE, STRINGLITERAL, GREATERTHANEQUALTO, LESSTHANEQUALTO, NOTEQUALS, EQUALS, LESSTHAN, GREATERTHAN,
+        LPAREN, RPAREN, PLUS, MINUS, MULTIPLY, DIVIDE
     }
     private final TokenType tokenType; // as defined in TokenType enum.
     private String val; // Value of the token. It can be null for tokens where value is not applicable, like ENDOFLINE.
@@ -71,9 +72,6 @@ public class Token {
         return this.tokenType;
     }
 
-    public String getVal() {
-        return this.val;
-    }
 }
 
 
