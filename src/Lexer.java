@@ -6,14 +6,23 @@ import java.util.LinkedList;
 // This class reads through the source code and identifies different elements like words, numbers, and special characters.
 public class Lexer {
 
-    private CodeHandler handler; // Handles the reading and navigation of the source code.
-    private int lineNo; // Tracks the current line number in the source code.
-    private int position; // Tracks the current position within the current line.
+    // Handles the reading and navigation of the source code.
+    private CodeHandler handler;
 
+    // Tracks the current line number in the source code.
+    private int lineNo;
+
+    // Tracks the current position within the current line.
+    private int position;
+
+    // Represents a HashMap that stores known words and their corresponding token types.
     private final HashMap<String, Token.TokenType> knownWords;
 
+
+    // Represents a HashMap that stores one-character symbols and their corresponding TokenType.
     private final HashMap<String, Token.TokenType> oneCharacterSymbols;
 
+    // Stores a mapping of two-character symbols to their corresponding TokenTypes.
     private final HashMap<String, Token.TokenType> twoCharacterSymbols;
 
     // Constructor for the Lexer. Initializes the lexer with the source code file.
@@ -27,20 +36,16 @@ public class Lexer {
         populateTwoCharacterSymbols();
     }
 
-    /*
-     * Populates the twoCharacterSymbols HashMap with predefined two-character symbols and their corresponding token types.
-     * The keys represent the symbol characters, and the values represent the corresponding TokenType enum.
-     */
+    // Populates the twoCharacterSymbols HashMap with predefined two-character symbols and their corresponding token types.
+    // The keys represent the symbol characters, and the values represent the corresponding TokenType enum.
     private void populateTwoCharacterSymbols() {
         twoCharacterSymbols.put("<=", Token.TokenType.LESSTHANEQUALTO);
         twoCharacterSymbols.put(">=", Token.TokenType.GREATERTHANEQUALTO);
         twoCharacterSymbols.put("<>", Token.TokenType.NOTEQUALS);
     }
 
-    /*
-     * Populates the oneCharacterSymbols HashMap with predefined one-character symbols and their corresponding token types.
-     * The keys represent the symbol characters, and the values represent the corresponding TokenType enum.
-     */
+    // Populates the oneCharacterSymbols HashMap with predefined one-character symbols and their corresponding token types.
+    // The keys represent the symbol characters, and the values represent the corresponding TokenType enum.
     private void populateOneCharacterSymbols() {
         oneCharacterSymbols.put("=", Token.TokenType.EQUALS);
         oneCharacterSymbols.put("<", Token.TokenType.LESSTHAN);
@@ -108,7 +113,8 @@ public class Lexer {
 
     }
 
-    // The 'appendTokenCharacters' appends valid token characters till a non-valid character or end.
+
+    // Appends valid token characters to the given tokenBuilder.
     private void appendTokenCharacters(StringBuilder tokenBuilder) {
         char currentChar;
         while (!handler.isDone()) {
