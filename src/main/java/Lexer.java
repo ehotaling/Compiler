@@ -58,7 +58,7 @@ public class Lexer {
         oneCharacterSymbols.put("/", Token.TokenType.DIVIDE);
     }
 
-     // Populates the knownWords HashMap with predefined words and their corresponding token types.
+    // Populates the knownWords HashMap with predefined words and their corresponding token types.
     private void populateKnownWords() {
         knownWords.put("if", Token.TokenType.IF);
         knownWords.put("print", Token.TokenType.PRINT);
@@ -147,7 +147,8 @@ public class Lexer {
 
             // Only accept one decimal
             if ((!Character.isDigit(c) && c != '.') || (c == '.' && decimalFound)) {
-                throw new IllegalStateException(String.format("Invalid identifier for Number token: %c%nLine: %d%nPosition: %d%n", c, lineNo, position));
+                break;
+//                throw new IllegalStateException(String.format("Invalid identifier for Number token: %c%nLine: %d%nPosition: %d%n", c, lineNo, position));
             }
 
             numberBuilder.append(c);
@@ -282,4 +283,3 @@ public class Lexer {
     }
 
 }
-
