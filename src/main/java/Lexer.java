@@ -1,7 +1,6 @@
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Optional;
 
 // Lexer class is responsible for tokenizing source code into a series of tokens.
 // This class reads through the source code and identifies different elements like words, numbers, and special characters.
@@ -165,7 +164,7 @@ public class Lexer {
      * and updates the line number and position values accordingly.
      * If the current character is a carriage return character, it does nothing.
      */
-    private Optional<Token> handleWhitespace(char curChar, LinkedList<Token> tokens) {
+    private void handleWhitespace(char curChar, LinkedList<Token> tokens) {
         if (Character.isSpaceChar(curChar)) {
             position++;
         } else if (curChar == '\n') { // If current character is a newline character add a ENDOFLINE token to token list.
