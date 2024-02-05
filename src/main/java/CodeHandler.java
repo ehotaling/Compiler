@@ -18,6 +18,9 @@ public class CodeHandler {
 
     // Returns the character at the current position offset by a given number of characters.
     public char peek(int i) {
+        if (i + index >= document.length()){ // If trying to peek past the end of the document
+            return ' '; // Return a space as a placeholder
+        }
         return document.charAt(index + i);
     }
 
