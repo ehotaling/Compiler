@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Optional;
 
 // Lexer class is responsible for tokenizing source code into a series of tokens.
 // This class reads through the source code and identifies different elements like words, numbers, and special characters.
@@ -139,15 +140,15 @@ public class Lexer {
     private Token processNumber() {
         StringBuilder numberBuilder = new StringBuilder();
         boolean decimalFound = false;
-        char currentChar;
+        char c;
         while (!handler.isDone()) {
-            currentChar = handler.peek(0);
+            c = handler.peek(0);
             // Stop when a whitespace or a second dot is encountered.
-            if (Character.isWhitespace(currentChar) || (currentChar == '.' && decimalFound)) {
+            if (Character.isWhitespace(c) || (c == '.' && decimalFound)) {
                 break;
             }
-            numberBuilder.append(currentChar);
-            if (currentChar == '.') {
+            numberBuilder.append(c);
+            if (c == '.') {
                 decimalFound = true;
             }
             handler.getChar();
@@ -164,7 +165,7 @@ public class Lexer {
      * and updates the line number and position values accordingly.
      * If the current character is a carriage return character, it does nothing.
      */
-    private void handleWhitespace(char curChar, LinkedList<Token> tokens) {
+    private Optional<Token> handleWhitespace(char curChar, LinkedList<Token> tokens) {
         if (Character.isSpaceChar(curChar)) {
             position++;
         } else if (curChar == '\n') { // If current character is a newline character add a ENDOFLINE token to token list.
@@ -253,14 +254,14 @@ public class Lexer {
         position = 0;
 
         while (!handler.isDone()) {
-            char head = handler.peek(0);
-            if (Character.isWhitespace(head)) {
-                handleWhitespace(head, tokens);
-            } else if (Character.isLetter(head)) {
+            char c = handler.peek(0);
+            if (Character.isWhitespace(c)) {
+                handleWhitespace(c, tokens);
+            } else if (Character.isLetter(c)) {
                 tokens.add(processWord());
-            } else if (Character.isDigit(head) || (head == '.' && Character.isDigit(handler.peek(1)))) {
+            } else if (Character.isDigit(c) || (c == '.' && Character.isDigit(handler.peek(1)))) {
                 tokens.add(processNumber());
-            } else if (head == '\"') {
+            } else if (c == '\"') {
                 tokens.add(HandleStringLiteral());
             }  else {
                 tokens.add(processSymbol());
