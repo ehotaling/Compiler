@@ -1,6 +1,7 @@
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -62,6 +63,28 @@ public class LexerTest {
     public void testNumberWithNewline() throws IOException {
         LinkedList<Token> tokens = runLexerOnText("12345\n");
         assertEquals(new Token(Token.TokenType.NUMBER, "12345", 1, 0), tokens.get(0));
+        assertEquals(new Token(Token.TokenType.ENDOFLINE, 1, 5), tokens.get(1));
+    }
+
+    @Test
+    public void testNumberWithDecimal() throws IOException {
+        LinkedList<Token> tokens = runLexerOnText("123.45");
+        assertEquals(new Token(Token.TokenType.NUMBER, "123.45", 1, 0), tokens.get(0));
+    }
+
+    @Test
+    public void testInvalidNumber() throws IOException {
+        assertThrows(IllegalStateException.class, () -> runLexerOnText("123_345"));
+        assertThrows(IllegalStateException.class, () -> runLexerOnText("123.34.55"));
+        assertThrows(IllegalStateException.class, () -> runLexerOnText("123:"));
+    }
+
+    @Test
+    public void testNumberWithNewlines() throws IOException {
+        LinkedList<Token> tokens = runLexerOnText("12345 \n 54321");
+        assertEquals(new Token(Token.TokenType.NUMBER, "12345", 1, 0), tokens.get(0));
+        assertEquals(new Token(Token.TokenType.ENDOFLINE, 1, 6), tokens.get(1));
+        assertEquals(new Token(Token.TokenType.NUMBER, "54321", 2, 1), tokens.get(2));
     }
 
     @Test
@@ -108,6 +131,28 @@ public class LexerTest {
         assertEquals(new Token(Token.TokenType.DIVIDE, "/", 1, 25), tokens.get(11));
     }
 
+    // ERIC: paranthesis are not generally used in BASIC except in function calls like Print()
+    // Not sure what the requirements are for this
+    public void testNumberInParantheses() throws IOException {
+        String text = "(4 + 2)\n";
+        LinkedList<Token> tokens = runLexerOnText(text);
+        assertEquals(new Token(Token.TokenType.LPAREN, "(", 1, 0), tokens.get(0));
+        assertEquals(new Token(Token.TokenType.NUMBER, "4", 1, 1), tokens.get(1));
+        assertEquals(new Token(Token.TokenType.PLUS, "+", 1, 3), tokens.get(2));
+        assertEquals(new Token(Token.TokenType.NUMBER, "2", 1, 5), tokens.get(3));
+        assertEquals(new Token(Token.TokenType.RPAREN, ")", 1, 6), tokens.get(4));
+    }
+
+    @Test
+    public void comparisonStatement() throws IOException {
+        String text = "4 <= 4.5\n";
+        LinkedList<Token> tokens = runLexerOnText(text);
+        assertEquals(new Token(Token.TokenType.NUMBER, "4", 1, 0), tokens.get(0));
+        assertEquals(new Token(Token.TokenType.LESSTHANEQUALTO, "<=", 1, 2), tokens.get(1));
+        assertEquals(new Token(Token.TokenType.NUMBER, "4.5", 1, 5), tokens.get(2));
+        assertEquals(new Token(Token.TokenType.ENDOFLINE, 1, 8), tokens.get(3));
+    }
+
     @Test
     public void testLabels() throws IOException {
         String text = "Hello: World: Testing testing";
@@ -118,6 +163,13 @@ public class LexerTest {
 
     @Test
     public void testInvalidSymbol() throws IOException {
+        assertThrows(IllegalStateException.class, () -> runLexerOnText("InvalidSymbol:: World: Testing testing"));
+        assertThrows(IllegalStateException.class, () -> runLexerOnText(":: World: Testing testing"));
+    }
+
+    @Test
+    public void testHelloWorld() throws IOException {
+        LinkedList<Token> tokensList =  lexer.lex("src/test/resources/hello_world.bas");
         assertThrows(IllegalStateException.class, () -> runLexerOnText("InvalidSymbol:: World: Testing testing"));
         assertThrows(IllegalStateException.class, () -> runLexerOnText(":: World: Testing testing"));
     }

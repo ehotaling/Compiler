@@ -113,18 +113,21 @@ public class Lexer {
         }
     }
 
+    private boolean isValidWordChar(char c) {
+        return (Character.isLetterOrDigit(c) || c == '_' || c == '$' || c == '%' || c == ':');
+    }
+
     // Appends valid token characters to the given tokenBuilder.
     private StringBuilder scanWordSuffix() {
         StringBuilder wordSuffix = new StringBuilder();
-        while (!handler.isDone()) {
+        while (!handler.isDone() && isValidWordChar(handler.peek(0))) {
             char c = handler.peek(0);
-            // Checking for valid characters for a Java Identifier (Letter, Digit, _, $, %)
-            if (!(Character.isLetterOrDigit(c) || c == '_' || c == '$' || c == '%' || c == ':')) {
-                break;
-            }
+
             // Append the character and update position
-            wordSuffix.append(handler.getChar());
+            wordSuffix.append(c);
+            handler.swallow(1);
             position++;
+
             // If a token has ended with $, %, or : , stop appending more characters
             if (c == '$' || c == '%' || c == ':') {
                 break; // breaking after appending $, %, or :
@@ -139,18 +142,20 @@ public class Lexer {
     private Token processNumber() {
         StringBuilder numberBuilder = new StringBuilder();
         boolean decimalFound = false;
-        char c;
-        while (!handler.isDone()) {
-            c = handler.peek(0);
-            // Stop when a whitespace or a second dot is encountered.
-            if (Character.isWhitespace(c) || (c == '.' && decimalFound)) {
-                break;
+        while (!handler.isDone() && !Character.isWhitespace(handler.peek(0))) {
+            char c = handler.peek(0);
+
+            // Only accept one decimal
+            if ((!Character.isDigit(c) && c != '.') || (c == '.' && decimalFound)) {
+                throw new IllegalStateException(String.format("Invalid identifier for Number token: %c%nLine: %d%nPosition: %d%n", c, lineNo, position));
             }
+
             numberBuilder.append(c);
             if (c == '.') {
                 decimalFound = true;
             }
-            handler.getChar();
+
+            handler.swallow(1);
             position++;
         }
         return new Token(Token.TokenType.NUMBER, numberBuilder.toString(), lineNo,
@@ -174,7 +179,7 @@ public class Lexer {
         } else if (curChar == '\r') {
             // Do nothing.
         }
-        handler.getChar();
+        handler.swallow(1);
     }
 
 
@@ -192,15 +197,15 @@ public class Lexer {
         //       should be an error, at least from my compiler and what I can glean from the requirements
         boolean quoteIsOpen = head == '\"';
 
-        char c = handler.peek(0);
-        while (!handler.isDone() && c != '\n') {
-            c = handler.getChar();
+        while (!handler.isDone() && handler.peek(0) != '\n') {
+            char c = handler.peek(0);
             position++;
             if (c == '\"') {
                 quoteIsOpen = !quoteIsOpen;
             }
             // I always append so the escaped quotes show up in the string token
             stringLiteralBuilder.append(c);
+            handler.swallow(1);
         }
         if (quoteIsOpen) {
             throw new IllegalStateException(String.format("Unterminated string literal:%nLine: %d%nPosition: %d%n", lineNo, position));
