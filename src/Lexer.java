@@ -142,9 +142,8 @@ public class Lexer {
     private Token processNumber() {
         StringBuilder numberBuilder = new StringBuilder();
         boolean decimalFound = false;
-        char currentChar;
         while (!handler.isDone()) {
-            currentChar = handler.peek(0);
+            char currentChar = handler.peek(0);
             // Stop when a whitespace or a second dot is encountered.
             if (Character.isWhitespace(currentChar) || (currentChar == '.' && decimalFound)) {
                 break;
@@ -153,14 +152,15 @@ public class Lexer {
             if (currentChar == '.') {
                 decimalFound = true;
             }
-            handler.getChar();
+            handler.swallow(1);
             position++;
         }
         return new Token(Token.TokenType.NUMBER, numberBuilder.toString(), lineNo,
                 position - numberBuilder.length());
     }
 
-    /*
+
+     /*
      * Handles whitespace characters in the source code.
      * If the current character is a space character, it advances the position by one.
      * If the current character is a newline character, it adds an ENDOFLINE token to the list of tokens
@@ -186,12 +186,11 @@ public class Lexer {
     // If it encounters an unterminated string literal, it throws a RuntimeException.
     private Token HandleStringLiteral() {
         StringBuilder stringLiteralBuilder = new StringBuilder();
-        char currentChar;
         boolean escapeNextChar = false;
         handler.getChar();
         position++;
         while (!handler.isDone()) {
-            currentChar = handler.getChar();
+            char currentChar = handler.getChar();
             position++;
             if (escapeNextChar) {
                 stringLiteralBuilder.append(currentChar);
@@ -239,16 +238,17 @@ public class Lexer {
     // Returns a LinkedList of tokens identified in the source code.
     public LinkedList<Token> lex(String filename) {
         // Stores the identified tokens.
-        LinkedList<Token> tokens;
+
         try {
             handler = new CodeHandler(filename);
-            tokens = new LinkedList<>();
-            lineNo = 1;
-            position = 0;
+
         } catch (IOException e) {
             throw new RuntimeException("Error reading file: " + filename, e);
         }
 
+        LinkedList<Token> tokens = new LinkedList<>();
+        lineNo = 1;
+        position = 0;
         while (!handler.isDone()) {
             char curChar = handler.peek(0);
             if (Character.isWhitespace(curChar)) {
