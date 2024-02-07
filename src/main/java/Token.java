@@ -15,8 +15,8 @@ public class Token {
     }
     private final TokenType tokenType; // as defined in TokenType enum.
     private String val; // Value of the token. It can be null for tokens where value is not applicable, like ENDOFLINE.
-    private int lineNo; // Line number in the source code where the token is located.
-   private int position; // Position within its line, as an index.
+    private final int lineNo; // Line number in the source code where the token is located.
+    private final int position; // Position within its line, as an index.
 
     // Constructor for a Token without value.
     // Useful for tokens where a specific value is not applicable.
@@ -38,9 +38,9 @@ public class Token {
     @Override
     public String toString() {
         if (val != null) {
-            return String.format("%s(%s)", tokenType, val);
+            return String.format("%s(%s) Line: %d Position: %d", tokenType, val, lineNo, position);
         } else {
-            return tokenType.toString();
+            return String.format("%s Line: %d Position: %d", tokenType, lineNo, position);
         }
     }
 

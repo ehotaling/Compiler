@@ -1,7 +1,6 @@
 import java.io.IOException;
 import java.util.*;
 
-
 // Lexer class is responsible for tokenizing source code into a series of tokens.
 // This class reads through the source code and identifies different elements like words, numbers, and special characters.
 public class Lexer {
@@ -60,7 +59,7 @@ public class Lexer {
         oneCharacterSymbols.put("/", Token.TokenType.DIVIDE);
     }
 
-     // Populates the knownWords HashMap with predefined words and their corresponding token types.
+    // Populates the knownWords HashMap with predefined words and their corresponding token types.
     private void populateKnownWords() {
         knownWords.put("if", Token.TokenType.IF);
         knownWords.put("print", Token.TokenType.PRINT);
@@ -79,7 +78,6 @@ public class Lexer {
         knownWords.put("end", Token.TokenType.END);
     }
 
-
     /*
      * Process a word token.
      * This method reads characters from the source code and constructs a word token
@@ -90,11 +88,11 @@ public class Lexer {
      */
     private Token processWord() {
         char head = handler.peek(0);
-        if(!Character.isLetter(head)) { // Checking for a letter only at the beginning
+        if (!Character.isLetter(head)) { // Checking for a Letter only at beginning
             throw new IllegalStateException(String.format("Unrecognized word start: %c%nLine: %d%nPosition: %d%n", head, lineNo, position));
         }
 
-        // Building the token with the starting letter
+        // Building the token with a starting letter
         StringBuilder wordBuilder = new StringBuilder();
         wordBuilder.append(handler.getChar());
         position++;
@@ -104,8 +102,9 @@ public class Lexer {
 
         // Convert the tokenBuilder to a String and check if it's in the knownWords map.
         String token = wordBuilder.toString();
-        if (knownWords.containsKey(token)) { // If so, return a Token with corresponding TokenType, lineNo, position.
-            return new Token(knownWords.get(token), lineNo, position);
+        if (knownWords.containsKey(token.toLowerCase())) { //If so, return a Token with corresponding TokenType, lineNo, position.
+            return new Token(knownWords.get(token.toLowerCase()), lineNo,
+                    position - wordBuilder.length());
         } else if (token.charAt(token.length() - 1) == ':') {
             return new Token(Token.TokenType.LABEL, token, lineNo,
                     position - wordBuilder.length());
@@ -113,14 +112,11 @@ public class Lexer {
             return new Token(Token.TokenType.WORD, token, lineNo,
                     position - wordBuilder.length());
         }
-
-
     }
 
     private boolean isValidWordChar(char c) {
         return (Character.isLetterOrDigit(c) || c == '_' || c == '$' || c == '%' || c == ':');
     }
-
 
     // Appends valid token characters to the given tokenBuilder.
     private StringBuilder scanWordSuffix() {
@@ -161,15 +157,14 @@ public class Lexer {
             if (c == '.') {
                 decimalFound = true;
             }
-
             handler.swallow(1);
             position++;
         }
-        return new Token(Token.TokenType.NUMBER, numberBuilder.toString(), lineNo, position - numberBuilder.length());
+        return new Token(Token.TokenType.NUMBER, numberBuilder.toString(), lineNo,
+                position - numberBuilder.length());
     }
 
-
-     /*
+    /*
      * Handles whitespace characters in the source code.
      * If the current character is a space character, it advances the position by one.
      * If the current character is a newline character, it adds an ENDOFLINE token to the list of tokens
@@ -189,10 +184,9 @@ public class Lexer {
         handler.swallow(1);
     }
 
-
     // This method handles a string literal token in the source code. It reads characters until it encounters
     // a closing double quote ("). It takes care of escape sequences and constructs the string literal value.
-    // If it encounters an unterminated string literal, it throws an IllegalStateException.
+    // If it encounters an unterminated string literal, it throws a RuntimeException.
     private Token HandleStringLiteral() {
         StringBuilder stringLiteralBuilder = new StringBuilder();
 
@@ -200,7 +194,7 @@ public class Lexer {
         stringLiteralBuilder.append(handler.getChar());
         position++;
 
-        boolean quoteIsOpen = false; // track the state of escaped quotes that have a matching end quote
+        boolean quoteIsOpen = false; // track the state of escaped quotes that must have a matching end quote
         boolean escapeNext = false;
         while (!handler.isDone() && handler.peek(0) != '\n') {
             char c = handler.peek(0);
@@ -209,7 +203,7 @@ public class Lexer {
             if (escapeNext && !validEscapeCharacters.contains(c)) {
                 // Only allow escaped '\\' followed by chars 'n' and '\"'
                 throw new IllegalStateException(
-                        String.format("Invalid escape character: '%c' in string '%s'%nLine: %d%nPosition: %d%n",
+                        String.format("Invalid escaped character: '%c' in string '%s'%nLine: %d%nPosition: %d%n",
                                 c, stringLiteralBuilder, lineNo, position)
                 );
             }
@@ -222,6 +216,7 @@ public class Lexer {
                 quoteIsOpen = !quoteIsOpen;
                 escapeNext = false;
             }
+
             stringLiteralBuilder.append(c);
             handler.swallow(1);
         }
@@ -236,15 +231,18 @@ public class Lexer {
         char next = handler.peek(0);
         if (!handler.isDone() && !Character.isSpaceChar(next) && next != '\n') {
             throw new IllegalStateException(
-                    String.format("Invalid character: '%c' after string '%s'%nLine: %d%nPosition: %d%n", next,
-                            stringLiteralBuilder, lineNo, position)
+                    String.format(
+                            "Invalid character: '%c' after string: '%s'%nLine: %d%nPosition: %d%n",
+                            next, stringLiteralBuilder, lineNo, position
+                    )
             );
         }
-
         return new Token(
                 Token.TokenType.STRINGLITERAL,
-                stringLiteralBuilder.toString(),lineNo,
-                position- stringLiteralBuilder.length());
+                stringLiteralBuilder.toString(),
+                lineNo,
+                position - stringLiteralBuilder.length()
+        );
     }
 
     /*
@@ -255,18 +253,15 @@ public class Lexer {
      */
     private Token processSymbol() {
         StringBuilder symbolBuilder = new StringBuilder();
-
-        if (twoCharacterSymbols.containsKey(handler.peek(0) + "" + handler.peek(1))) {
+        if (twoCharacterSymbols.containsKey((handler.peek(0) + "" + handler.peek(1)).toLowerCase())) {
             symbolBuilder.append(handler.getChar());
             symbolBuilder.append(handler.getChar());
             position += 2;
-            return new Token(twoCharacterSymbols.get(symbolBuilder.toString()),
-                    symbolBuilder.toString(), lineNo, position - symbolBuilder.length());
-        } else if (oneCharacterSymbols.containsKey(handler.peek(0) + "")) {
+            return new Token(twoCharacterSymbols.get(symbolBuilder.toString()), symbolBuilder.toString(), lineNo, position - symbolBuilder.length());
+        } else if (oneCharacterSymbols.containsKey((handler.peek(0) + "").toLowerCase())) {
             symbolBuilder.append(handler.getChar());
             position++;
-            return new Token(oneCharacterSymbols.get(symbolBuilder.toString()),
-                    symbolBuilder.toString(), lineNo, position - symbolBuilder.length());
+            return new Token(oneCharacterSymbols.get(symbolBuilder.toString()), symbolBuilder.toString(), lineNo, position - symbolBuilder.length());
         } else {
             throw new IllegalStateException(
                     String.format("Undetermined symbol: %c%nLine: %d%nPosition: %d%n", handler.peek(0), lineNo, position)
@@ -278,18 +273,17 @@ public class Lexer {
     // It reads the source code character by character, identifying and collecting tokens.
     // Returns a LinkedList of tokens identified in the source code.
     public LinkedList<Token> lex(String filename) {
-        // Stores the identified tokens.
-
         try {
             handler = new CodeHandler(filename);
         } catch (IOException e) {
             throw new RuntimeException("Error reading file: " + filename, e);
         }
 
-        // Stores the identified tokens
+        // Stores the identified tokens.
         LinkedList<Token> tokens = new LinkedList<>();
         lineNo = 1;
         position = 0;
+
         while (!handler.isDone()) {
             char c = handler.peek(0);
             if (Character.isWhitespace(c)) {
@@ -298,10 +292,8 @@ public class Lexer {
                 tokens.add(processWord());
             } else if (Character.isDigit(c) || (c == '.' && Character.isDigit(handler.peek(1)))) {
                 tokens.add(processNumber());
-
             } else if (c == '\"') {
                 tokens.add(HandleStringLiteral());
-
             }  else {
                 tokens.add(processSymbol());
             }
@@ -315,6 +307,4 @@ public class Lexer {
 
         return tokens;
     }
-
 }
-
