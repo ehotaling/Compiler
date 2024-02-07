@@ -102,8 +102,9 @@ public class Lexer {
 
         // Convert the tokenBuilder to a String and check if it's in the knownWords map.
         String token = wordBuilder.toString();
-        if (knownWords.containsKey(token)) { //If so, return a Token with corresponding TokenType, lineNo, position.
-            return new Token(knownWords.get(token), lineNo, position);
+        if (knownWords.containsKey(token.toLowerCase())) { //If so, return a Token with corresponding TokenType, lineNo, position.
+            return new Token(knownWords.get(token.toLowerCase()), lineNo,
+                    position - wordBuilder.length());
         } else if (token.charAt(token.length() - 1) == ':') {
             return new Token(Token.TokenType.LABEL, token, lineNo,
                     position - wordBuilder.length());
@@ -253,12 +254,12 @@ public class Lexer {
      */
     private Token processSymbol() {
         StringBuilder symbolBuilder = new StringBuilder();
-        if (twoCharacterSymbols.containsKey(handler.peek(0) + "" + handler.peek(1))) {
+        if (twoCharacterSymbols.containsKey((handler.peek(0) + "" + handler.peek(1)).toLowerCase())) {
             symbolBuilder.append(handler.getChar());
             symbolBuilder.append(handler.getChar());
             position += 2;
             return new Token(twoCharacterSymbols.get(symbolBuilder.toString()), symbolBuilder.toString(), lineNo, position - symbolBuilder.length());
-        } else if (oneCharacterSymbols.containsKey(handler.peek(0) + "")) {
+        } else if (oneCharacterSymbols.containsKey((handler.peek(0) + "").toLowerCase())) {
             symbolBuilder.append(handler.getChar());
             position++;
             return new Token(oneCharacterSymbols.get(symbolBuilder.toString()), symbolBuilder.toString(), lineNo, position - symbolBuilder.length());

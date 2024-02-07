@@ -190,11 +190,25 @@ public class LexerTest {
         LinkedList<Token> tokens =  lexer.lex("src/test/resources/hello_world.bas");
         assertEquals(tokens.size(), 7);
         assertEquals(new Token(Token.TokenType.NUMBER, "10", 1, 0), tokens.get(0));
-        assertEquals(new Token(Token.TokenType.WORD, "PRINT", 1, 3), tokens.get(1));
+        assertEquals(new Token(Token.TokenType.PRINT, 1, 3), tokens.get(1));
         assertEquals(new Token(Token.TokenType.STRINGLITERAL, "\"Hello, World!\"", 1, 9), tokens.get(2));
         assertEquals(new Token(Token.TokenType.ENDOFLINE, 1, 24), tokens.get(3));
         assertEquals(new Token(Token.TokenType.NUMBER, "20", 2, 0), tokens.get(4));
-        assertEquals(new Token(Token.TokenType.WORD, "END", 2, 3), tokens.get(5));
+        assertEquals(new Token(Token.TokenType.END, 2, 3), tokens.get(5));
         assertEquals(new Token(Token.TokenType.ENDOFLINE, 2, 6), tokens.get(6));
+    }
+
+    @Test
+    public void testForLoopFromFile() throws IOException {
+        LinkedList<Token> tokens =  lexer.lex("src/test/resources/for_loop.bas");
+
+        assertEquals(new Token(Token.TokenType.NUMBER, "10", 1, 0), tokens.get(0));
+        assertEquals(new Token(Token.TokenType.FOR, 1, 3), tokens.get(1));
+        assertEquals(new Token(Token.TokenType.WORD, "I", 1, 7), tokens.get(2));
+        assertEquals(new Token(Token.TokenType.EQUALS, "=", 1, 9), tokens.get(3));
+        assertEquals(new Token(Token.TokenType.NUMBER, "1", 1, 11), tokens.get(4));
+        assertEquals(new Token(Token.TokenType.TO, 1, 13), tokens.get(5));
+        assertEquals(new Token(Token.TokenType.NUMBER, "10", 1, 16), tokens.get(6));
+        assertEquals(new Token(Token.TokenType.ENDOFLINE, 1, 18), tokens.get(7));
     }
 }
