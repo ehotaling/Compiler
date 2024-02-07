@@ -291,15 +291,15 @@ public class Lexer {
         lineNo = 1;
         position = 0;
         while (!handler.isDone()) {
-            char curChar = handler.peek(0);
-            if (Character.isWhitespace(curChar)) {
-                handleWhitespace(curChar, tokens);
-            } else if (Character.isLetter(curChar)) {
+            char c = handler.peek(0);
+            if (Character.isWhitespace(c)) {
+                handleWhitespace(c, tokens);
+            } else if (Character.isLetter(c)) {
                 tokens.add(processWord());
-            } else if (Character.isDigit(curChar) || (curChar == '.' && Character.isDigit(handler.peek(1)))) {
+            } else if (Character.isDigit(c) || (c == '.' && Character.isDigit(handler.peek(1)))) {
                 tokens.add(processNumber());
 
-            } else if (curChar == '\"') {
+            } else if (c == '\"') {
                 tokens.add(HandleStringLiteral());
 
             }  else {
