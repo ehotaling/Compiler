@@ -25,7 +25,7 @@ public class Lexer {
     private final HashMap<String, Token.TokenType> twoCharacterSymbols;
 
     private final Set<Character> validEscapeCharacters = new HashSet<>(Arrays.asList('n', '\"'));
-  
+
     // Constructor for the Lexer. Initializes the lexer with the source code file.
     // throws RuntimeException if an IOException occurs while reading the file.
     public Lexer() {
@@ -59,7 +59,7 @@ public class Lexer {
         oneCharacterSymbols.put("/", Token.TokenType.DIVIDE);
     }
 
-     // Populates the knownWords HashMap with predefined words and their corresponding token types.
+    // Populates the knownWords HashMap with predefined words and their corresponding token types.
     private void populateKnownWords() {
         knownWords.put("if", Token.TokenType.IF);
         knownWords.put("print", Token.TokenType.PRINT);
@@ -156,6 +156,7 @@ public class Lexer {
             if (c == '.') {
                 decimalFound = true;
             }
+            
             handler.swallow(1);
             position++;
         }
@@ -163,7 +164,7 @@ public class Lexer {
                 position - numberBuilder.length());
     }
 
-     /*
+    /*
      * Handles whitespace characters in the source code.
      * If the current character is a space character, it advances the position by one.
      * If the current character is a newline character, it adds an ENDOFLINE token to the list of tokens
@@ -182,7 +183,7 @@ public class Lexer {
         }
         handler.swallow(1);
     }
-  
+
     // This method handles a string literal token in the source code. It reads characters until it encounters
     // a closing double quote ("). It takes care of escape sequences and constructs the string literal value.
     // If it encounters an unterminated string literal, it throws a RuntimeException.
