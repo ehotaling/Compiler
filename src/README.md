@@ -1,13 +1,26 @@
-# Project: Compiler
+# BASIC Lexer
 
-This project contains the following files:
+A lexer for a subset of the BASIC language that outputs a list of Tokens given a file
 
-- Basic.java: Entry point for the lexer program. It processes a file to tokenize its content and prints out the tokens.
-- CodeHandler.java: Manages and navigates through the content of a code document.
-- CodeHandlerTest.java: Contains unit tests for testing various functionalities of the CodeHandler class.
-- Lexer.java: Responsible for tokenizing source code into a series of tokens.
-- LexerTest.java: Contains unit tests for the Lexer class, testing its ability to tokenize various strings into correct sequences of tokens.
-- Token.java: Represents a token for the lexer.
-- TokenTest.java: Contains unit tests to validate the functionalities in the Token class.
+### Prerequisites
 
-The project aims to provide a lexer for tokenizing source code into a series of tokens. It includes classes for handling code documents, lexing source code, and representing tokens. Additionally, it includes unit tests to ensure the correctness of the lexer and token classes.
+Java 1.8
+Maven 3.8.x (at the time of publishing, use the latest version otherwise)
+Ensure you have at least Maven 3.8.x installed on your system or environment where the project is being built
+
+### Installation
+
+Clone the repo and run:
+
+> mvn clean install -U
+> mvn package
+
+An easy way to do this in IntelliJ:
+- Click "Open",  navigate to the project root directory, select the "pom.xml" file, then click "Open as Project"
+- Click "View" -> "Tool Windows" -> "Maven"
+- Open Maven Settings for your project and ensure you are using "Bundled (Maven 3)" under "Maven home path"
+    - This will run the correct Maven version if you are running a different version of Maven at the system level
+
+## Usage
+
+java -jar /target/basic-app-1.0.jar "basic_file_name.bas"

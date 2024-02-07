@@ -156,7 +156,7 @@ public class Lexer {
             if (c == '.') {
                 decimalFound = true;
             }
-
+            
             handler.swallow(1);
             position++;
         }
