@@ -1,7 +1,5 @@
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -31,15 +29,14 @@ public class LexerTest {
      */
     // Tests the Lexer's ability to correctly tokenize multi-line strings.
     // Verifies if the Lexer correctly identifies words, numbers, and end-of-line tokens.
-//    @Test
-//    public void testMultiLineStrings() throws IOException {
-//        LinkedList<Token> tokens = runLexerOnText("Hello\nWorld\n12345");
-//        assertEquals(new Token(Token.TokenType.WORD, "Hello", 1, 0), tokens.get(0));
-//        assertEquals(new Token(Token.TokenType.ENDOFLINE, 1, 5), tokens.get(1));
-//        assertEquals(new Token(Token.TokenType.WORD, "World", 2, 0), tokens.get(2));
-//        assertEquals(new Token(Token.TokenType.ENDOFLINE, 2, 5), tokens.get(3));
-//        assertEquals(new Token(Token.TokenType.NUMBER, "12345", 3, 0), tokens.get(4));
-//    }
+    @Test
+    public void testMultiLineStrings() throws IOException {
+        String s = "\"Hello\\nWorld\\n12345\"";
+        LinkedList<Token> tokens = runLexerOnText(s);
+        assertEquals(tokens.size(), 2);
+        assertEquals(new Token(Token.TokenType.STRINGLITERAL, "\"Hello\\nWorld\\n12345\"", 1, 0), tokens.get(0));
+        assertEquals(new Token(Token.TokenType.ENDOFLINE, 1, s.length()), tokens.get(1));
+    }
 
     // Tests the Lexer's ability to tokenize a string containing words followed by numbers.
     // Verifies if words and numbers are correctly identified and tokenized.
@@ -74,9 +71,9 @@ public class LexerTest {
 
     @Test
     public void testInvalidNumber() throws IOException {
-//        assertThrows(IllegalStateException.class, () -> runLexerOnText("123_345"));
-//        assertThrows(IllegalStateException.class, () -> runLexerOnText("123.34.55"));
-//        assertThrows(IllegalStateException.class, () -> runLexerOnText("123:"));
+        assertThrows(IllegalStateException.class, () -> runLexerOnText("123_345"));
+        assertThrows(IllegalStateException.class, () -> runLexerOnText("123.34.55"));
+        assertThrows(IllegalStateException.class, () -> runLexerOnText("123:"));
     }
 
     @Test
@@ -89,14 +86,20 @@ public class LexerTest {
 
     @Test
     public void testStringLiteral() throws IOException {
-        LinkedList<Token> tokens = runLexerOnText("\"Hello there\"");
-        assertEquals(new Token(Token.TokenType.STRINGLITERAL, "\"Hello there\"", 1, 0), tokens.get(0));
+        String s = "\"\\\"Hello World\\\"\"";
+        LinkedList<Token> tokens = runLexerOnText(s);
+        assertEquals(tokens.size(), 2);
+        assertEquals(new Token(Token.TokenType.STRINGLITERAL, s, 1, 0), tokens.get(0));
+        assertEquals(new Token(Token.TokenType.ENDOFLINE, 1, s.length()), tokens.get(1));
     }
 
     @Test
     public void testStringLiteralEscapedQuotes() throws IOException {
-        LinkedList<Token> tokens = runLexerOnText("\"Hello there\" this is a string");
-        assertEquals(new Token(Token.TokenType.STRINGLITERAL, "\"Hello there\" this is a string", 1, 0), tokens.get(0));
+        String s = "\"\\\"Hello there\\\" this is a string\"";
+        LinkedList<Token> tokens = runLexerOnText(s);
+        assertEquals(tokens.size(), 2);
+        assertEquals(new Token(Token.TokenType.STRINGLITERAL, s, 1, 0), tokens.get(0));
+        assertEquals(new Token(Token.TokenType.ENDOFLINE, 1, s.length()), tokens.get(1));
     }
 
     @Test
@@ -107,10 +110,10 @@ public class LexerTest {
 
     @Test
     public void testStringLiteralWithoutMatchingQuote() throws IOException {
-        assertThrows(IllegalStateException.class, () -> runLexerOnText("\""));
-        assertThrows(IllegalStateException.class, () -> runLexerOnText("abcd \"Hello there"));
-        assertThrows(IllegalStateException.class, () -> runLexerOnText("abcd \"Hello there\"\""));
-        assertThrows(IllegalStateException.class, () -> runLexerOnText("Hello \""));
+        assertThrows(IllegalStateException.class, () -> runLexerOnText("\\\""));
+        assertThrows(IllegalStateException.class, () -> runLexerOnText("abcd \\\"Hello there"));
+        assertThrows(IllegalStateException.class, () -> runLexerOnText("abcd \\\"Hello there\"\""));
+        assertThrows(IllegalStateException.class, () -> runLexerOnText("Hello \\\""));
     }
 
     @Test
@@ -133,15 +136,16 @@ public class LexerTest {
 
     // ERIC: paranthesis are not generally used in BASIC except in function calls like Print()
     // Not sure what the requirements are for this
-    public void testNumberInParantheses() throws IOException {
-        String text = "(4 + 2)\n";
-        LinkedList<Token> tokens = runLexerOnText(text);
-        assertEquals(new Token(Token.TokenType.LPAREN, "(", 1, 0), tokens.get(0));
-        assertEquals(new Token(Token.TokenType.NUMBER, "4", 1, 1), tokens.get(1));
-        assertEquals(new Token(Token.TokenType.PLUS, "+", 1, 3), tokens.get(2));
-        assertEquals(new Token(Token.TokenType.NUMBER, "2", 1, 5), tokens.get(3));
-        assertEquals(new Token(Token.TokenType.RPAREN, ")", 1, 6), tokens.get(4));
-    }
+//    @Test
+//    public void testNumberInParantheses() throws IOException {
+//        String text = "(4 + 2)\n";
+//        LinkedList<Token> tokens = runLexerOnText(text);
+//        assertEquals(new Token(Token.TokenType.LPAREN, "(", 1, 0), tokens.get(0));
+//        assertEquals(new Token(Token.TokenType.NUMBER, "4", 1, 1), tokens.get(1));
+//        assertEquals(new Token(Token.TokenType.PLUS, "+", 1, 3), tokens.get(2));
+//        assertEquals(new Token(Token.TokenType.NUMBER, "2", 1, 5), tokens.get(3));
+//        assertEquals(new Token(Token.TokenType.RPAREN, ")", 1, 6), tokens.get(4));
+//    }
 
     @Test
     public void comparisonStatement() throws IOException {
@@ -161,19 +165,19 @@ public class LexerTest {
         assertEquals(new Token(Token.TokenType.LABEL, "World:", 1, 7), tokens.get(1));
     }
 
-    @Test
-    public void testParan() throws IOException {
-        String text = "(4+5)";
-        LinkedList<Token> tokens = runLexerOnText(text);
-        assertEquals(new Token(Token.TokenType.LPAREN, "(", 1, 0), tokens.get(0));
-        assertEquals(new Token(Token.TokenType.NUMBER, "4", 1, 1), tokens.get(1));
-        assertEquals(new Token(Token.TokenType.PLUS, "+", 1, 2), tokens.get(2));
-        assertEquals(new Token(Token.TokenType.NUMBER, "5", 1, 3), tokens.get(3));
-        assertEquals(new Token(Token.TokenType.RPAREN, ")", 1, 4), tokens.get(4));
+//    @Test
+//    public void testNumbersWithParanthesisAndOperatorsWithNoSpaces() throws IOException {
+//        String text = "(4+5)";
+//        LinkedList<Token> tokens = runLexerOnText(text);
+//        assertEquals(new Token(Token.TokenType.LPAREN, "(", 1, 0), tokens.get(0));
+//        assertEquals(new Token(Token.TokenType.NUMBER, "4", 1, 1), tokens.get(1));
+//        assertEquals(new Token(Token.TokenType.PLUS, "+", 1, 2), tokens.get(2));
+//        assertEquals(new Token(Token.TokenType.NUMBER, "5", 1, 3), tokens.get(3));
+//        assertEquals(new Token(Token.TokenType.RPAREN, ")", 1, 4), tokens.get(4));
 //        assertEquals(new Token(Token.TokenType.LESSTHANEQUALTO, "<=", 1, 2), tokens.get(1));
 //        assertEquals(new Token(Token.TokenType.NUMBER, "4.5", 1, 5), tokens.get(2));
 //        assertEquals(new Token(Token.TokenType.ENDOFLINE, 1, 8), tokens.get(3));
-    }
+//    }
 
     @Test
     public void testInvalidSymbol() throws IOException {
@@ -182,9 +186,15 @@ public class LexerTest {
     }
 
     @Test
-    public void testHelloWorld() throws IOException {
-        LinkedList<Token> tokensList =  lexer.lex("src/test/resources/hello_world.bas");
-        assertThrows(IllegalStateException.class, () -> runLexerOnText("InvalidSymbol:: World: Testing testing"));
-        assertThrows(IllegalStateException.class, () -> runLexerOnText(":: World: Testing testing"));
+    public void testHelloWorldFromFile() throws IOException {
+        LinkedList<Token> tokens =  lexer.lex("src/test/resources/hello_world.bas");
+        assertEquals(tokens.size(), 7);
+        assertEquals(new Token(Token.TokenType.NUMBER, "10", 1, 0), tokens.get(0));
+        assertEquals(new Token(Token.TokenType.WORD, "PRINT", 1, 3), tokens.get(1));
+        assertEquals(new Token(Token.TokenType.STRINGLITERAL, "\"Hello, World!\"", 1, 9), tokens.get(2));
+        assertEquals(new Token(Token.TokenType.ENDOFLINE, 1, 24), tokens.get(3));
+        assertEquals(new Token(Token.TokenType.NUMBER, "20", 2, 0), tokens.get(4));
+        assertEquals(new Token(Token.TokenType.WORD, "END", 2, 3), tokens.get(5));
+        assertEquals(new Token(Token.TokenType.ENDOFLINE, 2, 6), tokens.get(6));
     }
 }

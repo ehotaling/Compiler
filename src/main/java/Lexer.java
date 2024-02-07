@@ -1,6 +1,5 @@
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.*;
 
 // Lexer class is responsible for tokenizing source code into a series of tokens.
 // This class reads through the source code and identifies different elements like words, numbers, and special characters.
@@ -24,6 +23,8 @@ public class Lexer {
 
     // Stores a mapping of two-character symbols to their corresponding TokenTypes.
     private final HashMap<String, Token.TokenType> twoCharacterSymbols;
+
+    private final Set<Character> validEscapeCharacters = new HashSet<>(Arrays.asList('n', '\"'));
 
     // Constructor for the Lexer. Initializes the lexer with the source code file.
     // throws RuntimeException if an IOException occurs while reading the file.
@@ -77,7 +78,6 @@ public class Lexer {
         knownWords.put("end", Token.TokenType.END);
     }
 
-
     /*
      * Process a word token.
      * This method reads characters from the source code and constructs a word token
@@ -89,7 +89,7 @@ public class Lexer {
     private Token processWord() {
         char head = handler.peek(0);
         if (!Character.isLetter(head)) { // Checking for a Letter only at beginning
-            throw new IllegalStateException(String.format("Unrecognized word start %c%nLine: %d%nPosition: %d%n", head, lineNo, position));
+            throw new IllegalStateException(String.format("Unrecognized word start: %c%nLine: %d%nPosition: %d%n", head, lineNo, position));
         }
 
         // Building the token with a starting letter
@@ -147,8 +147,9 @@ public class Lexer {
 
             // Only accept one decimal
             if ((!Character.isDigit(c) && c != '.') || (c == '.' && decimalFound)) {
-                break;
-//                throw new IllegalStateException(String.format("Invalid identifier for Number token: %c%nLine: %d%nPosition: %d%n", c, lineNo, position));
+                throw new IllegalStateException(
+                        String.format("Invalid character for Number token: '%c'%nLine: %d%nPosition: %d%n", c, lineNo, position)
+                );
             }
 
             numberBuilder.append(c);
@@ -183,33 +184,58 @@ public class Lexer {
         handler.swallow(1);
     }
 
-
     // This method handles a string literal token in the source code. It reads characters until it encounters
     // a closing double quote ("). It takes care of escape sequences and constructs the string literal value.
     // If it encounters an unterminated string literal, it throws a RuntimeException.
     private Token HandleStringLiteral() {
         StringBuilder stringLiteralBuilder = new StringBuilder();
 
-        char head = handler.getChar();
-        stringLiteralBuilder.append(head);
+        // Append the opening quote
+        stringLiteralBuilder.append(handler.getChar());
         position++;
 
-        // Eric: BASIC generally only allows escaping matching quotes, i.e. PRINT "\[OTHER CHAR]"
-        //       should be an error, at least from my compiler and what I can glean from the requirements
-        boolean quoteIsOpen = head == '\"';
-
+        boolean quoteIsOpen = false; // track the state of escaped quotes that must have a matching end quote
+        boolean escapeNext = false;
         while (!handler.isDone() && handler.peek(0) != '\n') {
             char c = handler.peek(0);
             position++;
-            if (c == '\"') {
-                quoteIsOpen = !quoteIsOpen;
+
+            if (escapeNext && !validEscapeCharacters.contains(c)) {
+                // Only allow escaped '\\' followed by chars 'n' and '\"'
+                throw new IllegalStateException(
+                        String.format("Invalid escaped character: '%c' in string '%s'%nLine: %d%nPosition: %d%n",
+                                c, stringLiteralBuilder, lineNo, position)
+                );
             }
-            // I always append so the escaped quotes show up in the string token
+
+            if (!escapeNext && c == '\\') {
+                escapeNext = true;
+            } else if (escapeNext && c == 'n') {
+                escapeNext = false;
+            } else if (escapeNext && c == '\"') {
+                quoteIsOpen = !quoteIsOpen;
+                escapeNext = false;
+            }
+
             stringLiteralBuilder.append(c);
             handler.swallow(1);
         }
-        if (quoteIsOpen) {
-            throw new IllegalStateException(String.format("Unterminated string literal:%nLine: %d%nPosition: %d%n", lineNo, position));
+
+        if (quoteIsOpen || escapeNext) {
+            throw new IllegalStateException(
+                    String.format("Unterminated string literal: '%s'%nLine: %d%nPosition: %d%n",
+                            stringLiteralBuilder, lineNo, position)
+            );
+        }
+
+        char next = handler.peek(0);
+        if (!handler.isDone() && !Character.isSpaceChar(next) && next != '\n') {
+            throw new IllegalStateException(
+                    String.format(
+                            "Invalid character: '%c' after string: '%s'%nLine: %d%nPosition: %d%n",
+                            next, stringLiteralBuilder, lineNo, position
+                    )
+            );
         }
         return new Token(
                 Token.TokenType.STRINGLITERAL,
