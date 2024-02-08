@@ -38,6 +38,14 @@ public class Token {
     @Override
     public String toString() {
         if (val != null) {
+            return String.format("%s(%s)", tokenType, val);
+        } else {
+            return tokenType.toString();
+        }
+    }
+
+    public String toStringDebug() {
+        if (val != null) {
             return String.format("%s(%s) Line: %d Position: %d", tokenType, val, lineNo, position);
         } else {
             return String.format("%s Line: %d Position: %d", tokenType, lineNo, position);
