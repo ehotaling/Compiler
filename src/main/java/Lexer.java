@@ -178,8 +178,6 @@ public class Lexer {
             tokens.add(new Token(Token.TokenType.ENDOFLINE, lineNo, position));
             lineNo++;
             position = 0;
-        } else if (curChar == '\r') {
-            // Do nothing.
         }
         handler.swallow(1);
     }
@@ -196,7 +194,7 @@ public class Lexer {
 
         boolean quoteIsOpen = false; // track the state of escaped quotes that must have a matching end quote
         boolean escapeNext = false;
-        while (!handler.isDone() && handler.peek(0) != '\n') {
+        while (!handler.isDone() && handler.peek(0) != '\n' && handler.peek(0) != '\r') {
             char c = handler.peek(0);
             position++;
 
@@ -229,7 +227,7 @@ public class Lexer {
         }
 
         char next = handler.peek(0);
-        if (!handler.isDone() && !Character.isSpaceChar(next) && next != '\n') {
+        if (!handler.isDone() && !Character.isSpaceChar(next) && next != '\n' && next != '\r') {
             throw new IllegalStateException(
                     String.format(
                             "Invalid character: '%c' after string: '%s'%nLine: %d%nPosition: %d%n",
@@ -237,6 +235,7 @@ public class Lexer {
                     )
             );
         }
+
         return new Token(
                 Token.TokenType.STRINGLITERAL,
                 stringLiteralBuilder.toString(),
