@@ -26,8 +26,11 @@ public class Lexer {
 
     private final Set<Character> validEscapeCharacters = new HashSet<>(Arrays.asList('n', '\"'));
 
-    // Constructor for the Lexer. Initializes the lexer with the source code file.
-    // throws RuntimeException if an IOException occurs while reading the file.
+
+    /*
+     * The Lexer class is responsible for lexical analysis of source code. It reads the source code character by character
+     * and identifies and collects tokens based on predefined rules.
+     */
     public Lexer() {
         knownWords = new HashMap<>();
         populateKnownWords();
@@ -114,6 +117,7 @@ public class Lexer {
         }
     }
 
+    // Determines whether a given character is a valid character for a word.
     private boolean isValidWordChar(char c) {
         return (Character.isLetterOrDigit(c) || c == '_' || c == '$' || c == '%' || c == ':');
     }
@@ -184,7 +188,7 @@ public class Lexer {
 
     // This method handles a string literal token in the source code. It reads characters until it encounters
     // a closing double quote ("). It takes care of escape sequences and constructs the string literal value.
-    // If it encounters an unterminated string literal, it throws a RuntimeException.
+    // If it encounters an unterminated string literal, it throws an IllegalStateException.
     private Token HandleStringLiteral() {
         StringBuilder stringLiteralBuilder = new StringBuilder();
 
@@ -248,7 +252,7 @@ public class Lexer {
      * This method processes a symbol character and returns a Token object representing the symbol.
      * It checks if the symbol is a two-character symbol or a one-character symbol
      * and returns the corresponding TokenType and symbol value.
-     * This method can throw a RuntimeException if the symbol character is not recognized.
+     * This method can throw an IllegalStateException if the symbol character is not recognized.
      */
     private Token processSymbol() {
         StringBuilder symbolBuilder = new StringBuilder();
