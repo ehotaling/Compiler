@@ -32,9 +32,10 @@ public class LexerTest {
     @Test
     public void testMultiLineStrings() throws IOException {
         String s = "\"Hello\\nWorld\\n12345\"";
+        String expected = "Hello\nWorld\n12345";
         LinkedList<Token> tokens = runLexerOnText(s);
         assertEquals(tokens.size(), 2);
-        assertEquals(new Token(Token.TokenType.STRINGLITERAL, "\"Hello\\nWorld\\n12345\"", 1, 0), tokens.get(0));
+        assertEquals(new Token(Token.TokenType.STRINGLITERAL, expected, 1, 0), tokens.get(0));
         assertEquals(new Token(Token.TokenType.ENDOFLINE, 1, s.length()), tokens.get(1));
     }
 
@@ -87,25 +88,35 @@ public class LexerTest {
     @Test
     public void testStringLiteral() throws IOException {
         String s = "\"\\\"Hello World\\\"\"";
+        String expected = "\"Hello World\"";
         LinkedList<Token> tokens = runLexerOnText(s);
         assertEquals(tokens.size(), 2);
-        assertEquals(new Token(Token.TokenType.STRINGLITERAL, s, 1, 0), tokens.get(0));
+        assertEquals(new Token(Token.TokenType.STRINGLITERAL, expected, 1, 0), tokens.get(0));
         assertEquals(new Token(Token.TokenType.ENDOFLINE, 1, s.length()), tokens.get(1));
     }
 
     @Test
     public void testStringLiteralEscapedQuotes() throws IOException {
         String s = "\"\\\"Hello there\\\" this is a string\"";
+        String expected = "\"Hello there\" this is a string";
         LinkedList<Token> tokens = runLexerOnText(s);
         assertEquals(tokens.size(), 2);
-        assertEquals(new Token(Token.TokenType.STRINGLITERAL, s, 1, 0), tokens.get(0));
+        assertEquals(new Token(Token.TokenType.STRINGLITERAL, expected, 1, 0), tokens.get(0));
         assertEquals(new Token(Token.TokenType.ENDOFLINE, 1, s.length()), tokens.get(1));
     }
 
     @Test
     public void testEmptyStringLiteral() throws IOException {
         LinkedList<Token> tokens = runLexerOnText("\"\"");
-        assertEquals(new Token(Token.TokenType.STRINGLITERAL, "\"\"", 1, 0), tokens.get(0));
+        assertEquals(new Token(Token.TokenType.STRINGLITERAL, "", 1, 0), tokens.get(0));
+    }
+
+    @Test
+    public void testSubStringIsEmptyString() throws IOException {
+        LinkedList<Token> tokens = runLexerOnText("\"\\\"Hello world\\\"\\\"\\\"\"");
+
+        String expected = "\"Hello world\"\"\"";
+        assertEquals(new Token(Token.TokenType.STRINGLITERAL, expected, 1, 0), tokens.get(0));
     }
 
     @Test
@@ -191,7 +202,7 @@ public class LexerTest {
         assertEquals(tokens.size(), 7);
         assertEquals(new Token(Token.TokenType.NUMBER, "10", 1, 0), tokens.get(0));
         assertEquals(new Token(Token.TokenType.PRINT, 1, 3), tokens.get(1));
-        assertEquals(new Token(Token.TokenType.STRINGLITERAL, "\"Hello, World!\"", 1, 9), tokens.get(2));
+        assertEquals(new Token(Token.TokenType.STRINGLITERAL, "Hello, World!", 1, 9), tokens.get(2));
         assertEquals(new Token(Token.TokenType.ENDOFLINE, 1, 24), tokens.get(3));
         assertEquals(new Token(Token.TokenType.NUMBER, "20", 2, 0), tokens.get(4));
         assertEquals(new Token(Token.TokenType.END, 2, 3), tokens.get(5));
@@ -210,5 +221,43 @@ public class LexerTest {
         assertEquals(new Token(Token.TokenType.TO, 1, 13), tokens.get(5));
         assertEquals(new Token(Token.TokenType.NUMBER, "10", 1, 16), tokens.get(6));
         assertEquals(new Token(Token.TokenType.ENDOFLINE, 1, 18), tokens.get(7));
+    }
+
+    @Test
+    public void testPrintStatement() throws IOException {
+        LinkedList<Token> tokens = runLexerOnText("PRINT \"Hello World\"");
+        assertEquals(new Token(Token.TokenType.PRINT, 1, 0), tokens.get(0));
+        assertEquals(new Token(Token.TokenType.STRINGLITERAL, "Hello World", 1, 6), tokens.get(1));
+        assertEquals(new Token(Token.TokenType.ENDOFLINE, 1, "PRINT \"Hello World\"".length()), tokens.get(2));
+    }
+
+    @Test
+    public void testFileWithStringLiteralAndCarriageReturn() throws IOException {
+        LinkedList<Token> tokens =  lexer.lex("src/test/resources/hello_world2.bas");
+        assertEquals(new Token(Token.TokenType.NUMBER, "10", 1, 0), tokens.get(0));
+        assertEquals(new Token(Token.TokenType.PRINT, 1, 3), tokens.get(1));
+        assertEquals(new Token(Token.TokenType.STRINGLITERAL, "Hello, World!", 1, 9), tokens.get(2));
+    }
+
+    @Test
+    public void testFileWithMultiLineStringLiteral() throws IOException {
+        LinkedList<Token> tokens =  lexer.lex("src/test/resources/hello_world3.bas");
+        assertEquals(new Token(Token.TokenType.NUMBER, "10", 1, 0), tokens.get(0));
+        assertEquals(new Token(Token.TokenType.PRINT, 1, 3), tokens.get(1));
+        assertEquals(new Token(Token.TokenType.STRINGLITERAL, "Hello,\n\n\nWorld!", 1, 9), tokens.get(2));
+    }
+
+    @Test
+    public void testFileWithEscapedQuotesInLineStringLiteral() throws IOException {
+        LinkedList<Token> tokens =  lexer.lex("src/test/resources/hello_world4.bas");
+
+        String s = "abc";
+        String s2 = "ab\nc";
+        System.out.println(s.length());
+        System.out.println(s2.length());
+
+        assertEquals(new Token(Token.TokenType.NUMBER, "10", 1, 0), tokens.get(0));
+        assertEquals(new Token(Token.TokenType.PRINT, 1, 3), tokens.get(1));
+        assertEquals(new Token(Token.TokenType.STRINGLITERAL, "Hello, \"Hi\" World!", 1, 9), tokens.get(2));
     }
 }

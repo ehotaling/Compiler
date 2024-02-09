@@ -24,7 +24,16 @@ public class Lexer {
     // Stores a mapping of two-character symbols to their corresponding TokenTypes.
     private final HashMap<String, Token.TokenType> twoCharacterSymbols;
 
-    private final Set<Character> validEscapeCharacters = new HashSet<>(Arrays.asList('n', '\"'));
+    private final Set<Character> validEscapeCharacters = new HashSet<>(Arrays.asList('n', '\"', 'r'));
+
+    private final String OS = System.getProperty("os.name").toLowerCase();
+
+    private final boolean isWindows = OS.contains("win");
+    private final boolean isUnix = OS.contains("nix") || OS.contains("nux") || OS.contains("aix");
+
+    private final boolean isMac = OS.contains("mac");
+
+    private final String LINE_SEPARATOR = (isUnix || isMac) ? "\n": "\r\n";
 
     // Constructor for the Lexer. Initializes the lexer with the source code file.
     // throws RuntimeException if an IOException occurs while reading the file.
@@ -184,21 +193,35 @@ public class Lexer {
         handler.swallow(1);
     }
 
+    /**
+     * Handles Newlines in Windows ("\r\n"), Unix, and Mac
+     * @param handler
+     * @return
+     */
+    private boolean isEndOfLine(CodeHandler handler) {
+        if (isUnix || isMac) {
+            return handler.peek(0) == '\n';
+        } else if (isWindows) {
+            return ("" + handler.peek(0) + handler.peek(1)).equals(System.lineSeparator());
+        }
+        return false;
+    }
+
     // This method handles a string literal token in the source code. It reads characters until it encounters
     // a closing double quote ("). It takes care of escape sequences and constructs the string literal value.
     // If it encounters an unterminated string literal, it throws a RuntimeException.
     private Token HandleStringLiteral() {
         StringBuilder stringLiteralBuilder = new StringBuilder();
 
-        // Append the opening quote
-        stringLiteralBuilder.append(handler.getChar());
+        // Don't append the opening quote to get the correct string representation in the Token
+        handler.swallow(1);
         position++;
 
+        int size = 1; // track the size of the original string, including literal backslashes
         boolean quoteIsOpen = false; // track the state of escaped quotes that must have a matching end quote
-        boolean escapeNext = false;
-        while (!handler.isDone() && handler.peek(0) != '\n') {
+        boolean escapeNext = false; // when we encounter a backslash, we expect the next char to be a control character ('\n', '\r')
+        while (!handler.isDone()) {
             char c = handler.peek(0);
-            position++;
 
             if (escapeNext && !validEscapeCharacters.contains(c)) {
                 // Only allow escaped '\\' followed by chars 'n' and '\"'
@@ -208,15 +231,39 @@ public class Lexer {
                 );
             }
 
+            // Break after finding the ending quote, do not append
+            if (!escapeNext && c == '\"' || isEndOfLine(handler)) {
+                size++;
+                position++;
+                handler.swallow(1);
+                break;
+            }
+
             if (!escapeNext && c == '\\') {
+                // don't append the literal byte, but increment size
+                size++;
                 escapeNext = true;
-            } else if (escapeNext && c == 'n') {
+                handler.swallow(1);
+                position++;
+                continue;
+            } else if (escapeNext && c == 'r') {
+                // ignore carriage return completely, don't increment
+                size++;
                 escapeNext = false;
+                handler.swallow(1);
+                position++;
+                continue;
+            } else if (escapeNext && c == 'n') {
+                // Found a valid new line
+                escapeNext = false;
+                c = '\n';
             } else if (escapeNext && c == '\"') {
+                // Inner quote found, track opening/closing quotes for validation
                 quoteIsOpen = !quoteIsOpen;
                 escapeNext = false;
             }
 
+            position++;
             stringLiteralBuilder.append(c);
             handler.swallow(1);
         }
@@ -229,7 +276,7 @@ public class Lexer {
         }
 
         char next = handler.peek(0);
-        if (!handler.isDone() && !Character.isSpaceChar(next) && next != '\n') {
+        if (!handler.isDone() && !Character.isSpaceChar(next) && !isEndOfLine(handler)) {
             throw new IllegalStateException(
                     String.format(
                             "Invalid character: '%c' after string: '%s'%nLine: %d%nPosition: %d%n",
@@ -241,7 +288,7 @@ public class Lexer {
                 Token.TokenType.STRINGLITERAL,
                 stringLiteralBuilder.toString(),
                 lineNo,
-                position - stringLiteralBuilder.length()
+                position - stringLiteralBuilder.length() - size // use the original bytes to correct for the position
         );
     }
 
