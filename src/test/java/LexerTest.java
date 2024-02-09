@@ -18,7 +18,7 @@ public class LexerTest {
     // Helper method to run the lexer on a given text.
     // Creates a temporary file with the text and uses the Lexer to tokenize it.
     private LinkedList<Token> runLexerOnText(String text) throws IOException {
-        Path tempFilePath = Files.createTempFile("test.txt", ".txt");
+        Path tempFilePath = Files.createTempFile("hello_world5.bas", ".txt");
         Files.writeString(tempFilePath, text);
         return lexer.lex(tempFilePath.toString());
     }
@@ -251,13 +251,20 @@ public class LexerTest {
     public void testFileWithEscapedQuotesInLineStringLiteral() throws IOException {
         LinkedList<Token> tokens =  lexer.lex("src/test/resources/hello_world4.bas");
 
-        String s = "abc";
-        String s2 = "ab\nc";
-        System.out.println(s.length());
-        System.out.println(s2.length());
-
         assertEquals(new Token(Token.TokenType.NUMBER, "10", 1, 0), tokens.get(0));
         assertEquals(new Token(Token.TokenType.PRINT, 1, 3), tokens.get(1));
         assertEquals(new Token(Token.TokenType.STRINGLITERAL, "Hello, \"Hi\" World!", 1, 9), tokens.get(2));
+    }
+
+    @Test
+    public void testFileWithConcatenation() throws IOException {
+        LinkedList<Token> tokens =  lexer.lex("src/test/resources/hello_world5.bas");
+
+        assertEquals(new Token(Token.TokenType.NUMBER, "10", 1, 0), tokens.get(0));
+        assertEquals(new Token(Token.TokenType.PRINT, 1, 3), tokens.get(1));
+        assertEquals(new Token(Token.TokenType.STRINGLITERAL, "Hello", 1, 9), tokens.get(2));
+        assertEquals(new Token(Token.TokenType.PLUS, "+", 1, 17), tokens.get(3));
+        assertEquals(new Token(Token.TokenType.STRINGLITERAL, "World", 1, 19), tokens.get(4));
+        assertEquals(new Token(Token.TokenType.ENDOFLINE, 1, 26), tokens.get(5));
     }
 }
