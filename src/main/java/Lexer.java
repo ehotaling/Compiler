@@ -154,12 +154,16 @@ public class Lexer {
         boolean decimalFound = false;
         while (!handler.isDone() && !Character.isWhitespace(handler.peek(0))) {
             char c = handler.peek(0);
-
             // Only accept one decimal
-            if ((!Character.isDigit(c) && c != '.') || (c == '.' && decimalFound)) {
+            if (c == '.' && decimalFound) {
                 throw new IllegalStateException(
-                        String.format("Invalid character for Number token: '%c'%nLine: %d%nPosition: %d%n", c, lineNo, position)
-                );
+                        String.format("Invalid character for Number token: " +
+                        "'%c'%nLine: %d%nPosition: %d%n", c, lineNo, position));
+            }
+            // If not letter, character, or decimal, break
+            if ((!Character.isLetterOrDigit(c) &&  c != '.')) {
+                //processSymbol();
+                break;
             }
 
             numberBuilder.append(c);

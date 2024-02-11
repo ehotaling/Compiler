@@ -88,6 +88,10 @@ public class Token {
         return this.lineNo;
     }
 
+    public String getVal() {
+        return this.val;
+    }
+
 }
 
 
