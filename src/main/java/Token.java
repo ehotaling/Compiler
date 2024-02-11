@@ -1,40 +1,62 @@
 import java.util.Objects;
 
+/**
+ * Token class - represents a token for the lexer.
+ * A token is a component of the source code that has a specific meaning in the programming language.
+ * It consists of a token type, value (if applicable), line number, and position.
+ */
 // Token class - represents a token for the lexer
 public class Token {
 
-    // TokenType enum defines the types of tokens that can be identified during lexical analysis.
-    // Each type represents a distinct category of token found in the source code.
-    // WORD: Represents a sequence of characters that form a word.
-    // NUMBER: Represents a numeric value, either integer or floating point.
-    // ENDOFLINE: Represents the end of a line in the text.
+    /**
+     * Enumerates the types of tokens that can be identified during lexical analysis.
+     * Each type represents a distinct category of token found in the source code.
+     */
     public enum TokenType {
         WORD, NUMBER, IF, PRINT, READ, INPUT, DATA, GOSUB, FOR, TO, STEP, NEXT, RETURN, THEN, FUNCTION, WHILE,
         END, ENDOFLINE, STRINGLITERAL, GREATERTHANEQUALTO, LESSTHANEQUALTO, NOTEQUALS, EQUALS, LESSTHAN, GREATERTHAN,
         LPAREN, RPAREN, PLUS, MINUS, MULTIPLY, DIVIDE, LABEL
     }
+    /**
+     * Represents a single token in the source code.
+     * Each token has a specific type, line number, and position.
+     */
     private final TokenType tokenType; // as defined in TokenType enum.
+    /**
+     * Represents a token in the source code.
+     */
     private String val; // Value of the token. It can be null for tokens where value is not applicable, like ENDOFLINE.
+    /**
+     * Represents line number of token.
+     */
     private final int lineNo; // Line number in the source code where the token is located.
+    /**
+     * Represents the position within its line of a token, as an index.
+     * The position indicates the location of the token within a line of source code.
+     */
     private final int position; // Position within its line, as an index.
 
-    // Constructor for a Token without value.
-    // Useful for tokens where a specific value is not applicable.
+    /**
+     * Represents a token without value in the source code.
+     */
     public Token(TokenType tokenType, int lineNo, int position) {
         this.tokenType = tokenType;
         this.lineNo = lineNo;
         this.position = position;
     }
 
-    // Overloaded constructor to create a Token instance with specific value.
-    // This will be used in the case where our token carries a value, like identifiers or literals.
+    /**
+     * Overloaded constructor to create a Token instance with specific value.
+     * This will be used in the case where our token carries a value, like identifiers or literals.
+     */
     public Token(TokenType tokenType, String val, int lineNo, int position) {
         this(tokenType, lineNo, position);
         this.val = val;
     }
 
-    // Returns a string representation of the Token object.
-    // The format is "TokenType" or "TokenType(Value)" if there is a value inside the token.
+    /** Returns a string representation of the Token object.
+    * The format is "TokenType" or "TokenType(Value)" if there is a value inside the token.
+    */
     @Override
     public String toString() {
         if (val != null) {
@@ -52,9 +74,12 @@ public class Token {
         }
     }
 
-    // Override the equals method from Object class.
-    // This method is used to compare two Token objects for equality.
-    // Two tokens are equal if their types, values, line numbers, and positions are equal.
+    /**
+     * Compares this Token object with the specified object for equality.
+     *
+     * @param o the object to be compared for equality with this Token
+     * @return {@code true} if the specified object is equal to this Token, {@code false} otherwise
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -66,9 +91,12 @@ public class Token {
                 Objects.equals(val, token.val);
     }
 
-    // Override the hashCode method from Object class.
-    // This method returns a hash code value for the object on which this method is invoked.
-    // This method is primarily used for insertion of this object in a Map or a Set.
+    /**
+     * Overrides the hashCode method from the Object class.
+     * Returns a hash code value for the Token object.
+     *
+     * @return the hash code value for the Token object
+     */
     @Override
     public int hashCode() {
         return Objects.hash(tokenType, val, lineNo, position);

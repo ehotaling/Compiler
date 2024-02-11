@@ -1,11 +1,17 @@
 import java.util.LinkedList;
 
-// Entry point for the lexer program.
-// It processes a file to tokenize its content and prints out the tokens.
+/**
+ * The Basic class is the entry point for the lexer program. It processes
+ * a file to tokenize its content and prints out the tokens.
+ */
 public class Basic {
 
-    // Starting point to initiate the tokenization process.
-    // Command line arguments expect single argument: the file name which has to be tokenized.
+    /**
+     * Starting point to initiate the tokenization process.
+     *
+     * @param args Command line arguments
+     *             - Expects a single argument: the file name which has to be tokenized.
+     */
     public static void main(String[] args) {
 
         // Validate that exactly one argument (filename) is provided
