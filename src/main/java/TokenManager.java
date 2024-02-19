@@ -28,8 +28,13 @@ public class TokenManager {
 
     // looks at the head of the list. If the token type of the head
     // is the same as what was passed in, remove that token from the
-    // list and return it. In all other cases, returns Optional.Empty().
+    // list and return it. In all other cases, returns Optional.empty().
     Optional<Token> matchAndRemove(Token.TokenType t) {
-
+        Token head = tokens.getFirst();
+        if (head.getTokenType().equals(t)) {
+            tokens.removeFirst();
+            return Optional.of(head);
+        }
+        return Optional.empty();
     }
 }
