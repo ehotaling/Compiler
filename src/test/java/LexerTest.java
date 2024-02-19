@@ -91,7 +91,6 @@ public class LexerTest {
     /**
      * Runs the lexer on the given text and returns a list of tokens identified in the source code.
      *
-     * @return A LinkedList of tokens identified in the source code.
      * @throws IOException If an I/O error occurs while reading the text.
      */
     @Test
@@ -174,7 +173,6 @@ public class LexerTest {
 
     /**
      * Unit test for the {@code testSubStringIsEmptyString} method in the {@code LexerTest} class.
-     *
      * This method tests the ability of the Lexer to correctly tokenize a substring that represents an empty string literal.
      * It verifies that the tokens returned have the correct token type, value, line number, and position.
      *
@@ -227,7 +225,7 @@ public class LexerTest {
 
 
     /**
-     * This method is a unit test for the testNumberInParantheses functionality.
+     * This method is a unit test for the testNumberInParentheses functionality.
      * It tests the ability of the Lexer to correctly tokenize a string containing a number enclosed in parentheses.
      *
      * @throws IOException if an I/O error occurs
@@ -302,7 +300,7 @@ public class LexerTest {
         assertThrows(IllegalStateException.class, () -> runLexerOnText("InvalidSymbol:: World: Testing testing"));
         assertThrows(IllegalStateException.class, () -> runLexerOnText(":: World: Testing testing"));
     }
-    /*
+
     @Test
     public void testHelloWorldFromFile() throws IOException {
         LinkedList<Token> tokens =  lexer.lex("src/test/resources/hello_world.bas");
@@ -314,7 +312,7 @@ public class LexerTest {
         assertEquals(new Token(Token.TokenType.NUMBER, "20", 2, 0), tokens.get(4));
         assertEquals(new Token(Token.TokenType.END, 2, 3), tokens.get(5));
         assertEquals(new Token(Token.TokenType.ENDOFLINE, 2, 6), tokens.get(6));
-    } */
+    }
 
     /**
      * This method is a unit test for the testHelloWorld functionality.
@@ -335,7 +333,7 @@ public class LexerTest {
         assertEquals(new Token(Token.TokenType.END, 2, 3), tokens.get(5));
         assertEquals(new Token(Token.TokenType.ENDOFLINE, 2, 6), tokens.get(6));
     }
-    /*
+
     @Test
     public void testForLoopFromFile() throws IOException {
         LinkedList<Token> tokens =  lexer.lex("src/test/resources/for_loop.bas");
@@ -348,7 +346,7 @@ public class LexerTest {
         assertEquals(new Token(Token.TokenType.TO, 1, 13), tokens.get(5));
         assertEquals(new Token(Token.TokenType.NUMBER, "10", 1, 16), tokens.get(6));
         assertEquals(new Token(Token.TokenType.ENDOFLINE, 1, 18), tokens.get(7));
-    } */
+    }
 
     /**
      * Tests the functionality of the testForLoop method.
@@ -386,14 +384,14 @@ public class LexerTest {
         assertEquals(new Token(Token.TokenType.STRINGLITERAL, "Hello World", 1, 6), tokens.get(1));
         assertEquals(new Token(Token.TokenType.ENDOFLINE, 1, "PRINT \"Hello World\"".length()), tokens.get(2));
     }
-    /*
+
     @Test
     public void testFileWithStringLiteralAndCarriageReturn() throws IOException {
         LinkedList<Token> tokens =  lexer.lex("src/test/resources/hello_world2.bas");
         assertEquals(new Token(Token.TokenType.NUMBER, "10", 1, 0), tokens.get(0));
         assertEquals(new Token(Token.TokenType.PRINT, 1, 3), tokens.get(1));
         assertEquals(new Token(Token.TokenType.STRINGLITERAL, "Hello, World!", 1, 9), tokens.get(2));
-    } */
+    }
 
     /**
      * This method is a unit test to verify the functionality of the testStringLiteralAndCarriageReturn method.
@@ -409,14 +407,14 @@ public class LexerTest {
         assertEquals(new Token(Token.TokenType.PRINT, 1, 3), tokens.get(1));
         assertEquals(new Token(Token.TokenType.STRINGLITERAL, "Hello, World!", 1, 9), tokens.get(2));
     }
-    /*
+
     @Test
     public void testFileWithMultiLineStringLiteral() throws IOException {
         LinkedList<Token> tokens =  lexer.lex("src/test/resources/hello_world3.bas");
         assertEquals(new Token(Token.TokenType.NUMBER, "10", 1, 0), tokens.get(0));
         assertEquals(new Token(Token.TokenType.PRINT, 1, 3), tokens.get(1));
         assertEquals(new Token(Token.TokenType.STRINGLITERAL, "Hello,\n\n\nWorld!", 1, 9), tokens.get(2));
-    } */
+    }
 
     /**
      * Tests the functionality of the method testMultiLineStringLiteral.
@@ -431,7 +429,7 @@ public class LexerTest {
         assertEquals(new Token(Token.TokenType.PRINT, 1, 3), tokens.get(1));
         assertEquals(new Token(Token.TokenType.STRINGLITERAL, "Hello,\n\n\nWorld!", 1, 9), tokens.get(2));
     }
-    /*
+
     @Test
     public void testFileWithEscapedQuotesInLineStringLiteral() throws IOException {
         LinkedList<Token> tokens =  lexer.lex("src/test/resources/hello_world4.bas");
@@ -439,7 +437,7 @@ public class LexerTest {
         assertEquals(new Token(Token.TokenType.NUMBER, "10", 1, 0), tokens.get(0));
         assertEquals(new Token(Token.TokenType.PRINT, 1, 3), tokens.get(1));
         assertEquals(new Token(Token.TokenType.STRINGLITERAL, "Hello, \"Hi\" World!", 1, 9), tokens.get(2));
-    } */
+    }
 
     /**
      * Test case for the method testEscapedQuotesInLineStringLiteral.
@@ -455,7 +453,7 @@ public class LexerTest {
         assertEquals(new Token(Token.TokenType.PRINT, 1, 3), tokens.get(1));
         assertEquals(new Token(Token.TokenType.STRINGLITERAL, "Hello, \"Hi\" World!", 1, 9), tokens.get(2));
     }
-    /*
+
     @Test
     public void testFileWithConcatenation() throws IOException {
         LinkedList<Token> tokens =  lexer.lex("src/test/resources/hello_world5.bas");
@@ -466,7 +464,7 @@ public class LexerTest {
         assertEquals(new Token(Token.TokenType.PLUS, "+", 1, 17), tokens.get(3));
         assertEquals(new Token(Token.TokenType.STRINGLITERAL, "World", 1, 19), tokens.get(4));
         assertEquals(new Token(Token.TokenType.ENDOFLINE, 1, 26), tokens.get(5));
-    } */
+    }
 
     /**
      * This method is a unit test for the `testConcatenation` method.
