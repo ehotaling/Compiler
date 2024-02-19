@@ -12,7 +12,7 @@ public class TokenManager {
 
     // peek “j” tokens ahead and return the token if we
     // aren’t past the end of the token list.
-    Optional<Token> Peek(int j) {
+    Optional<Token> peek(int j) {
         int peekIndex = currentTokenIndex + j;
         if (peekIndex < tokens.size()) {
             return Optional.of(tokens.get(peekIndex));
