@@ -29,5 +29,11 @@ public class Basic {
         for (Token token : tokens) {
             System.out.println(token.toString());
         }
+
+        Parser parser = new Parser(tokens);
+
+        Node ast = parser.parse();
+
+        System.out.println(ast.toString());
     }
 }

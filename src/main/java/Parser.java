@@ -40,17 +40,19 @@ public class Parser {
      * @return
      */
     public Node expression() {
-        Node expression = term();
+        Node left = term();
         while (true) {
             if (matchAndRemove(Token.TokenType.PLUS)) {
-                expression = new MathOpNode(MathOpNode.OPERATION.ADD, expression, term());
+                Node right = term();
+                left = new MathOpNode(MathOpNode.OPERATION.ADD, left, right);
             } else if (matchAndRemove(Token.TokenType.MINUS)) {
-                expression = new MathOpNode(MathOpNode.OPERATION.SUBTRACT, expression, term());
+                Node right = term();
+                left = new MathOpNode(MathOpNode.OPERATION.SUBTRACT, left, right);
             } else {
                 break;
             }
         }
-        return expression;
+        return left;
     }
 
     /**
@@ -58,17 +60,19 @@ public class Parser {
      * @return Term: FACTOR {*|/ FACTOR}
      */
     public Node term() {
-        Node term = factor();
+        Node left = factor();
         while (true) {
             if (matchAndRemove(Token.TokenType.MULTIPLY)) {
-                term = new MathOpNode(MathOpNode.OPERATION.MULTIPLY, term, factor());
+                Node right = factor();
+                left = new MathOpNode(MathOpNode.OPERATION.MULTIPLY, left, right);
             } else if (matchAndRemove(Token.TokenType.DIVIDE)) {
-                term = new MathOpNode(MathOpNode.OPERATION.DIVIDE, term, factor());
+                Node right = factor();
+                left = new MathOpNode(MathOpNode.OPERATION.DIVIDE, left, right);
             } else {
                 break;
             }
         }
-        return term;
+        return left;
     }
 
     /**
@@ -76,6 +80,12 @@ public class Parser {
      * @return FloatNode, IntegerNode, or value from Expression
      */
     public Node factor() {
+        // Check if the next token is a unary minus.
+        if (matchAndRemove(Token.TokenType.MINUS)) {
+            // If so, parse the next factor and subtract it from zero.
+            return new MathOpNode(MathOpNode.OPERATION.SUBTRACT, new IntegerNode(0), factor());
+        }
+
         if (matchAndRemove(Token.TokenType.LPAREN)) {
             Node expression = expression();
             matchAndRemove(Token.TokenType.RPAREN);
@@ -83,9 +93,9 @@ public class Parser {
         }
 
         return tokenManager.matchAndRemove(Token.TokenType.NUMBER).map(n ->
-            n.toString().contains(".") ?
-                    new FloatNode(Float.parseFloat(n.getVal())) :
-                    new IntegerNode(Integer.parseInt(n.getVal()))
+                n.toString().contains(".") ?
+                        new FloatNode(Float.parseFloat(n.getVal())) :
+                        new IntegerNode(Integer.parseInt(n.getVal()))
         ).orElse(null);
     }
 

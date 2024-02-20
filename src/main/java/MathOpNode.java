@@ -20,7 +20,7 @@ public class MathOpNode extends Node {
     }
 
     public Node getRight() {
-        return left;
+        return right;
     }
 
     @Override
