@@ -7,8 +7,7 @@ public class Parser {
 
     // constructor that accepts a LinkedList of Token
     public Parser(LinkedList<Token> tokens) {
-
-        this.tokenManager = new TokenManager(tokens);
+       this.tokenManager = new TokenManager(tokens);
     }
 
     // accepts any number of separators (EndOfLine) and
