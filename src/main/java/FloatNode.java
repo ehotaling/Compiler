@@ -1,18 +1,16 @@
 public class FloatNode extends Node {
 
-    private float number;
+    private final float value;
 
-    public FloatNode(float number) {
-        this.number = number;
+    public FloatNode(float value) {
+        this.value = value;
     }
 
-    public float getNumber() {
-        return this.number;
+    public float getFloat() {
+        return this.value;
     }
     @Override
     public String toString() {
-        return "FloaatNode: " + this.number;
+        return String.format("FloatNode: <%f>", value);
     }
-
-
 }

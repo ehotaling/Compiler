@@ -1,17 +1,17 @@
 public class IntegerNode extends Node {
 
-    private float number;
+    private final int value;
 
-    public IntegerNode(float number) {
-        this.number = number;
+    public IntegerNode(int value) {
+        this.value = value;
     }
 
-    public float getNumber() {
-        return this.number;
+    public int getInt() {
+        return this.value;
     }
 
     @Override
     public String toString() {
-        return "FloatNode " + this.number;
+        return String.format("IntegerNode: <%d>", value);
     }
 }
