@@ -50,4 +50,10 @@ public class ParserTest {
         ProgramNode program =  runParserOnText("6/2*(1+2)");
         System.out.println(program);
     }
+
+    @Test
+    public void testMultiplyFactorWithAddExpression() throws IOException {
+        ProgramNode program =  runParserOnText("3*5+2");
+        System.out.println(program);
+    }
 }
