@@ -1,13 +1,25 @@
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class ProgramNode extends Node {
 
-    private final Node root;
+    private final List<Node> expressions;
 
-    public ProgramNode(Node root) {
-        this.root = root;
+    public ProgramNode() {
+        this.expressions = new ArrayList<>();
+    }
+
+    public void addExpression(Node expression) {
+        expressions.add(expression);
     }
 
     @Override
     public String toString() {
-        return String.format("ProgramNode: {%s}", root);
+        return "ProgramNode: {" +
+                expressions.stream()
+                        .map(Node::toString)
+                        .collect(Collectors.joining(", ")) +
+                "}";
     }
 }

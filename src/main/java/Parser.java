@@ -1,5 +1,4 @@
 import java.util.LinkedList;
-import java.util.Optional;
 
 public class Parser {
 
@@ -13,12 +12,21 @@ public class Parser {
     // accepts any number of separators (EndOfLine) and
     // returns true if it finds at least one.
     public boolean acceptSeperators() {
-        return true;
+        boolean found = false;
+        while (tokenManager.moreTokens() && tokenManager.peek(0).isPresent() && tokenManager.peek(0)
+                .get().getTokenType().equals(Token.TokenType.ENDOFLINE)) {
+            tokenManager.matchAndRemove(Token.TokenType.ENDOFLINE);
+            found = true;
+        }
+       return found;
     }
 
     public ProgramNode parse() {
-        return new ProgramNode(expression());
-
+        ProgramNode program = new ProgramNode();
+        do {
+            program.addExpression(expression());
+        } while (acceptSeperators() && tokenManager.moreTokens());
+        return program;
     }
 
     /**
@@ -84,4 +92,5 @@ public class Parser {
     private boolean matchAndRemove(Token.TokenType type) {
         return tokenManager.matchAndRemove(type).isPresent();
     }
+
 }
