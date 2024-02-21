@@ -1,4 +1,5 @@
 import java.util.LinkedList;
+import java.util.Optional;
 
 public class Parser {
 
@@ -18,7 +19,7 @@ public class Parser {
             tokenManager.matchAndRemove(Token.TokenType.ENDOFLINE);
             found = true;
         }
-       return found;
+        return found;
     }
 
     public ProgramNode parse() {
@@ -39,68 +40,61 @@ public class Parser {
      * Expression: TERM {+|- TERM}
      * @return
      */
-    public Node expression() {
-        Node left = term();
+    public ExpressionNode expression() {
+        LinkedList<Node> terms = new LinkedList<>();
+        Node term = term();
         while (true) {
             if (matchAndRemove(Token.TokenType.PLUS)) {
-                Node right = term();
-                left = new MathOpNode(MathOpNode.OPERATION.ADD, left, right);
+                terms.add(new MathOpNode(MathOpNode.OPERATION.ADD, term, term()));
             } else if (matchAndRemove(Token.TokenType.MINUS)) {
-                Node right = term();
-                left = new MathOpNode(MathOpNode.OPERATION.SUBTRACT, left, right);
+                terms.add(new MathOpNode(MathOpNode.OPERATION.SUBTRACT, term, term()));
             } else {
-                break;
+                break; // Do not add the original Term, or else it will be a duplicate
             }
         }
-        return left;
+        // If the Expression only has a single Term, do not add the empty list
+        return !terms.isEmpty() ? new ExpressionNode(terms) : new ExpressionNode(term);
     }
 
     /**
      *
      * @return Term: FACTOR {*|/ FACTOR}
      */
-    public Node term() {
-        Node left = factor();
+    public TermNode term() {
+        LinkedList<Node> factors = new LinkedList<>();
+        Node factor = factor();
         while (true) {
             if (matchAndRemove(Token.TokenType.MULTIPLY)) {
-                Node right = factor();
-                left = new MathOpNode(MathOpNode.OPERATION.MULTIPLY, left, right);
+                factors.add(new MathOpNode(MathOpNode.OPERATION.MULTIPLY, factor, factor()));
             } else if (matchAndRemove(Token.TokenType.DIVIDE)) {
-                Node right = factor();
-                left = new MathOpNode(MathOpNode.OPERATION.DIVIDE, left, right);
+                factors.add(new MathOpNode(MathOpNode.OPERATION.DIVIDE, factor, factor()));
             } else {
-                break;
+                break; // Do not add the original Factor, or else it will be a duplicate
             }
         }
-        return left;
+        // If the Term only has a single Factor, do not add the empty list
+        return !factors.isEmpty() ? new TermNode(factors) : new TermNode(factor);
     }
 
     /**
      *
      * @return FloatNode, IntegerNode, or value from Expression
      */
-    public Node factor() {
-        // Check if the next token is a unary minus.
-        if (matchAndRemove(Token.TokenType.MINUS)) {
-            // If so, parse the next factor and subtract it from zero.
-            return new MathOpNode(MathOpNode.OPERATION.SUBTRACT, new IntegerNode(0), factor());
-        }
-
+    public FactorNode factor() {
         if (matchAndRemove(Token.TokenType.LPAREN)) {
-            Node expression = expression();
+            FactorNode parenExpression = new FactorNode(expression());
             matchAndRemove(Token.TokenType.RPAREN);
-            return expression;
+            return parenExpression;
         }
 
         return tokenManager.matchAndRemove(Token.TokenType.NUMBER).map(n ->
-                n.toString().contains(".") ?
-                        new FloatNode(Float.parseFloat(n.getVal())) :
-                        new IntegerNode(Integer.parseInt(n.getVal()))
+            n.toString().contains(".") ?
+                    new FactorNode(new FloatNode(Float.parseFloat(n.getVal()))) :
+                    new FactorNode(new IntegerNode(Integer.parseInt(n.getVal())))
         ).orElse(null);
     }
 
     private boolean matchAndRemove(Token.TokenType type) {
         return tokenManager.matchAndRemove(type).isPresent();
     }
-
 }

@@ -34,8 +34,26 @@ public class ParserTest {
     }
 
     @Test
+    public void testExpression() throws IOException {
+        ProgramNode program =  runParserOnText("1");
+        System.out.println(program);
+    }
+
+    @Test
     public void testAddExpression() throws IOException {
         ProgramNode program =  runParserOnText("1+2");
+        System.out.println(program);
+    }
+
+    @Test
+    public void testExpressionThreeTerms() throws IOException {
+        ProgramNode program =  runParserOnText("1+2+3");
+        System.out.println(program);
+    }
+
+    @Test
+    public void testTermWithThreeFactors() throws IOException {
+        ProgramNode program =  runParserOnText("2*2*2");
         System.out.println(program);
     }
 
@@ -52,7 +70,7 @@ public class ParserTest {
     }
 
     @Test
-    public void testMultiplyFactorWithAddExpression() throws IOException {
+    public void testMultiplyTermWithAddExpression() throws IOException {
         ProgramNode program =  runParserOnText("3*5+2");
         System.out.println(program);
     }
