@@ -1,25 +1,29 @@
 import java.util.LinkedList;
+import java.util.Objects;
 
 
 public class TermNode extends Node {
-    private LinkedList<Node> factorNodes = new LinkedList<>();
+    private final Node node;
 
-    public TermNode() {}
-
-    public TermNode(Node factorNode) {
-        this.factorNodes.add(factorNode);
-    }
-
-    public TermNode(LinkedList<Node> factorNodes) { //Changed FactorNode to Node
-        this.factorNodes = factorNodes;
-    }
-
-    public void addFactor(Node factorNode) { //Changed FactorNode to Node
-        this.factorNodes.add(factorNode);
+    public TermNode(Node node) {
+        this.node = node;
     }
 
     @Override
     public String toString() {
-        return String.format("TermNode: {%s} ", this.factorNodes);
+        return String.format("TermNode: {%s}", this.node);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TermNode termNode = (TermNode) o;
+        return Objects.equals(node, termNode.node);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(node);
     }
 }

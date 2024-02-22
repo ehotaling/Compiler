@@ -32,16 +32,55 @@ public class ParserTest {
         return new Parser(tokens).parse();
     }
 
+    private ExpressionNode generateExpression(int i) {
+        return new ExpressionNode(new TermNode(new FactorNode(new IntegerNode(i))));
+    }
+
     @Test
     public void testExpression() throws IOException {
-        ProgramNode program =  runParserOnText("1");
-        System.out.println(program);
+        ProgramNode testProgram =  runParserOnText("1");
+
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addExpression(generateExpression(1));
+
+        System.out.println(expectedProgram);
+        assertEquals(expectedProgram, testProgram);
     }
 
     @Test
     public void testAddExpression() throws IOException {
-        ProgramNode program =  runParserOnText("1+2");
-        System.out.println(program);
+        ProgramNode testProgram =  runParserOnText("1+2");
+
+        ExpressionNode expectedExpression = new ExpressionNode(
+                new MathOpNode(MathOpNode.OPERATION.ADD,
+                        new TermNode(new FactorNode(new IntegerNode(1))),
+                        new TermNode(new FactorNode(new IntegerNode(2)))
+                )
+        );
+
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addExpression(expectedExpression);
+
+        System.out.println(testProgram);
+        assertEquals(expectedProgram, testProgram);
+    }
+
+    @Test
+    public void testNegativeFactorSubtraction() throws IOException {
+        ProgramNode testProgram =  runParserOnText("-1 + -2");
+
+        ExpressionNode expectedExpression = new ExpressionNode(
+                new MathOpNode(MathOpNode.OPERATION.ADD,
+                        new TermNode(new FactorNode(new IntegerNode(-1))),
+                        new TermNode(new FactorNode(new IntegerNode(-2)))
+                )
+        );
+
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addExpression(expectedExpression);
+
+        System.out.println(testProgram);
+        assertEquals(expectedProgram, testProgram);
     }
 
     @Test

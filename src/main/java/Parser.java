@@ -15,7 +15,6 @@ public class Parser {
      * generating an Abstract Syntax Tree (AST).
      */
     public Parser(LinkedList<Token> tokens) {
-
         this.tokenManager = new TokenManager(tokens);
     }
 
@@ -96,25 +95,35 @@ public class Parser {
      * @throws IllegalArgumentException if there is a mismatched parentheses or an unexpected end of factor.
      */
     public Node factor() {
-        if (matchAndRemove(Token.TokenType.MINUS)) {
-            return new FactorNode(new MathOpNode(MathOpNode.OPERATION.SUBTRACT, new IntegerNode(0), factor()));
-        }
+        boolean isNegative = matchAndRemove(Token.TokenType.MINUS);
+
         if (matchAndRemove(Token.TokenType.LPAREN)) {
             ExpressionNode innerExpr = expression();
             if (!matchAndRemove(Token.TokenType.RPAREN)) {
                 throw new IllegalArgumentException("Mismatched parentheses");
             }
+
+            if (isNegative) {
+                innerExpr = new ExpressionNode(new MathOpNode(MathOpNode.OPERATION.MULTIPLY, new IntegerNode(-1), innerExpr));
+            }
             return new FactorNode(innerExpr);
         }
-        Optional<Token> numberToken = tokenManager.matchAndRemove(Token.TokenType.NUMBER);
-        if (numberToken.isPresent()) {
-            if (numberToken.get().getVal().contains(".")) {
-                return new FactorNode(new FloatNode(Float.parseFloat(numberToken.get().getVal())));
-            } else {
-                return new FactorNode(new IntegerNode(Integer.parseInt(numberToken.get().getVal())));
-            }
-        } else {
+
+        Optional<Token> numberTokenOpt = tokenManager.matchAndRemove(Token.TokenType.NUMBER);
+        if (numberTokenOpt.isEmpty()) {
             throw new IllegalArgumentException("Unexpected end of factor");
+        }
+
+        Token numberToken = numberTokenOpt.get();
+        if (numberToken.getVal().contains(".")) {
+            float val = Float.parseFloat(numberToken.getVal());
+            FloatNode floatNode = isNegative ? new FloatNode(-val) : new FloatNode(val);
+            return new FactorNode(floatNode);
+        }
+        else {
+            int val = Integer.parseInt(numberToken.getVal());
+            IntegerNode integerNode = isNegative ? new IntegerNode(-val) : new IntegerNode(val);
+            return new FactorNode(integerNode);
         }
     }
 
