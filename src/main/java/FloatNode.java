@@ -11,6 +11,6 @@ public class FloatNode extends Node {
     }
     @Override
     public String toString() {
-        return String.format("FloatNode: <%f>", value);
+        return String.format("FloatNode(%f)", value);
     }
 }

@@ -12,6 +12,6 @@ public class IntegerNode extends Node {
 
     @Override
     public String toString() {
-        return String.format("IntegerNode: <%d>", value);
+        return String.format("IntegerNode(%d)", value);
     }
 }
