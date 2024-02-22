@@ -127,6 +127,14 @@ public class Parser {
         }
     }
 
+    /**
+     * Checks if the next token in the token list has the specified TokenType,
+     * removes the token from the list if it matches, and returns true.
+     * If the token does not match or there are no more tokens in the list, it returns false.
+     *
+     * @param type The TokenType to match against.
+     * @return true if the next token matches the specified TokenType and is successfully removed, false otherwise.
+     */
     private boolean matchAndRemove(Token.TokenType type) {
         return tokenManager.matchAndRemove(type).isPresent();
     }
