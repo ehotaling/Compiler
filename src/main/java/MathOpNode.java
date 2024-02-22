@@ -7,7 +7,7 @@ public class MathOpNode extends Node {
     private final Node left;
     private final Node right;
 
-    private OPERATION operation;
+    private final OPERATION operation;
 
     public MathOpNode(OPERATION operator, Node left, Node right) {
         this.operation = operator;

@@ -8,6 +8,6 @@ public class FactorNode extends Node {
 
     @Override
     public String toString() {
-        return String.format("FactorNode(%s)", node);
+        return String.format("FactorNode: {%s}", node);
     }
 }

@@ -1,25 +1,25 @@
 import java.util.LinkedList;
 
+
 public class TermNode extends Node {
+    private LinkedList<Node> factorNodes = new LinkedList<>();
 
-    private LinkedList<Node> children = new LinkedList<>();
-
-    public TermNode() {
-    }
+    public TermNode() {}
 
     public TermNode(Node factorNode) {
-        this.children.add(factorNode);
+        this.factorNodes.add(factorNode);
     }
 
-    public TermNode(LinkedList<Node> factorNodes) {
-        this.children = factorNodes;
+    public TermNode(LinkedList<Node> factorNodes) { //Changed FactorNode to Node
+        this.factorNodes = factorNodes;
     }
 
-    public void addFactor(Node factorNode) {
-        this.children.add(factorNode);
+    public void addFactor(Node factorNode) { //Changed FactorNode to Node
+        this.factorNodes.add(factorNode);
     }
 
+    @Override
     public String toString() {
-        return String.format("TermNode(%s)", children.size() > 1 ? children.toString(): children.get(0));
+        return String.format("TermNode: {%s} ", this.factorNodes);
     }
 }

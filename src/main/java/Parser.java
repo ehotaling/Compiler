@@ -1,17 +1,14 @@
+
 import java.util.LinkedList;
 import java.util.Optional;
 
 public class Parser {
+    private final TokenManager tokenManager;
 
-    private TokenManager tokenManager;
-
-    // constructor that accepts a LinkedList of Token
     public Parser(LinkedList<Token> tokens) {
-       this.tokenManager = new TokenManager(tokens);
+        this.tokenManager = new TokenManager(tokens);
     }
 
-    // accepts any number of separators (EndOfLine) and
-    // returns true if it finds at least one.
     public boolean acceptSeperators() {
         boolean found = false;
         while (tokenManager.moreTokens() && tokenManager.peek(0).isPresent() && tokenManager.peek(0)
@@ -30,68 +27,55 @@ public class Parser {
         return program;
     }
 
-    /**
-     * Expression: TERM {+|- TERM}
-     * Term: FACTOR {*|/ FACTOR}
-     * Factor: number | ( EXPRESSION )
-     */
-
-    /**
-     * Expression: TERM {+|- TERM}
-     * @return
-     */
     public ExpressionNode expression() {
-        LinkedList<Node> terms = new LinkedList<>();
         Node term = term();
         while (true) {
             if (matchAndRemove(Token.TokenType.PLUS)) {
-                terms.add(new MathOpNode(MathOpNode.OPERATION.ADD, term, term()));
+                term = new MathOpNode(MathOpNode.OPERATION.ADD, term, term());
             } else if (matchAndRemove(Token.TokenType.MINUS)) {
-                terms.add(new MathOpNode(MathOpNode.OPERATION.SUBTRACT, term, term()));
+                term = new MathOpNode(MathOpNode.OPERATION.SUBTRACT, term, term());
             } else {
-                break; // Do not add the original Term, or else it will be a duplicate
+                break;
             }
         }
-        // If the Expression only has a single Term, do not add the empty list
-        return !terms.isEmpty() ? new ExpressionNode(terms) : new ExpressionNode(term);
+        return new ExpressionNode(term);
     }
 
-    /**
-     *
-     * @return Term: FACTOR {*|/ FACTOR}
-     */
     public TermNode term() {
-        LinkedList<Node> factors = new LinkedList<>();
         Node factor = factor();
-        while (true) {
+        while (tokenManager.moreTokens()) {
             if (matchAndRemove(Token.TokenType.MULTIPLY)) {
-                factors.add(new MathOpNode(MathOpNode.OPERATION.MULTIPLY, factor, factor()));
+                factor = new MathOpNode(MathOpNode.OPERATION.MULTIPLY, factor, factor());
             } else if (matchAndRemove(Token.TokenType.DIVIDE)) {
-                factors.add(new MathOpNode(MathOpNode.OPERATION.DIVIDE, factor, factor()));
+                factor = new MathOpNode(MathOpNode.OPERATION.DIVIDE, factor, factor());
             } else {
-                break; // Do not add the original Factor, or else it will be a duplicate
+                break;
             }
         }
-        // If the Term only has a single Factor, do not add the empty list
-        return !factors.isEmpty() ? new TermNode(factors) : new TermNode(factor);
+        return new TermNode(factor);
     }
 
-    /**
-     *
-     * @return FloatNode, IntegerNode, or value from Expression
-     */
-    public FactorNode factor() {
-        if (matchAndRemove(Token.TokenType.LPAREN)) {
-            FactorNode parenExpression = new FactorNode(expression());
-            matchAndRemove(Token.TokenType.RPAREN);
-            return parenExpression;
+    public Node factor() {
+        if (matchAndRemove(Token.TokenType.MINUS)) {
+            return new FactorNode(new MathOpNode(MathOpNode.OPERATION.SUBTRACT, new IntegerNode(0), factor()));
         }
-
-        return tokenManager.matchAndRemove(Token.TokenType.NUMBER).map(n ->
-            n.toString().contains(".") ?
-                    new FactorNode(new FloatNode(Float.parseFloat(n.getVal()))) :
-                    new FactorNode(new IntegerNode(Integer.parseInt(n.getVal())))
-        ).orElse(null);
+        if (matchAndRemove(Token.TokenType.LPAREN)) {
+            ExpressionNode innerExpr = expression();
+            if (!matchAndRemove(Token.TokenType.RPAREN)) {
+                throw new IllegalArgumentException("Mismatched parentheses");
+            }
+            return new FactorNode(innerExpr);
+        }
+        Optional<Token> numberToken = tokenManager.matchAndRemove(Token.TokenType.NUMBER);
+        if (numberToken.isPresent()) {
+            if (numberToken.get().getVal().contains(".")) {
+                return new FactorNode(new FloatNode(Float.parseFloat(numberToken.get().getVal())));
+            } else {
+                return new FactorNode(new IntegerNode(Integer.parseInt(numberToken.get().getVal())));
+            }
+        } else {
+            throw new IllegalArgumentException("Unexpected end of factor");
+        }
     }
 
     private boolean matchAndRemove(Token.TokenType type) {
