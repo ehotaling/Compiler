@@ -5,8 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedList;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -85,6 +84,12 @@ public class ParserTest {
     }
 
     @Test
+    public void testSubtractExpression() throws IOException {
+        ProgramNode program =  runParserOnText("1-2");
+        System.out.println(program);
+    }
+
+    @Test
     public void testExpressionThreeTerms() throws IOException {
         ProgramNode program =  runParserOnText("1+2+3");
         System.out.println(program);
@@ -113,4 +118,45 @@ public class ParserTest {
         ProgramNode program =  runParserOnText("3*5+2");
         System.out.println(program);
     }
+
+    // Test for the acceptSeparators method in the Parser class.
+    @Test
+    public void testAcceptSeparators() {
+        LinkedList<Token> tokens = new LinkedList<>();
+        tokens.add(new Token(Token.TokenType.ENDOFLINE, "\n",1,0));
+        tokens.add(new Token(Token.TokenType.ENDOFLINE, "\n",2,0));
+        tokens.add(new Token(Token.TokenType.NUMBER, "42",3,0));
+        Parser parser = new Parser(tokens);
+
+        // Multiple ENDOFLINE tokens exist, the method should return true
+        assertTrue(parser.acceptSeperators(), "The method did not correctly accept multiple separators.");
+
+        // No ENDOFLINE tokens exist at this point, the method should return false
+        assertFalse(parser.acceptSeperators(), "The method did not correctly handle the case when no separators exist.");
+    }
+
+    // Test for the acceptSeparators method in the Parser class when no ENDOFLINE tokens exist.
+    @Test
+    public void testAcceptSeparatorsNoEndOfLine() {
+        LinkedList<Token> tokens = new LinkedList<>();
+        tokens.add(new Token(Token.TokenType.NUMBER, "3",1,0));
+        Parser parser = new Parser(tokens);
+
+        // No ENDOFLINE tokens exist, the method should return false
+        assertFalse(parser.acceptSeperators(), "The method did not correctly handle the case when no separators exist.");
+    }
+
+    // Test for the acceptSeparators method in the Parser class when only one ENDOFLINE token exists.
+    @Test
+    public void testAcceptSeparatorsSingleEndOfLine() {
+        LinkedList<Token> tokens = new LinkedList<>();
+        tokens.add(new Token(Token.TokenType.ENDOFLINE, "\n", 1, 0));
+        tokens.add(new Token(Token.TokenType.NUMBER, "5",2,1));
+        Parser parser = new Parser(tokens);
+
+        // Single ENDOFLINE token exists, the method should return true
+        assertTrue(parser.acceptSeperators(), "The method did not correctly accept a single separator.");
+    }
 }
+
+
