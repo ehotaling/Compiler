@@ -27,14 +27,6 @@ public class MathOpNode extends Node {
         return right;
     }
 
-//    public int eval() {
-//        return left.eval() + right.eval();
-//    }
-//
-//    public float eval() {
-//        return left.eval() + right.eval();
-//    }
-
     @Override
     public String toString() {
         return String.format("MathOpNode(%s %s %s)", left, operation, right);

@@ -1,5 +1,0 @@
-{ExpressionNode:
-{
-[MathOpNode:
-  {TermNode: {[FactorNode: {IntegerNode: <1>}]}
-  ADD TermNode: {[FactorNode: {IntegerNode: <2>}]} }, TermNode: {[FactorNode: {IntegerNode: <1>}]} ]}}
