@@ -343,6 +343,12 @@ public class Lexer {
         }
     }
 
+    private Token handleComma() {
+        Token commaToken = new Token(Token.TokenType.COMMA, lineNo, position);
+        advancePosition();
+        return commaToken;
+    }
+
     /**
      * Performs the lexing of the source code. It reads the source code character by character,
      * identifying and collecting tokens.
@@ -369,7 +375,7 @@ public class Lexer {
                 handleWhitespace(c, tokens);
             } else if (c == ',') {
                 // Commas can separate valid words and strings in a print statement
-                advancePosition();
+                tokens.add(handleComma());
             } else if (Character.isLetter(c)) {
                 tokens.add(processWord());
             } else if (Character.isDigit(c) || (c == '.' && Character.isDigit(handler.peek(1)))) {

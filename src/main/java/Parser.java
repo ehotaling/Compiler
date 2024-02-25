@@ -81,6 +81,11 @@ public class Parser {
         }
         PrintNode printNode = new PrintNode();
         while (!peekAndMatch(Token.TokenType.ENDOFLINE)) {
+            // TODO in bas55 (macOS interpreter for BASIC), consecutive commas with no expressions will stop parsing the line
+            // TODO if this isn't the case for this dialect, two commas in a row should throw an error or parse until EOL
+            if (matchAndRemove(Token.TokenType.COMMA)) {
+                continue;
+            }
             // TODO should a string literal be an Expression -> Term -> Factor or a new rule?
             Optional<Token> stringLiteralOpt = tokenManager.matchAndRemove(Token.TokenType.STRINGLITERAL);
             if (stringLiteralOpt.isPresent()) {
