@@ -17,6 +17,12 @@ public class ParserTest {
 
     Parser parser;
 
+    private LinkedList<Token> lexTokens(String text) throws IOException {
+        Path tempFilePath = Files.createTempFile("temp.bas", ".txt");
+        Files.writeString(tempFilePath, text);
+        return lexer.lex(tempFilePath.toString());
+    }
+
     /**
      * Runs the lexer on the given text and returns a list of tokens identified in the source code.
      *
@@ -24,12 +30,12 @@ public class ParserTest {
      * @return A LinkedList of tokens identified in the source code.
      * @throws IOException If an I/O error occurs while reading the text.
      */
-    private ProgramNode runParserOnText(String text) throws IOException {
-        Path tempFilePath = Files.createTempFile("temp.bas", ".txt");
-        Files.writeString(tempFilePath, text);
-        LinkedList<Token> tokens = lexer.lex(tempFilePath.toString());
+    private ProgramNode parseExpressions(String text) throws IOException {
+        return new Parser(lexTokens(text)).parseExpressions();
+    }
 
-        return new Parser(tokens).parse();
+    private ProgramNode parseStatements(String text) throws IOException {
+        return new Parser(lexTokens(text)).parse();
     }
 
     private ExpressionNode negate(ExpressionNode expression) {
@@ -46,7 +52,7 @@ public class ParserTest {
 
     @Test
     public void testExpressionWithOneTerminal() throws IOException {
-        ProgramNode testProgram =  runParserOnText("1");
+        ProgramNode testProgram =  parseExpressions("1");
 
         ExpressionNode expectedExpression = new ExpressionNode(new TermNode(new FactorNode(new IntegerNode(1))));
         ProgramNode expectedProgram = new ProgramNode();
@@ -58,7 +64,7 @@ public class ParserTest {
 
     @Test
     public void testAddTwoTerms() throws IOException {
-        ProgramNode testProgram =  runParserOnText("1+2");
+        ProgramNode testProgram =  parseExpressions("1+2");
 
         ExpressionNode expectedExpression = new ExpressionNode(
                 new MathOpNode(MathOpNode.OPERATION.ADD,
@@ -75,7 +81,7 @@ public class ParserTest {
 
     @Test
     public void testAddNegativeTerms() throws IOException {
-        ProgramNode testProgram =  runParserOnText("-1 + -2");
+        ProgramNode testProgram =  parseExpressions("-1 + -2");
 
         ExpressionNode expectedExpression = new ExpressionNode(
                 new MathOpNode(MathOpNode.OPERATION.ADD,
@@ -93,7 +99,7 @@ public class ParserTest {
 
     @Test
     public void testSubtractExpression() throws IOException {
-        ProgramNode testProgram =  runParserOnText("1-2");
+        ProgramNode testProgram =  parseExpressions("1-2");
 
         ExpressionNode expectedExpression = new ExpressionNode(
                 new MathOpNode(MathOpNode.OPERATION.SUBTRACT,
@@ -110,13 +116,13 @@ public class ParserTest {
 
     @Test
     public void testExpressionAddThreeTerms() throws IOException {
-        ProgramNode program =  runParserOnText("1+2+3");
+        ProgramNode program =  parseExpressions("1+2+3");
         System.out.println(program);
     }
 
     @Test
     public void testMultiplyThreeFactors() throws IOException {
-        ProgramNode testProgram =  runParserOnText("2*3*4");
+        ProgramNode testProgram =  parseExpressions("2*3*4");
 
         MathOpNode left = new MathOpNode(
                 MathOpNode.OPERATION.MULTIPLY,
@@ -138,7 +144,7 @@ public class ParserTest {
 
     @Test
     public void testAddExpressionAndDivideTerm() throws IOException {
-        ProgramNode program =  runParserOnText("1+2/2");
+        ProgramNode program =  parseExpressions("1+2/2");
 
         ExpressionNode expectedExpression = new ExpressionNode(
                 new MathOpNode(MathOpNode.OPERATION.ADD,
@@ -160,7 +166,7 @@ public class ParserTest {
 
     @Test
     public void testMultiFactorExpressionWithFloat() throws IOException {
-        ProgramNode program =  runParserOnText("6/2*(1+2.0)");
+        ProgramNode program =  parseExpressions("6/2*(1+2.0)");
 
         ExpressionNode terminalExpression = new ExpressionNode(
                 new MathOpNode(MathOpNode.OPERATION.ADD,
@@ -189,7 +195,7 @@ public class ParserTest {
 
     @Test
     public void testNestedExpression() throws IOException {
-        ProgramNode program =  runParserOnText("((1 + 2.0))");
+        ProgramNode program =  parseExpressions("((1 + 2.0))");
 
         ExpressionNode terminalExpression = new ExpressionNode(
                 new MathOpNode(
@@ -219,7 +225,7 @@ public class ParserTest {
 
     @Test
     public void testNestedNegativeExpression() throws IOException {
-        ProgramNode program =  runParserOnText("4 * -(1 + 2.0)");
+        ProgramNode program =  parseExpressions("4 * -(1 + 2.0)");
 
         ExpressionNode terminalExpression = new ExpressionNode(
                 new MathOpNode(
@@ -246,7 +252,7 @@ public class ParserTest {
 
     @Test
     public void testTermsWithFloats() throws IOException {
-        ProgramNode program =  runParserOnText("3.0 * 5 + 2");
+        ProgramNode program = parseExpressions("3.0 * 5 + 2");
 
         ExpressionNode expectedExpression =
                 new ExpressionNode(new MathOpNode(
@@ -276,10 +282,10 @@ public class ParserTest {
         Parser parser = new Parser(tokens);
 
         // Multiple ENDOFLINE tokens exist, the method should return true
-        assertTrue(parser.acceptSeperators(), "The method did not correctly accept multiple separators.");
+        assertTrue(parser.acceptSeparators(), "The method did not correctly accept multiple separators.");
 
         // No ENDOFLINE tokens exist at this point, the method should return false
-        assertFalse(parser.acceptSeperators(), "The method did not correctly handle the case when no separators exist.");
+        assertFalse(parser.acceptSeparators(), "The method did not correctly handle the case when no separators exist.");
     }
 
     // Test for the acceptSeparators method in the Parser class when no ENDOFLINE tokens exist.
@@ -290,7 +296,7 @@ public class ParserTest {
         Parser parser = new Parser(tokens);
 
         // No ENDOFLINE tokens exist, the method should return false
-        assertFalse(parser.acceptSeperators(), "The method did not correctly handle the case when no separators exist.");
+        assertFalse(parser.acceptSeparators(), "The method did not correctly handle the case when no separators exist.");
     }
 
     // Test for the acceptSeparators method in the Parser class when only one ENDOFLINE token exists.
@@ -302,7 +308,7 @@ public class ParserTest {
         Parser parser = new Parser(tokens);
 
         // Single ENDOFLINE token exists, the method should return true
-        assertTrue(parser.acceptSeperators(), "The method did not correctly accept a single separator.");
+        assertTrue(parser.acceptSeparators(), "The method did not correctly accept a single separator.");
     }
 
     /**
@@ -315,7 +321,7 @@ public class ParserTest {
     @Test
     public void testReadExpressionsFromFile() throws IOException {
         LinkedList<Token> tokens =  lexer.lex("src/test/resources/expression_list.txt");
-        ProgramNode program = new Parser(tokens).parse();
+        ProgramNode program = new Parser(tokens).parseExpressions();
 
         ExpressionNode line1 = new ExpressionNode(
                 new MathOpNode(MathOpNode.OPERATION.ADD,
@@ -368,6 +374,102 @@ public class ParserTest {
         expectedProgram.addExpression(line2);
         expectedProgram.addExpression(line3);
         expectedProgram.addExpression(line4);
+
+        System.out.println(program);
+
+        assertEquals(expectedProgram, program);
+    }
+
+    @Test
+    public void testParseAssignment() throws IOException {
+        ProgramNode program = parseStatements("F% = 5");
+
+        StatementsNode statements = new StatementsNode();
+        statements.addStatement(new AssignmentNode(
+                new VariableNode("F%"),
+                new ExpressionNode(
+                        new TermNode(
+                                new FactorNode(
+                                        new IntegerNode(5)
+                                )
+                        )
+                )
+        ));
+
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addStatements(statements);
+
+        assertEquals(expectedProgram, program);
+    }
+
+    @Test
+    public void testParsePrintStatement() throws IOException {
+        ProgramNode program = parseStatements("PRINT F%, \"DEG F = \",C%, \"DEG C\"");
+
+        PrintNode printNode = new PrintNode();
+        printNode.addNode(new ExpressionNode(new TermNode(new VariableNode("F%"))));
+        printNode.addNode(new StringNode("DEG F = "));
+        printNode.addNode(new ExpressionNode(new TermNode(new VariableNode("C%"))));
+        printNode.addNode(new StringNode("DEG C"));
+
+        StatementsNode statements = new StatementsNode();
+        statements.addStatement(printNode);
+
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addStatements(statements);
+
+        assertEquals(expectedProgram, program);
+    }
+
+    @Test
+    public void testReadStatementsFromFile() throws IOException {
+        LinkedList<Token> tokens =  lexer.lex("src/test/resources/statements.txt");
+        ProgramNode program = new Parser(tokens).parse();
+
+        AssignmentNode assignment1 = new AssignmentNode(
+                new VariableNode("F%"),
+                new ExpressionNode(
+                        new TermNode(
+                                new FactorNode(
+                                        new FloatNode(10.0f)
+                                )
+                        )
+                )
+        );
+
+        AssignmentNode assignment2 = new AssignmentNode(
+                new VariableNode("C%"),
+                new ExpressionNode(
+                        new TermNode(
+                                new FactorNode(
+                                        new IntegerNode(-5)
+                                )
+                        )
+                )
+        );
+
+        PrintNode printNode = new PrintNode();
+        printNode.addNode(new ExpressionNode(new TermNode(new VariableNode("F%"))));
+        printNode.addNode(new StringNode("DEG F = "));
+        printNode.addNode(new ExpressionNode(new TermNode(new VariableNode("C%"))));
+        printNode.addNode(new StringNode("DEG C"));
+        printNode.addNode(new ExpressionNode(new TermNode(new FactorNode(new IntegerNode(4)))));
+
+        ExpressionNode inner = new ExpressionNode(new TermNode(new MathOpNode(MathOpNode.OPERATION.MULTIPLY,
+                new FactorNode(new IntegerNode(5)),
+                new FactorNode(new FloatNode(4.0f)))));
+
+        printNode.addNode(new ExpressionNode(
+                new TermNode(new FactorNode(inner))
+        ));
+
+        StatementsNode statements = new StatementsNode();
+        statements.addStatement(assignment1);
+        statements.addStatement(assignment2);
+        statements.addStatement(printNode);
+
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addStatements(statements);
 
         assertEquals(expectedProgram, program);
     }

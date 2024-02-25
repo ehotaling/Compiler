@@ -66,7 +66,8 @@ public class Token {
         }
     }
 
-    public String toStringDebug() {
+//    @Override
+    public String toString2() {
         if (val != null) {
             return String.format("%s(%s) Line: %d Position: %d", tokenType, val, lineNo, position);
         } else {

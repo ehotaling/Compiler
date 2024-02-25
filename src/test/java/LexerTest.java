@@ -466,6 +466,18 @@ public class LexerTest {
         assertEquals(new Token(Token.TokenType.ENDOFLINE, 1, 26), tokens.get(5));
     }
 
+    @Test
+    public void testFilePrintList() {
+        LinkedList<Token> tokens =  lexer.lex("src/test/resources/print_list.txt");
+
+        assertEquals(new Token(Token.TokenType.PRINT, 1, 0), tokens.get(0));
+        assertEquals(new Token(Token.TokenType.WORD, "F%", 1, 6), tokens.get(1));
+        assertEquals(new Token(Token.TokenType.STRINGLITERAL, "DEG F = ", 1, 10), tokens.get(2));
+        assertEquals(new Token(Token.TokenType.WORD, "C%", 1, 21), tokens.get(3));
+        assertEquals(new Token(Token.TokenType.STRINGLITERAL, "DEG C", 1, 25), tokens.get(4));
+        assertEquals(new Token(Token.TokenType.ENDOFLINE, 1, 32), tokens.get(5));
+    }
+
     /**
      * This method is a unit test for the `testConcatenation` method.
      * It verifies that the `runLexerOnText` method correctly tokenizes the input text and returns the expected tokens.

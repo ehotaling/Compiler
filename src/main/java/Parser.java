@@ -25,10 +25,9 @@ public class Parser {
      *
      * @return true if any "ENDOFLINE" tokens are found and matched, false otherwise.
      */
-    public boolean acceptSeperators() {
+    public boolean acceptSeparators() {
         boolean found = false;
-        while (tokenManager.moreTokens() && tokenManager.peek(0).isPresent() && tokenManager.peek(0)
-                .get().getTokenType().equals(Token.TokenType.ENDOFLINE)) {
+        while (peekAndMatch(Token.TokenType.ENDOFLINE)) {
             tokenManager.matchAndRemove(Token.TokenType.ENDOFLINE);
             found = true;
         }
@@ -42,10 +41,63 @@ public class Parser {
      */
     public ProgramNode parse() {
         ProgramNode program = new ProgramNode();
+        program.addStatements(statements());
+        return program;
+    }
+
+    public ProgramNode parseExpressions() {
+        ProgramNode program = new ProgramNode();
         do {
             program.addExpression(expression());
-        } while (acceptSeperators() && tokenManager.moreTokens());
+        } while (acceptSeparators() && tokenManager.moreTokens());
         return program;
+    }
+
+    public StatementsNode statements() {
+        StatementsNode statements = new StatementsNode();
+        do {
+            StatementNode statementNode = statement();
+            if (statementNode != null) {
+                statements.addStatement(statementNode);
+            } else {
+                return statements;
+            }
+        } while(acceptSeparators() && tokenManager.moreTokens());
+        return statements;
+    }
+
+    public StatementNode statement() {
+        if (peekAndMatch(Token.TokenType.PRINT)) {
+            return printStatement();
+        } else if (peekAndMatch(Token.TokenType.WORD)) {
+            return assignment();
+        }
+        return null;
+    }
+
+    public PrintNode printStatement() {
+        if (!matchAndRemove(Token.TokenType.PRINT)) {
+            throw new IllegalArgumentException("Invalid Print Statement");
+        }
+        PrintNode printNode = new PrintNode();
+        while (!peekAndMatch(Token.TokenType.ENDOFLINE)) {
+            // TODO should a string literal be an Expression -> Term -> Factor or a new rule?
+            Optional<Token> stringLiteralOpt = tokenManager.matchAndRemove(Token.TokenType.STRINGLITERAL);
+            if (stringLiteralOpt.isPresent()) {
+                printNode.addNode(new StringNode(stringLiteralOpt.get().getVal()));
+            } else {
+                printNode.addNode(expression());
+            }
+        }
+        return printNode;
+    }
+
+    public AssignmentNode assignment() {
+        VariableNode variableNode = (VariableNode) factor();
+        if (matchAndRemove(Token.TokenType.EQUALS)) {
+            return new AssignmentNode(variableNode, expression());
+        }
+        return null;
     }
 
     /**
@@ -90,11 +142,24 @@ public class Parser {
 
     /**
      * Evaluates and generates a Node representing a factor in an expression.
+     * Expression: TERM {+|- TERM}
+     * Term: FACTOR {*|/ FACTOR}
+     * Factor: VARIABLE | number | ( EXPRESSION )
      *
      * @return The FactorNode representing the evaluated factor.
      * @throws IllegalArgumentException if there is a mismatched parentheses or an unexpected end of factor.
      */
     public Node factor() {
+        Optional<Token> wordTokenOpt = tokenManager.matchAndRemove(Token.TokenType.WORD);
+        if (wordTokenOpt.isPresent()) {
+            return new VariableNode(wordTokenOpt.get().getVal());
+        }
+
+        Optional<Token> stringLiteralOpt = tokenManager.matchAndRemove(Token.TokenType.STRINGLITERAL);
+        if (stringLiteralOpt.isPresent()) {
+            return new VariableNode(stringLiteralOpt.get().getVal());
+        }
+
         boolean isNegative = matchAndRemove(Token.TokenType.MINUS);
 
         if (matchAndRemove(Token.TokenType.LPAREN)) {
@@ -123,7 +188,10 @@ public class Parser {
             throw new IllegalArgumentException("Unexpected end of factor");
         }
 
-        Token numberToken = numberTokenOpt.get();
+        return number(numberTokenOpt.get(), isNegative);
+    }
+
+    private FactorNode number(Token numberToken, boolean isNegative) {
         if (numberToken.getVal().contains(".")) {
             float val = Float.parseFloat(numberToken.getVal());
             FloatNode floatNode = isNegative ? new FloatNode(-val) : new FloatNode(val);
@@ -146,5 +214,10 @@ public class Parser {
      */
     private boolean matchAndRemove(Token.TokenType type) {
         return tokenManager.matchAndRemove(type).isPresent();
+    }
+
+    private boolean peekAndMatch(Token.TokenType type) {
+        Optional<Token> tokenOpt = tokenManager.peek(0);
+        return tokenOpt.isPresent() && tokenOpt.get().getTokenType() == type;
     }
 }

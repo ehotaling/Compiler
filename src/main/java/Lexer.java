@@ -156,8 +156,7 @@ public class Lexer {
 
             // Append the character and update position
             wordSuffix.append(c);
-            handler.swallow(1);
-            position++;
+            advancePosition();
 
             // If a token has ended with $, %, or : , stop appending more characters
             if (c == '$' || c == '%' || c == ':') {
@@ -181,15 +180,16 @@ public class Lexer {
         boolean decimalFound = false;
         while (!handler.isDone() && !Character.isWhitespace(handler.peek(0))) {
             char c = handler.peek(0);
+
             // Only accept one decimal
             if (c == '.' && decimalFound) {
                 throw new IllegalStateException(
                         String.format("Invalid character for Number token: " +
                         "'%c'%nLine: %d%nPosition: %d%n", c, lineNo, position));
             }
+
             // If not letter, character, or decimal, break
             if ((!Character.isLetterOrDigit(c) &&  c != '.')) {
-                //processSymbol();
                 break;
             }
 
@@ -197,8 +197,7 @@ public class Lexer {
             if (c == '.') {
                 decimalFound = true;
             }
-            handler.swallow(1);
-            position++;
+            advancePosition();
         }
         return new Token(Token.TokenType.NUMBER, numberBuilder.toString(), lineNo,
                 position - numberBuilder.length());
@@ -253,8 +252,7 @@ public class Lexer {
         StringBuilder stringLiteralBuilder = new StringBuilder();
 
         // Don't append the opening quote to get the correct string representation in the Token
-        handler.swallow(1);
-        position++;
+        advancePosition();
 
         int size = 1; // track the size of the original string, including literal backslashes
         boolean quoteIsOpen = false; // track the state of escaped quotes that must have a matching end quote
@@ -273,8 +271,7 @@ public class Lexer {
             // Break after finding the ending quote, do not append
             if (!escapeNext && c == '\"' || isEndOfLine(handler)) {
                 size++;
-                position++;
-                handler.swallow(1);
+                advancePosition();
                 break;
             }
 
@@ -282,15 +279,13 @@ public class Lexer {
                 // don't append the literal byte, but increment size
                 size++;
                 escapeNext = true;
-                handler.swallow(1);
-                position++;
+                advancePosition();
                 continue;
             } else if (escapeNext && c == 'r') {
                 // ignore carriage return completely, don't increment
                 size++;
                 escapeNext = false;
-                handler.swallow(1);
-                position++;
+                advancePosition();
                 continue;
             } else if (escapeNext && c == 'n') {
                 // Found a valid new line
@@ -302,9 +297,8 @@ public class Lexer {
                 escapeNext = false;
             }
 
-            position++;
             stringLiteralBuilder.append(c);
-            handler.swallow(1);
+            advancePosition();
         }
 
         if (quoteIsOpen || escapeNext) {
@@ -314,15 +308,6 @@ public class Lexer {
             );
         }
 
-        char next = handler.peek(0);
-        if (!handler.isDone() && !Character.isSpaceChar(next) && !isEndOfLine(handler)) {
-            throw new IllegalStateException(
-                    String.format(
-                            "Invalid character: '%c' after string: '%s'%nLine: %d%nPosition: %d%n",
-                            next, stringLiteralBuilder, lineNo, position
-                    )
-            );
-        }
         return new Token(
                 Token.TokenType.STRINGLITERAL,
                 stringLiteralBuilder.toString(),
@@ -382,13 +367,16 @@ public class Lexer {
             char c = handler.peek(0);
             if (Character.isWhitespace(c)) {
                 handleWhitespace(c, tokens);
+            } else if (c == ',') {
+                // Commas can separate valid words and strings in a print statement
+                advancePosition();
             } else if (Character.isLetter(c)) {
                 tokens.add(processWord());
             } else if (Character.isDigit(c) || (c == '.' && Character.isDigit(handler.peek(1)))) {
                 tokens.add(processNumber());
             } else if (c == '\"') {
                 tokens.add(HandleStringLiteral());
-            }  else {
+            } else {
                 tokens.add(processSymbol());
             }
         }
@@ -400,5 +388,10 @@ public class Lexer {
         }
 
         return tokens;
+    }
+
+    private void advancePosition() {
+        handler.swallow(1);
+        position++;
     }
 }
