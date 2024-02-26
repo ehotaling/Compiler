@@ -104,7 +104,16 @@ public class Parser {
             }
 
             if (isNegative) {
-                innerExpr = new ExpressionNode(new MathOpNode(MathOpNode.OPERATION.MULTIPLY, new IntegerNode(-1), innerExpr));
+                // wrap the original expression in a new Term (-1 * expr) to conform to the original grammar
+                innerExpr = new ExpressionNode(
+                        new TermNode(
+                                new MathOpNode(
+                                        MathOpNode.OPERATION.MULTIPLY,
+                                        new FactorNode(new IntegerNode(-1)),
+                                        new FactorNode(innerExpr)
+                                )
+                        )
+                );
             }
             return new FactorNode(innerExpr);
         }

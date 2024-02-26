@@ -32,23 +32,32 @@ public class ParserTest {
         return new Parser(tokens).parse();
     }
 
-    private ExpressionNode generateExpression(int i) {
-        return new ExpressionNode(new TermNode(new FactorNode(new IntegerNode(i))));
+    private ExpressionNode negate(ExpressionNode expression) {
+        return new ExpressionNode(
+                new TermNode(
+                        new MathOpNode(
+                                MathOpNode.OPERATION.MULTIPLY,
+                                new FactorNode(new IntegerNode(-1)),
+                                new FactorNode(expression)
+                        )
+                )
+        );
     }
 
     @Test
-    public void testExpression() throws IOException {
+    public void testExpressionWithOneTerminal() throws IOException {
         ProgramNode testProgram =  runParserOnText("1");
 
+        ExpressionNode expectedExpression = new ExpressionNode(new TermNode(new FactorNode(new IntegerNode(1))));
         ProgramNode expectedProgram = new ProgramNode();
-        expectedProgram.addExpression(generateExpression(1));
+        expectedProgram.addExpression(expectedExpression);
 
         System.out.println(expectedProgram);
         assertEquals(expectedProgram, testProgram);
     }
 
     @Test
-    public void testAddExpression() throws IOException {
+    public void testAddTwoTerms() throws IOException {
         ProgramNode testProgram =  runParserOnText("1+2");
 
         ExpressionNode expectedExpression = new ExpressionNode(
@@ -61,12 +70,11 @@ public class ParserTest {
         ProgramNode expectedProgram = new ProgramNode();
         expectedProgram.addExpression(expectedExpression);
 
-        System.out.println(testProgram);
         assertEquals(expectedProgram, testProgram);
     }
 
     @Test
-    public void testNegativeFactorSubtraction() throws IOException {
+    public void testAddNegativeTerms() throws IOException {
         ProgramNode testProgram =  runParserOnText("-1 + -2");
 
         ExpressionNode expectedExpression = new ExpressionNode(
@@ -85,38 +93,177 @@ public class ParserTest {
 
     @Test
     public void testSubtractExpression() throws IOException {
-        ProgramNode program =  runParserOnText("1-2");
-        System.out.println(program);
+        ProgramNode testProgram =  runParserOnText("1-2");
+
+        ExpressionNode expectedExpression = new ExpressionNode(
+                new MathOpNode(MathOpNode.OPERATION.SUBTRACT,
+                        new TermNode(new FactorNode(new IntegerNode(1))),
+                        new TermNode(new FactorNode(new IntegerNode(2)))
+                )
+        );
+
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addExpression(expectedExpression);
+
+        assertEquals(expectedProgram, testProgram);
     }
 
     @Test
-    public void testExpressionThreeTerms() throws IOException {
+    public void testExpressionAddThreeTerms() throws IOException {
         ProgramNode program =  runParserOnText("1+2+3");
         System.out.println(program);
     }
 
     @Test
-    public void testTermWithThreeFactors() throws IOException {
-        ProgramNode program =  runParserOnText("2*2*2");
-        System.out.println(program);
+    public void testMultiplyThreeFactors() throws IOException {
+        ProgramNode testProgram =  runParserOnText("2*3*4");
+
+        MathOpNode left = new MathOpNode(
+                MathOpNode.OPERATION.MULTIPLY,
+                new FactorNode(new IntegerNode(2)),
+                new FactorNode(new IntegerNode(3))
+        );
+        MathOpNode right = new MathOpNode(
+                MathOpNode.OPERATION.MULTIPLY,
+                left,
+                new FactorNode(new IntegerNode(4))
+        );
+        ExpressionNode expectedExpression = new ExpressionNode(new TermNode(right));
+
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addExpression(expectedExpression);
+
+        assertEquals(expectedProgram, testProgram);
     }
 
     @Test
     public void testAddExpressionAndDivideTerm() throws IOException {
         ProgramNode program =  runParserOnText("1+2/2");
-        System.out.println(program);
+
+        ExpressionNode expectedExpression = new ExpressionNode(
+                new MathOpNode(MathOpNode.OPERATION.ADD,
+                        new TermNode(new FactorNode(new IntegerNode(1))),
+                        new TermNode(
+                                new MathOpNode(MathOpNode.OPERATION.DIVIDE,
+                                        new FactorNode(new IntegerNode(2)),
+                                        new FactorNode(new IntegerNode(2))
+                                )
+                        )
+                )
+        );
+
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addExpression(expectedExpression);
+
+        assertEquals(expectedProgram, program);
     }
 
     @Test
-    public void testMultiFactorExpression() throws IOException {
-        ProgramNode program =  runParserOnText("6/2*(1+2)");
-        System.out.println(program);
+    public void testMultiFactorExpressionWithFloat() throws IOException {
+        ProgramNode program =  runParserOnText("6/2*(1+2.0)");
+
+        ExpressionNode terminalExpression = new ExpressionNode(
+                new MathOpNode(MathOpNode.OPERATION.ADD,
+                        new TermNode(new FactorNode(new IntegerNode(1))),
+                        new TermNode(new FactorNode(new FloatNode(2.0f)))
+                )
+        );
+        ExpressionNode expectedExpression = new ExpressionNode(
+                new TermNode(
+                        new MathOpNode(MathOpNode.OPERATION.MULTIPLY,
+                                new MathOpNode(
+                                        MathOpNode.OPERATION.DIVIDE,
+                                        new FactorNode(new IntegerNode(6)),
+                                        new FactorNode(new IntegerNode(2))
+                                ),
+                                new FactorNode(terminalExpression)
+                        )
+                )
+        );
+
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addExpression(expectedExpression);
+
+        assertEquals(expectedProgram, program);
     }
 
     @Test
-    public void testMultiplyTermWithAddExpression() throws IOException {
-        ProgramNode program =  runParserOnText("3*5+2");
-        System.out.println(program);
+    public void testNestedExpression() throws IOException {
+        ProgramNode program =  runParserOnText("((1 + 2.0))");
+
+        ExpressionNode terminalExpression = new ExpressionNode(
+                new MathOpNode(
+                        MathOpNode.OPERATION.ADD,
+                        new TermNode(new FactorNode(new IntegerNode(1))),
+                        new TermNode(new FactorNode(new FloatNode(2.0f)))
+                )
+        );
+
+        ExpressionNode expectedExpression = new ExpressionNode(
+                new TermNode(
+                        new FactorNode(
+                                new ExpressionNode(
+                                        new TermNode(
+                                                new FactorNode(terminalExpression)
+                                        )
+                                )
+                        )
+                )
+        );
+
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addExpression(expectedExpression);
+
+        assertEquals(expectedProgram, program);
+    }
+
+    @Test
+    public void testNestedNegativeExpression() throws IOException {
+        ProgramNode program =  runParserOnText("4 * -(1 + 2.0)");
+
+        ExpressionNode terminalExpression = new ExpressionNode(
+                new MathOpNode(
+                        MathOpNode.OPERATION.ADD,
+                        new TermNode(new FactorNode(new IntegerNode(1))),
+                        new TermNode(new FactorNode(new FloatNode(2.0f)))
+                )
+        );
+
+        ExpressionNode negatedExpression = negate(terminalExpression);
+
+        ExpressionNode expectedExpression = new ExpressionNode(
+                new TermNode(new MathOpNode(MathOpNode.OPERATION.MULTIPLY,
+                        new FactorNode(new IntegerNode(4)),
+                        new FactorNode(negatedExpression))
+                )
+        );
+
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addExpression(expectedExpression);
+
+        assertEquals(expectedProgram, program);
+    }
+
+    @Test
+    public void testTermsWithFloats() throws IOException {
+        ProgramNode program =  runParserOnText("3.0 * 5 + 2");
+
+        ExpressionNode expectedExpression =
+                new ExpressionNode(new MathOpNode(
+                        MathOpNode.OPERATION.ADD,
+                        new TermNode(
+                                new MathOpNode(MathOpNode.OPERATION.MULTIPLY,
+                                        new FactorNode(new FloatNode(3.0f)),
+                                        new FactorNode(new IntegerNode(5))
+                                )
+                        ),
+                        new TermNode(new FactorNode(new IntegerNode(2))))
+        );
+
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addExpression(expectedExpression);
+
+        assertEquals(expectedProgram, program);
     }
 
     // Test for the acceptSeparators method in the Parser class.
@@ -156,6 +303,73 @@ public class ParserTest {
 
         // Single ENDOFLINE token exists, the method should return true
         assertTrue(parser.acceptSeperators(), "The method did not correctly accept a single separator.");
+    }
+
+    /**
+     * 1 + 2
+     * 2 * 2 + 4
+     * 4 / (2 + 2)
+     * 5 - -(4 * 4)
+     * @throws IOException
+     */
+    @Test
+    public void testReadExpressionsFromFile() throws IOException {
+        LinkedList<Token> tokens =  lexer.lex("src/test/resources/expression_list.txt");
+        ProgramNode program = new Parser(tokens).parse();
+
+        ExpressionNode line1 = new ExpressionNode(
+                new MathOpNode(MathOpNode.OPERATION.ADD,
+                        new TermNode(new FactorNode(new IntegerNode(1))),
+                        new TermNode(new FactorNode(new IntegerNode(2)))
+                )
+        );
+
+        ExpressionNode line2 = new ExpressionNode(
+                new MathOpNode(MathOpNode.OPERATION.ADD,
+                        new TermNode(new MathOpNode(MathOpNode.OPERATION.MULTIPLY,
+                                new FactorNode(new IntegerNode(2)),
+                                new FactorNode(new IntegerNode(2)))),
+                        new TermNode(new FactorNode(new IntegerNode(4)))
+                )
+        );
+
+        ExpressionNode terminalExpression = new ExpressionNode(
+                new MathOpNode(MathOpNode.OPERATION.ADD,
+                        new TermNode(new FactorNode(new IntegerNode(2))),
+                        new TermNode(new FactorNode(new IntegerNode(2)))
+                )
+        );
+        ExpressionNode line3 = new ExpressionNode(
+                new TermNode(new MathOpNode(MathOpNode.OPERATION.DIVIDE,
+                        new FactorNode(new IntegerNode(4)),
+                        new FactorNode(terminalExpression)
+                )
+        ));
+
+        ExpressionNode terminalExpression2 = new ExpressionNode(
+                new TermNode(new MathOpNode(MathOpNode.OPERATION.MULTIPLY,
+                        new FactorNode(new IntegerNode(4)),
+                        new FactorNode(new IntegerNode(4)))
+                )
+        );
+
+        ExpressionNode negatedExpression = negate(terminalExpression2);
+
+        ExpressionNode line4 = new ExpressionNode(
+                new MathOpNode(MathOpNode.OPERATION.SUBTRACT,
+                        new TermNode(
+                                new FactorNode(new IntegerNode(5))),
+                        new TermNode(new FactorNode(negatedExpression))
+                )
+        );
+
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addExpression(line1);
+        expectedProgram.addExpression(line2);
+        expectedProgram.addExpression(line3);
+        expectedProgram.addExpression(line4);
+
+        assertEquals(expectedProgram, program);
     }
 }
 
