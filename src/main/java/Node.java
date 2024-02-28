@@ -1,8 +1,6 @@
 public abstract class Node {
 
-    public Node(){
-
-    }
+    public Node(){}
 
     @Override
     public abstract String toString();

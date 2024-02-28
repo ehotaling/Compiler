@@ -6,17 +6,26 @@ import java.util.stream.Collectors;
 public class ProgramNode extends Node {
 
     private final List<Node> expressions;
+    private StatementsNode statementsNode;
 
     public ProgramNode() {
         this.expressions = new ArrayList<>();
+        this.statementsNode = new StatementsNode();
     }
 
     public void addExpression(Node expression) {
         expressions.add(expression);
     }
 
+    public void addStatements(StatementsNode statementsNode) {
+        this.statementsNode = statementsNode;
+    }
+
     @Override
     public String toString() {
+        if (statementsNode != null && !statementsNode.getStatements().isEmpty()) {
+            return String.format("ProgramNode: {%s}", statementsNode);
+        }
         return "ProgramNode: {" +
                 expressions.stream()
                         .map(Node::toString)
@@ -29,7 +38,8 @@ public class ProgramNode extends Node {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ProgramNode that = (ProgramNode) o;
-        return Objects.equals(expressions, that.expressions);
+        return Objects.equals(expressions, that.expressions) &&
+                Objects.equals(statementsNode, that.statementsNode);
     }
 
     @Override

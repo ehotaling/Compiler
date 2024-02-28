@@ -466,6 +466,21 @@ public class LexerTest {
         assertEquals(new Token(Token.TokenType.ENDOFLINE, 1, 26), tokens.get(5));
     }
 
+    @Test
+    public void testFilePrintList() {
+        LinkedList<Token> tokens =  lexer.lex("src/test/resources/print_list.txt");
+
+        assertEquals(new Token(Token.TokenType.PRINT, 1, 0), tokens.get(0));
+        assertEquals(new Token(Token.TokenType.WORD, "F%", 1, 6), tokens.get(1));
+        assertEquals(new Token(Token.TokenType.COMMA, 1, 8), tokens.get(2));
+        assertEquals(new Token(Token.TokenType.STRINGLITERAL, "DEG F = ", 1, 10), tokens.get(3));
+        assertEquals(new Token(Token.TokenType.COMMA, 1, 20), tokens.get(4));
+        assertEquals(new Token(Token.TokenType.WORD, "C%", 1, 21), tokens.get(5));
+        assertEquals(new Token(Token.TokenType.COMMA, 1, 23), tokens.get(6));
+        assertEquals(new Token(Token.TokenType.STRINGLITERAL, "DEG C", 1, 25), tokens.get(7));
+        assertEquals(new Token(Token.TokenType.ENDOFLINE, 1, 32), tokens.get(8));
+    }
+
     /**
      * This method is a unit test for the `testConcatenation` method.
      * It verifies that the `runLexerOnText` method correctly tokenizes the input text and returns the expected tokens.
@@ -483,5 +498,21 @@ public class LexerTest {
         assertEquals(new Token(Token.TokenType.PLUS, "+", 1, 17), tokens.get(3));
         assertEquals(new Token(Token.TokenType.STRINGLITERAL, "World", 1, 19), tokens.get(4));
         assertEquals(new Token(Token.TokenType.ENDOFLINE, 1, 26), tokens.get(5));
+    }
+
+    @Test
+    public void testCommaParsing() throws IOException {
+        String text = "PRINT F%, \"DEG F = \",C%, \"DEG C\"";
+        LinkedList<Token> tokens =  runLexerOnText(text);
+
+        assertEquals(new Token(Token.TokenType.PRINT, 1, 0), tokens.get(0));
+        assertEquals(new Token(Token.TokenType.WORD, "F%", 1, 6), tokens.get(1));
+        assertEquals(new Token(Token.TokenType.COMMA, 1, 8), tokens.get(2));
+        assertEquals(new Token(Token.TokenType.STRINGLITERAL, "DEG F = ", 1, 10), tokens.get(3));
+        assertEquals(new Token(Token.TokenType.COMMA, 1, 20), tokens.get(4));
+        assertEquals(new Token(Token.TokenType.WORD, "C%", 1, 21), tokens.get(5));
+        assertEquals(new Token(Token.TokenType.COMMA, 1, 23), tokens.get(6));
+        assertEquals(new Token(Token.TokenType.STRINGLITERAL, "DEG C", 1, 25), tokens.get(7));
+        assertEquals(new Token(Token.TokenType.ENDOFLINE, 1, 32), tokens.get(8));
     }
 }

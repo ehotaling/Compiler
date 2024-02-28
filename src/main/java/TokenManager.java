@@ -44,6 +44,10 @@ public class TokenManager {
      * @return an Optional containing the token if it matches and is removed, or an empty Optional otherwise
      */
     Optional<Token> matchAndRemove(Token.TokenType t) {
+        if (tokens.isEmpty()) {
+            return Optional.empty();
+        }
+
         Token head = tokens.getFirst();
         if (head.getTokenType().equals(t)) {
             tokens.removeFirst();

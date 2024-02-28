@@ -15,7 +15,7 @@ public class Token {
     public enum TokenType {
         WORD, NUMBER, IF, PRINT, READ, INPUT, DATA, GOSUB, FOR, TO, STEP, NEXT, RETURN, THEN, FUNCTION, WHILE,
         END, ENDOFLINE, STRINGLITERAL, GREATERTHANEQUALTO, LESSTHANEQUALTO, NOTEQUALS, EQUALS, LESSTHAN, GREATERTHAN,
-        LPAREN, RPAREN, PLUS, MINUS, MULTIPLY, DIVIDE, LABEL
+        LPAREN, RPAREN, PLUS, MINUS, MULTIPLY, DIVIDE, LABEL, COMMA
     }
     /**
      * Represents a single token in the source code.
@@ -66,7 +66,11 @@ public class Token {
         }
     }
 
-    public String toStringDebug() {
+    /**
+     * Verbose output for testing
+     * @return
+     */
+    public String toString2Debug() {
         if (val != null) {
             return String.format("%s(%s) Line: %d Position: %d", tokenType, val, lineNo, position);
         } else {
