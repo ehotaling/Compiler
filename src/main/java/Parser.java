@@ -72,14 +72,11 @@ public class Parser {
     */
     public StatementsNode statements() {
         StatementsNode statements = new StatementsNode();
-        do {
-            StatementNode statementNode = statement();
-            if (statementNode != null) {
-                statements.addStatement(statementNode);
-            } else {
-                return statements;
-            }
-        } while(acceptSeparators() && tokenManager.moreTokens());
+        StatementNode statementNode;
+        while ((statementNode = statement()) != null) {
+            statements.addStatement(statementNode);
+            acceptSeparators();
+        }
         return statements;
     }
 
@@ -130,18 +127,22 @@ public class Parser {
      *
      * @return A list of nodes to be printed.
      */
-    public List<Node> printList() {
-        List<Node> nodes = new ArrayList<>();
-        while (!peekAndMatch(Token.TokenType.ENDOFLINE)) {
+public List<Node> printList() {
+    List<Node> nodes = new ArrayList<>();
+    while (!peekAndMatch(Token.TokenType.ENDOFLINE)) {
+        if (peekAndMatch(Token.TokenType.STRINGLITERAL)) {
+            nodes.add(new StringNode(tokenManager.matchAndRemove(Token.TokenType.STRINGLITERAL).get().getVal()));
+        } else {
             nodes.add(expression());
-            if (peekAndMatch(Token.TokenType.COMMA)) {
-                matchAndRemove(Token.TokenType.COMMA);
-            } else if (!peekAndMatch(Token.TokenType.ENDOFLINE)) {
-                throw new RuntimeException("Expected a comma between expressions");
-            }
         }
-        return nodes;
+        if (peekAndMatch(Token.TokenType.COMMA)) {
+            matchAndRemove(Token.TokenType.COMMA);
+        } else if (!peekAndMatch(Token.TokenType.ENDOFLINE)) {
+            throw new RuntimeException("Expected a comma between expressions");
+        }
     }
+    return nodes;
+}
 
     /**
      * This method is responsible for parsing an assignment statement from the token stream.
