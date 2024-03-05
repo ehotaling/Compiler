@@ -1,5 +1,7 @@
 
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
 
 public class Parser {
@@ -7,7 +9,6 @@ public class Parser {
      * The TokenManager class manages the token stream. It keeps track
      * of the current position in the token list and provides methods to access and manipulate the tokens.
      */
-    // Token Manager manages the token stream.
     private final TokenManager tokenManager;
 
     /**
@@ -45,6 +46,14 @@ public class Parser {
         return program;
     }
 
+
+    /**
+     * This method is responsible for parsing expressions from the token stream.
+     * It creates a new ProgramNode and then repeatedly calls the expression() method to parse individual expressions.
+     * It continues parsing expressions as long as there are more tokens and the next token is a separator (i.e., an ENDOFLINE token).
+     *
+     * @return A ProgramNode representing the root of the Abstract Syntax Tree (AST) for the parsed expressions.
+     */
     public ProgramNode parseExpressions() {
         ProgramNode program = new ProgramNode();
         do {
@@ -53,6 +62,14 @@ public class Parser {
         return program;
     }
 
+    /**
+    * This method is responsible for parsing statements from the token stream.
+    * It creates a new StatementsNode and then repeatedly calls the statement() method to parse individual statements.
+    * It continues parsing statements as long as there are more tokens and the next token is a separator (i.e., an ENDOFLINE token).
+    * If the statement() method returns null, it stops parsing and returns the StatementsNode.
+    *
+    * @return A StatementsNode representing the parsed statements.
+    */
     public StatementsNode statements() {
         StatementsNode statements = new StatementsNode();
         do {
@@ -66,6 +83,14 @@ public class Parser {
         return statements;
     }
 
+    /**
+     * This method is responsible for parsing a statement from the token stream.
+     * It first checks if the next token is a PRINT token. If it is, it calls the printStatement() method to parse a print statement.
+     * If the next token is a WORD token, it calls the assignment() method to parse an assignment statement.
+     * If the next token is neither a PRINT nor a WORD token, it returns null.
+     *
+     * @return A StatementNode representing the parsed statement, or null if the next token is neither a PRINT nor a WORD token.
+     */
     public StatementNode statement() {
         if (peekAndMatch(Token.TokenType.PRINT)) {
             return printStatement();
@@ -75,28 +100,57 @@ public class Parser {
         return null;
     }
 
+    /**
+     * This method is responsible for parsing a print statement from the token stream.
+     * It first checks if the next token is a PRINT token. If it is, it creates a new PrintNode.
+     * It then calls the printList() method to parse a list of nodes to be printed and adds the returned nodes to the PrintNode.
+     * Finally, it returns the PrintNode.
+     *
+     * @return A PrintNode representing the parsed print statement.
+     */
     public PrintNode printStatement() {
         if (!matchAndRemove(Token.TokenType.PRINT)) {
             throw new IllegalArgumentException("Invalid Print Statement");
         }
         PrintNode printNode = new PrintNode();
-        while (!peekAndMatch(Token.TokenType.ENDOFLINE)) {
-            // TODO in bas55 (macOS interpreter for BASIC), consecutive commas with no expressions will stop parsing the line
-            // TODO if this isn't the case for this dialect, two commas in a row should throw an error or parse until EOL
-            if (matchAndRemove(Token.TokenType.COMMA)) {
-                continue;
-            }
-            // TODO should a string literal be an Expression -> Term -> Factor or a new rule?
-            Optional<Token> stringLiteralOpt = tokenManager.matchAndRemove(Token.TokenType.STRINGLITERAL);
-            if (stringLiteralOpt.isPresent()) {
-                printNode.addNode(new StringNode(stringLiteralOpt.get().getVal()));
-            } else {
-                printNode.addNode(expression());
-            }
+
+        // Call the printList method and add the returned nodes to the PrintNode
+        List<Node> nodes = printList();
+        for (Node node : nodes) {
+            printNode.addNode(node);
         }
+
         return printNode;
     }
 
+/**
+     * This method is responsible for parsing a list of nodes to be printed from the token stream.
+     * It creates a new list of nodes and repeatedly calls the expression() method to parse individual nodes.
+     * It continues parsing nodes as long as there are more tokens and the next token is not an ENDOFLINE token.
+     *
+     * @return A list of nodes to be printed.
+     */
+    public List<Node> printList() {
+        List<Node> nodes = new ArrayList<>();
+        while (!peekAndMatch(Token.TokenType.ENDOFLINE)) {
+            nodes.add(expression());
+            if (peekAndMatch(Token.TokenType.COMMA)) {
+                matchAndRemove(Token.TokenType.COMMA);
+            } else if (!peekAndMatch(Token.TokenType.ENDOFLINE)) {
+                throw new RuntimeException("Expected a comma between expressions");
+            }
+        }
+        return nodes;
+    }
+
+    /**
+     * This method is responsible for parsing an assignment statement from the token stream.
+     * It first calls the factor() method to parse a variable name.
+     * If the next token is an EQUALS token, it calls the expression() method to parse the expression to be assigned to the variable.
+     * If the next token is not an EQUALS token, it returns null.
+     *
+     * @return An AssignmentNode representing the parsed assignment statement, or null if the next token is not an EQUALS token.
+     */
     public AssignmentNode assignment() {
         VariableNode variableNode = (VariableNode) factor();
         if (matchAndRemove(Token.TokenType.EQUALS)) {
@@ -106,7 +160,7 @@ public class Parser {
     }
 
     /**
-     * Parses and generates an ExpressionNode from the given tokens.
+     * Parses and generates an ExpressionNode from the given tokens. An ExpressionNode represents an expression in the grammar.
      * It evaluates the input tokens and creates a binary expression tree.
      *
      * @return The ExpressionNode representing the root of the expression tree.
@@ -126,7 +180,7 @@ public class Parser {
     }
 
     /**
-     * Parses and generates a TermNode from the given tokens. A TermNode represents a term in an expression.
+     * Parses and generates a TermNode from the given tokens. A TermNode represents a term in the grammar.
      * It evaluates the input tokens and creates a binary expression tree.
      *
      * @return The TermNode representing the root of the term tree.
@@ -146,13 +200,10 @@ public class Parser {
     }
 
     /**
-     * Evaluates and generates a Node representing a factor in an expression.
-     * Expression: TERM {+|- TERM}
-     * Term: FACTOR {*|/ FACTOR}
-     * Factor: VARIABLE | number | ( EXPRESSION )
+     * Parses and generates a FactorNode from the given tokens. A FactorNode represents a factor in the grammar.
+     * It evaluates the input tokens and creates a binary expression tree.
      *
-     * @return The FactorNode representing the evaluated factor.
-     * @throws IllegalArgumentException if there is a mismatched parentheses or an unexpected end of factor.
+     * @return The FactorNode representing the root of the factor tree.
      */
     public Node factor() {
         Optional<Token> wordTokenOpt = tokenManager.matchAndRemove(Token.TokenType.WORD);
@@ -221,8 +272,16 @@ public class Parser {
         return tokenManager.matchAndRemove(type).isPresent();
     }
 
+    /**
+     * Checks if the next token in the token list has the specified TokenType, without removing it from the list.
+     * If the token matches and there are more tokens in the list, it returns true. Otherwise, it returns false.
+     *
+     * @param type The TokenType to match against.
+     * @return true if the next token matches the specified TokenType, false otherwise.
+     */
     private boolean peekAndMatch(Token.TokenType type) {
         Optional<Token> tokenOpt = tokenManager.peek(0);
         return tokenOpt.isPresent() && tokenOpt.get().getTokenType() == type;
     }
 }
+

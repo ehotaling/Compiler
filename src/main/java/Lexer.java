@@ -74,6 +74,7 @@ public class Lexer {
         oneCharacterSymbols.put("-", Token.TokenType.MINUS);
         oneCharacterSymbols.put("*", Token.TokenType.MULTIPLY);
         oneCharacterSymbols.put("/", Token.TokenType.DIVIDE);
+        oneCharacterSymbols.put(",", Token.TokenType.COMMA);
     }
 
     /**
