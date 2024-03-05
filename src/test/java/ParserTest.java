@@ -493,6 +493,57 @@ public class ParserTest {
 
         assertEquals(expectedProgram, program);
     }
+
+    @Test
+    public void testFactorWithWordToken() throws IOException {
+        ProgramNode testProgram = parseExpressions("x");
+
+        ExpressionNode expectedExpression = new ExpressionNode(new TermNode(new VariableNode("x")));
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addExpression(expectedExpression);
+
+        assertEquals(expectedProgram, testProgram);
+    }
+
+    @Test
+    public void testAssignmentWithExpression() throws IOException {
+        ProgramNode testProgram = parseStatements("x = 1 + 2");
+
+        ExpressionNode expression = new ExpressionNode(
+                new MathOpNode(MathOpNode.OPERATION.ADD,
+                        new TermNode(new FactorNode(new IntegerNode(1))),
+                        new TermNode(new FactorNode(new IntegerNode(2)))
+                )
+        );
+
+        AssignmentNode assignment = new AssignmentNode(new VariableNode("x"), expression);
+
+        StatementsNode statements = new StatementsNode();
+        statements.addStatement(assignment);
+
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addStatements(statements);
+
+        assertEquals(expectedProgram, testProgram);
+    }
+
+    @Test
+    public void testFactorWithNegativeNumber() throws IOException {
+        ProgramNode testProgram = parseExpressions("-1");
+
+        ExpressionNode expectedExpression = new ExpressionNode(
+                new TermNode(
+                        new FactorNode(
+                                new IntegerNode(-1)
+                        )
+                )
+        );
+
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addExpression(expectedExpression);
+
+        assertEquals(expectedProgram, testProgram);
+    }
 }
 
 
