@@ -89,12 +89,38 @@ public class Parser {
      * @return A StatementNode representing the parsed statement, or null if the next token is neither a PRINT nor a WORD token.
      */
     public StatementNode statement() {
-        if (peekAndMatch(Token.TokenType.PRINT)) {
+        if (peekAndMatch(Token.TokenType.READ)) {
+            return readStatement();
+        } else if (peekAndMatch(Token.TokenType.DATA)) {
+            return dataStatement();
+        } else if (peekAndMatch(Token.TokenType.PRINT)) {
             return printStatement();
         } else if (peekAndMatch(Token.TokenType.WORD)) {
             return assignment();
         }
         return null;
+    }
+
+    public ReadNode readStatement() {
+        if (!matchAndRemove(Token.TokenType.READ)) {
+            throw new IllegalArgumentException("Invalid Read Statement");
+        }
+        List<VariableNode> variables = new ArrayList<>();
+        do {
+            variables.add((VariableNode) factor());
+        } while (matchAndRemove(Token.TokenType.COMMA));
+        return new ReadNode(variables);
+    }
+
+    public DataNode dataStatement() {
+        if (!matchAndRemove(Token.TokenType.DATA)) {
+            throw new IllegalArgumentException("Invalid Data Statement");
+        }
+        List<Node> data = new ArrayList<>();
+        do {
+            data.add(expression());
+        } while (matchAndRemove(Token.TokenType.COMMA));
+        return new DataNode(data);
     }
 
     /**
