@@ -95,13 +95,45 @@ public class Parser {
             return dataStatement();
         } else if (peekAndMatch(Token.TokenType.PRINT)) {
             return printStatement();
+        } else if (peekAndMatch(Token.TokenType.INPUT)) {
+            return inputStatement();
         } else if (peekAndMatch(Token.TokenType.WORD)) {
             return assignment();
         }
         return null;
     }
 
-    public ReadNode readStatement() {
+    /**
+     * This method is responsible for parsing an input statement from the token stream.
+     * It first checks if the next token is an INPUT token. If it is, it creates a new InputNode.
+     * It then calls the factor() method to parse the first parameter and adds the returned parameter to the InputNode.
+     * It then repeatedly calls the factor() method to parse a list of variables to be input and adds the returned variables to the InputNode.
+     * Finally, it returns the InputNode.
+     *
+     * @return An InputNode representing the parsed input statement.
+     */
+    private StatementNode inputStatement() {
+        if (!matchAndRemove(Token.TokenType.INPUT)) {
+            throw new IllegalArgumentException("Invalid Input Statement");
+        }
+        Node firstParameter = factor();
+        List <VariableNode> variables = new ArrayList<>();
+        while (matchAndRemove(Token.TokenType.COMMA)) {
+            variables.add((VariableNode) factor());
+        }
+        return new InputNode(firstParameter, variables);
+    }
+
+
+    /**
+     * This method is responsible for parsing a read statement from the token stream.
+     * It first checks if the next token is a READ token. If it is, it creates a new ReadNode.
+     * It then calls the factor() method to parse a list of variables to be read and adds the returned variables to the ReadNode.
+     * Finally, it returns the ReadNode.
+     *
+     * @return A ReadNode representing the parsed read statement.
+     */
+    public StatementNode readStatement() {
         if (!matchAndRemove(Token.TokenType.READ)) {
             throw new IllegalArgumentException("Invalid Read Statement");
         }
@@ -112,7 +144,15 @@ public class Parser {
         return new ReadNode(variables);
     }
 
-    public DataNode dataStatement() {
+    /**
+     * This method is responsible for parsing a data statement from the token stream.
+     * It first checks if the next token is a DATA token. If it is, it creates a new DataNode.
+     * It then calls the expression() method to parse a list of data values and adds the returned values to the DataNode.
+     * Finally, it returns the DataNode.
+     *
+     * @return A DataNode representing the parsed data statement.
+     */
+    public StatementNode dataStatement() {
         if (!matchAndRemove(Token.TokenType.DATA)) {
             throw new IllegalArgumentException("Invalid Data Statement");
         }
