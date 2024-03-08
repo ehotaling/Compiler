@@ -617,6 +617,144 @@ public class ParserTest {
 
     }
 
+    @Test
+    public void readStatement_ValidTokens_ReturnsReadNode() throws IOException {
+        ProgramNode testProgram = parseStatements("read x, y, z");
+
+        List<VariableNode> variables = new ArrayList<>();
+        variables.add(new VariableNode("x"));
+        variables.add(new VariableNode("y"));
+        variables.add(new VariableNode("z"));
+
+        StatementNode statement = new ReadNode(variables);
+        StatementsNode statements = new StatementsNode();
+        statements.addStatement(statement);
+
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addStatements(statements);
+
+        assertEquals(expectedProgram, testProgram);
+    }
+
+    @Test
+    public void readStatement_SingleVariable_ReturnsReadNode() throws IOException {
+        ProgramNode testProgram = parseStatements("read x");
+
+        List<VariableNode> variables = new ArrayList<>();
+        variables.add(new VariableNode("x"));
+
+        StatementNode statement = new ReadNode(variables);
+        StatementsNode statements = new StatementsNode();
+        statements.addStatement(statement);
+
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addStatements(statements);
+
+        assertEquals(expectedProgram, testProgram);
+    }
+
+    @Test
+    public void readStatement_NoVariables_ThrowsException() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            parseStatements("read");
+        });
+    }
+
+    @Test
+    public void readStatement_InvalidTokens_ThrowsException() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            parseStatements("read x, 123, z");
+        });
+    }
+
+    @Test
+    public void readStatement_WhitespaceBetweenVariablesAndCommas_ReturnsReadNode() throws IOException {
+        ProgramNode testProgram = parseStatements("read x , y , z");
+
+        List<VariableNode> variables = new ArrayList<>();
+        variables.add(new VariableNode("x"));
+        variables.add(new VariableNode("y"));
+        variables.add(new VariableNode("z"));
+
+        StatementNode statement = new ReadNode(variables);
+        StatementsNode statements = new StatementsNode();
+        statements.addStatement(statement);
+
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addStatements(statements);
+
+        assertEquals(expectedProgram, testProgram);
+    }
+
+    @Test
+    public void dataStatement_ValidTokens_ReturnsDataNode() throws IOException {
+        ProgramNode testProgram = parseStatements("data x, y, z");
+
+        List<Node> nodes = new ArrayList<>();
+        nodes.add(new VariableNode("x"));
+        nodes.add(new VariableNode("y"));
+        nodes.add(new VariableNode("z"));
+
+        StatementNode statement = new DataNode(nodes);
+        StatementsNode statements = new StatementsNode();
+        statements.addStatement(statement);
+
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addStatements(statements);
+
+        assertEquals(expectedProgram, testProgram);
+    }
+
+    @Test
+    public void dataStatement_SingleVariable_ReturnsDataNode() throws IOException {
+        ProgramNode testProgram = parseStatements("data x");
+
+        List<Node> nodes = new ArrayList<>();
+        nodes.add(new VariableNode("x"));
+
+        StatementNode statement = new DataNode(nodes);
+        StatementsNode statements = new StatementsNode();
+        statements.addStatement(statement);
+
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addStatements(statements);
+
+        assertEquals(expectedProgram, testProgram);
+    }
+
+    @Test
+    public void dataStatement_NoVariables_ThrowsException() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            parseStatements("data");
+        });
+    }
+
+    @Test
+    public void dataStatement_InvalidTokens_ThrowsException() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            parseStatements("data x, 123, z");
+        });
+    }
+
+    @Test
+    public void dataStatement_WhitespaceBetweenVariablesAndCommas_ReturnsDataNode() throws IOException {
+        ProgramNode testProgram = parseStatements("data x , y , z");
+
+        List<Node> nodes = new ArrayList<>();
+        nodes.add(new VariableNode("x"));
+        nodes.add(new VariableNode("y"));
+        nodes.add(new VariableNode("z"));
+
+        StatementNode statement = new DataNode(nodes);
+        StatementsNode statements = new StatementsNode();
+        statements.addStatement(statement);
+
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addStatements(statements);
+
+        assertEquals(expectedProgram, testProgram);
+    }
+
 
 }
 

@@ -1,4 +1,5 @@
 import java.util.List;
+import java.util.Objects;
 
 public class ReadNode extends StatementNode {
     private List<VariableNode> variables;
@@ -14,5 +15,18 @@ public class ReadNode extends StatementNode {
 
     public List<VariableNode> getVariables() {
         return variables;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ReadNode readNode = (ReadNode) o;
+        return Objects.equals(variables, readNode.variables);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(variables);
     }
 }

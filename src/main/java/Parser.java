@@ -4,6 +4,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * This method is responsible for parsing an assignment statement from the token stream.
+ * It first calls the factor() method to parse a variable name.
+ * If the next token is an EQUALS token, it calls the expression() method to parse the expression to be assigned to the variable.
+ * If the next token is not an EQUALS token, it returns null.
+ *
+ * @return An AssignmentNode representing the parsed assignment statement, or null if the next token is not an EQUALS token.
+ */
 public class Parser {
     /**
      * The TokenManager class manages the token stream. It keeps track
@@ -106,8 +114,7 @@ public class Parser {
     /**
      * This method is responsible for parsing an input statement from the token stream.
      * It first checks if the next token is an INPUT token. If it is, it creates a new InputNode.
-     * It then calls the factor() method to parse the first parameter and adds the returned parameter to the InputNode.
-     * It then repeatedly calls the factor() method to parse a list of variables to be input and adds the returned variables to the InputNode.
+     * It then calls the factor() method to parse a list of variables to be input and adds the returned variables to the InputNode.
      * Finally, it returns the InputNode.
      *
      * @return An InputNode representing the parsed input statement.
@@ -143,7 +150,12 @@ public class Parser {
         }
         List<VariableNode> variables = new ArrayList<>();
         do {
-            variables.add((VariableNode) factor());
+            Node node = factor();
+            if (node instanceof VariableNode) {
+                variables.add((VariableNode) node);
+            } else {
+                throw new IllegalArgumentException("Invalid token in Read Statement");
+            }
         } while (matchAndRemove(Token.TokenType.COMMA));
         return new ReadNode(variables);
     }
@@ -162,7 +174,12 @@ public class Parser {
         }
         List<Node> data = new ArrayList<>();
         do {
-            data.add(expression());
+            Node node = factor();
+            if (node instanceof VariableNode || node instanceof IntegerNode || node instanceof FloatNode) {
+                data.add(node);
+            } else {
+                throw new IllegalArgumentException("Invalid token in Data Statement");
+            }
         } while (matchAndRemove(Token.TokenType.COMMA));
         return new DataNode(data);
     }

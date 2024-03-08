@@ -1,4 +1,5 @@
 import java.util.List;
+import java.util.Objects;
 
 public class DataNode extends StatementNode {
     private List<Node> data;
@@ -14,5 +15,18 @@ public class DataNode extends StatementNode {
 
     public List<Node> getData() {
         return data;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DataNode dataNode = (DataNode) o;
+        return Objects.equals(data, dataNode.data);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(data);
     }
 }
