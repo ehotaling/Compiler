@@ -118,7 +118,12 @@ public class Parser {
         }
         List<VariableNode> variables = new ArrayList<>();
         do {
-            variables.add((VariableNode) factor());
+            Node node = factor();
+            if (node instanceof VariableNode) {
+                variables.add((VariableNode) node);
+            } else {
+                throw new IllegalArgumentException("Invalid Input Statement");
+            }
         } while (matchAndRemove(Token.TokenType.COMMA));
         return new InputNode(variables);
     }

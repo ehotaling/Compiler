@@ -548,33 +548,76 @@ public class ParserTest {
     }
 
     @Test
-    public void testInputStatementWithSingleVariable() throws IOException {
-        LinkedList<Token> tokens = lexTokens("INPUT A");
-        Parser parser = new Parser(tokens);
+    public void testInputStatement_SingleInput() throws IOException {
+        ProgramNode testProgram = parseStatements("input x");
 
-        StatementNode statementNode = parser.inputStatement();
+        List<VariableNode> inputs = new ArrayList<>();
+        inputs.add(new VariableNode("x"));
 
-        List<VariableNode> variables = new ArrayList<>();
-        variables.add(new VariableNode("A"));
-        InputNode expectedNode = new InputNode(variables);
+        StatementNode statement = new InputNode(inputs);
+        StatementsNode statements = new StatementsNode();
+        statements.addStatement(statement);
 
-        assertEquals(expectedNode, statementNode);
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addStatements(statements);
+
+        assertEquals(expectedProgram, testProgram);
     }
 
     @Test
-    public void testInputStatementWithMultipleVariables() throws IOException {
-        LinkedList<Token> tokens = lexTokens("INPUT A, B");
-        Parser parser = new Parser(tokens);
+    public void testInputStatement_MultipleInputs() throws IOException {
+        ProgramNode testProgram = parseStatements("input x, y, z");
 
-        StatementNode statementNode = parser.inputStatement();
+        List<VariableNode> inputs = new ArrayList<>();
+        inputs.add(new VariableNode("x"));
+        inputs.add(new VariableNode("y"));
+        inputs.add(new VariableNode("z"));
 
-        List<VariableNode> variables = new ArrayList<>();
-        variables.add(new VariableNode("A"));
-        variables.add(new VariableNode("B"));
-        InputNode expectedNode = new InputNode(variables);
+        StatementNode statement = new InputNode(inputs);
+        StatementsNode statements = new StatementsNode();
+        statements.addStatement(statement);
 
-        assertEquals(expectedNode, statementNode);
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addStatements(statements);
+
+        assertEquals(expectedProgram, testProgram);
     }
+
+    @Test
+    public void testInputStatement_NoInputs() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            parseStatements("input");
+        });
+    }
+
+    @Test
+    public void testInputStatement_WhitespaceBetweenVariablesAndCommas() throws IOException {
+        ProgramNode testProgram = parseStatements("input x , y , z");
+
+        List<VariableNode> inputs = new ArrayList<>();
+        inputs.add(new VariableNode("x"));
+        inputs.add(new VariableNode("y"));
+        inputs.add(new VariableNode("z"));
+
+        StatementNode statement = new InputNode(inputs);
+        StatementsNode statements = new StatementsNode();
+        statements.addStatement(statement);
+
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addStatements(statements);
+
+        assertEquals(expectedProgram, testProgram);
+    }
+
+    @Test
+    public void testInputStatement_InvalidTokens() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            parseStatements("input x, 123, z");
+        });
+
+    }
+
+
 }
 
 
