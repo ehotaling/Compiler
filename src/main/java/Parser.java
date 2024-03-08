@@ -112,16 +112,15 @@ public class Parser {
      *
      * @return An InputNode representing the parsed input statement.
      */
-    private StatementNode inputStatement() {
+    public StatementNode inputStatement() {
         if (!matchAndRemove(Token.TokenType.INPUT)) {
             throw new IllegalArgumentException("Invalid Input Statement");
         }
-        Node firstParameter = factor();
-        List <VariableNode> variables = new ArrayList<>();
-        while (matchAndRemove(Token.TokenType.COMMA)) {
+        List<VariableNode> variables = new ArrayList<>();
+        do {
             variables.add((VariableNode) factor());
-        }
-        return new InputNode(firstParameter, variables);
+        } while (matchAndRemove(Token.TokenType.COMMA));
+        return new InputNode(variables);
     }
 
 

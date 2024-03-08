@@ -1,16 +1,11 @@
 import java.util.List;
+import java.util.Objects;
 
 public class InputNode extends StatementNode {
-    private Node firstParameter;
     private List<VariableNode> variables;
 
-    public InputNode(Node firstParameter, List<VariableNode> variables) {
-        this.firstParameter = firstParameter;
+    public InputNode(List<VariableNode> variables) {
         this.variables = variables;
-    }
-
-    public Node getFirstParameter() {
-        return firstParameter;
     }
 
     public List<VariableNode> getVariables() {
@@ -19,6 +14,19 @@ public class InputNode extends StatementNode {
 
     @Override
     public String toString() {
-        return String.format("InputNode(%s, %s)", firstParameter, variables);
+        return String.format("InputNode(%s)", variables);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        InputNode inputNode = (InputNode) o;
+        return Objects.equals(variables, inputNode.variables);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(variables);
     }
 }

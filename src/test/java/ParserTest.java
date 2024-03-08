@@ -3,7 +3,9 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -543,6 +545,35 @@ public class ParserTest {
         expectedProgram.addExpression(expectedExpression);
 
         assertEquals(expectedProgram, testProgram);
+    }
+
+    @Test
+    public void testInputStatementWithSingleVariable() throws IOException {
+        LinkedList<Token> tokens = lexTokens("INPUT A");
+        Parser parser = new Parser(tokens);
+
+        StatementNode statementNode = parser.inputStatement();
+
+        List<VariableNode> variables = new ArrayList<>();
+        variables.add(new VariableNode("A"));
+        InputNode expectedNode = new InputNode(variables);
+
+        assertEquals(expectedNode, statementNode);
+    }
+
+    @Test
+    public void testInputStatementWithMultipleVariables() throws IOException {
+        LinkedList<Token> tokens = lexTokens("INPUT A, B");
+        Parser parser = new Parser(tokens);
+
+        StatementNode statementNode = parser.inputStatement();
+
+        List<VariableNode> variables = new ArrayList<>();
+        variables.add(new VariableNode("A"));
+        variables.add(new VariableNode("B"));
+        InputNode expectedNode = new InputNode(variables);
+
+        assertEquals(expectedNode, statementNode);
     }
 }
 
