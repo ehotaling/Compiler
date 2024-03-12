@@ -125,11 +125,13 @@ public class Parser {
         if (!matchAndRemove(Token.TokenType.INPUT)) {
             throw new IllegalArgumentException("Invalid Input Statement");
         }
+        // TODO Node =
         List<VariableNode> variables = new ArrayList<>();
         do {
             Node node = factor();
+            // index 0
             if (node instanceof VariableNode) {
-                variables.add((VariableNode) node);
+                variables.add((VariableNode) node); // TODO first iteration needs to be a string literal (VariableNode(STRINGLITERAL))
             } else {
                 throw new IllegalArgumentException("Invalid Input Statement");
             }
@@ -306,6 +308,9 @@ public List<Node> printList() {
         Optional<Token> stringLiteralOpt = tokenManager.matchAndRemove(Token.TokenType.STRINGLITERAL);
         if (stringLiteralOpt.isPresent()) {
             // NOTE: We'll have to add logic in the interpreter to validate the type of variable ('%', '$', etc)
+            // myVar$ = "someString"
+            // myVar% = Float()
+            // myVar = Int()
             return new VariableNode(stringLiteralOpt.get().getVal());
         }
 
