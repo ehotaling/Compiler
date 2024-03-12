@@ -305,6 +305,8 @@ public List<Node> printList() {
             return new VariableNode(wordTokenOpt.get().getVal());
         }
 
+        // TODO do we need another node for a string literal? Because myString% is a variable,
+        //  but we can have "string literal %str" in the code?
         Optional<Token> stringLiteralOpt = tokenManager.matchAndRemove(Token.TokenType.STRINGLITERAL);
         if (stringLiteralOpt.isPresent()) {
             // NOTE: We'll have to add logic in the interpreter to validate the type of variable ('%', '$', etc)
