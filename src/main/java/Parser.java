@@ -120,6 +120,8 @@ public class Parser {
      * @return An InputNode representing the parsed input statement.
      */
     public StatementNode inputStatement() {
+        // TODO "INPUT – expects a string, then any number of variables. Prints the string, then waits for the user to enter the inputs, comma separated. "
+        // ^^^ I think this is is something that we can handle while parsing
         if (!matchAndRemove(Token.TokenType.INPUT)) {
             throw new IllegalArgumentException("Invalid Input Statement");
         }
@@ -145,6 +147,8 @@ public class Parser {
      * @return A ReadNode representing the parsed read statement.
      */
     public StatementNode readStatement() {
+        // TODO If the data types don’t match correctly (like the $ was on the wrong variable), that is a runtime error.
+        // ^^^ I think this is handled when interpreting, so probably don't need to handle that
         if (!matchAndRemove(Token.TokenType.READ)) {
             throw new IllegalArgumentException("Invalid Read Statement");
         }
@@ -301,6 +305,7 @@ public List<Node> printList() {
 
         Optional<Token> stringLiteralOpt = tokenManager.matchAndRemove(Token.TokenType.STRINGLITERAL);
         if (stringLiteralOpt.isPresent()) {
+            // NOTE: We'll have to add logic in the interpreter to validate the type of variable ('%', '$', etc)
             return new VariableNode(stringLiteralOpt.get().getVal());
         }
 
