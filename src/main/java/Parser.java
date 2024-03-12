@@ -97,15 +97,16 @@ public class Parser {
      * @return A StatementNode representing the parsed statement, or null if the next token is neither a PRINT nor a WORD token.
      */
     public StatementNode statement() {
+
         if (peekAndMatch(Token.TokenType.READ)) {
             return readStatement();
-        } else if (peekAndMatch(Token.TokenType.DATA)) {
+        } else if (peekAndMatch(Token.TokenType.DATA)) { // TODO won't execute, treated as WORD, not LABEL
             return dataStatement();
         } else if (peekAndMatch(Token.TokenType.PRINT)) {
             return printStatement();
-        } else if (peekAndMatch(Token.TokenType.INPUT)) {
+        } else if (peekAndMatch(Token.TokenType.INPUT)) { // TODO won't execute, treated as WORD, not LABEL
             return inputStatement();
-        } else if (peekAndMatch(Token.TokenType.WORD)) {
+        } else if (peekAndMatch(Token.TokenType.WORD)) { // TODO won't execute, treated as WORD, not LABEL
             return assignment();
         }
         return null;
@@ -125,11 +126,13 @@ public class Parser {
         if (!matchAndRemove(Token.TokenType.INPUT)) {
             throw new IllegalArgumentException("Invalid Input Statement");
         }
+        // TODO Node =
         List<VariableNode> variables = new ArrayList<>();
         do {
             Node node = factor();
+            // index 0
             if (node instanceof VariableNode) {
-                variables.add((VariableNode) node);
+                variables.add((VariableNode) node); // TODO first iteration needs to be a string literal (VariableNode(STRINGLITERAL))
             } else {
                 throw new IllegalArgumentException("Invalid Input Statement");
             }
@@ -303,9 +306,14 @@ public List<Node> printList() {
             return new VariableNode(wordTokenOpt.get().getVal());
         }
 
+        // TODO do we need another node for a string literal? Because myString% is a variable,
+        //  but we can have "string literal %str" in the code?
         Optional<Token> stringLiteralOpt = tokenManager.matchAndRemove(Token.TokenType.STRINGLITERAL);
         if (stringLiteralOpt.isPresent()) {
             // NOTE: We'll have to add logic in the interpreter to validate the type of variable ('%', '$', etc)
+            // myVar$ = "someString"
+            // myVar% = Float()
+            // myVar = Int()
             return new VariableNode(stringLiteralOpt.get().getVal());
         }
 

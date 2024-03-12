@@ -549,6 +549,7 @@ public class ParserTest {
 
     @Test
     public void testInputStatement_SingleInput() throws IOException {
+        // TODO ensure the first node is a stringliteral
         ProgramNode testProgram = parseStatements("input x");
 
         List<VariableNode> inputs = new ArrayList<>();
@@ -708,6 +709,7 @@ public class ParserTest {
     @Test
     public void dataStatement_SingleVariable_ReturnsDataNode() throws IOException {
         ProgramNode testProgram = parseStatements("data x");
+        // TODO, but "DATA" is a WORD, not a LABEL
 
         List<Node> nodes = new ArrayList<>();
         nodes.add(new VariableNode("x"));
@@ -753,6 +755,19 @@ public class ParserTest {
         expectedProgram.addStatements(statements);
 
         assertEquals(expectedProgram, testProgram);
+    }
+
+    @Test
+    public void testPrintInputRead() throws IOException {
+        // TODO
+        // read_test.txt
+        LinkedList<Token> tokens =  lexer.lex("src/test/resources/input_test.txt");
+        ProgramNode program = new Parser(tokens).parseExpressions();
+        System.out.println(program);
+
+        LinkedList<Token> tokens2 =  lexer.lex("src/test/resources/read_test.txt");
+        ProgramNode program2 = new Parser(tokens).parseExpressions();
+        System.out.println(program2);
     }
 
 
