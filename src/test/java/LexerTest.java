@@ -223,6 +223,11 @@ public class LexerTest {
         assertEquals(new Token(Token.TokenType.DIVIDE, "/", 1, 25), tokens.get(11));
     }
 
+    public void testProcessLabels() throws IOException {
+        // TODO
+        String text = "PRINT INPUT READ DATA.... ETC";
+    }
+
 
     /**
      * This method is a unit test for the testNumberInParentheses functionality.
