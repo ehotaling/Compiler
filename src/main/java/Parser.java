@@ -97,15 +97,16 @@ public class Parser {
      * @return A StatementNode representing the parsed statement, or null if the next token is neither a PRINT nor a WORD token.
      */
     public StatementNode statement() {
+
         if (peekAndMatch(Token.TokenType.READ)) {
             return readStatement();
-        } else if (peekAndMatch(Token.TokenType.DATA)) {
+        } else if (peekAndMatch(Token.TokenType.DATA)) { // TODO won't execute, treated as WORD, not LABEL
             return dataStatement();
         } else if (peekAndMatch(Token.TokenType.PRINT)) {
             return printStatement();
-        } else if (peekAndMatch(Token.TokenType.INPUT)) {
+        } else if (peekAndMatch(Token.TokenType.INPUT)) { // TODO won't execute, treated as WORD, not LABEL
             return inputStatement();
-        } else if (peekAndMatch(Token.TokenType.WORD)) {
+        } else if (peekAndMatch(Token.TokenType.WORD)) { // TODO won't execute, treated as WORD, not LABEL
             return assignment();
         }
         return null;

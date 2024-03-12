@@ -709,6 +709,7 @@ public class ParserTest {
     @Test
     public void dataStatement_SingleVariable_ReturnsDataNode() throws IOException {
         ProgramNode testProgram = parseStatements("data x");
+        // TODO, but "DATA" is a WORD, not a LABEL
 
         List<Node> nodes = new ArrayList<>();
         nodes.add(new VariableNode("x"));
