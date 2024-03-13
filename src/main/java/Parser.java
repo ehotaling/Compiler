@@ -386,6 +386,10 @@ public List<Node> printList() {
         return tokenOpt.isPresent() && tokenOpt.get().getTokenType() == type;
     }
 
+    /**
+     * Wrapper method to peek the next token (Used for logging)
+     * @return
+     */
     private Token peek() {
         return tokenManager.peek(0).orElse(null);
     }
