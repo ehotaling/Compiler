@@ -124,20 +124,29 @@ public class Parser {
         // TODO "INPUT – expects a string, then any number of variables. Prints the string, then waits for the user to enter the inputs, comma separated. "
         // ^^^ I think this is is something that we can handle while parsing
         if (!matchAndRemove(Token.TokenType.INPUT)) {
-            throw new IllegalArgumentException("Invalid Input Statement");
+            throw new IllegalArgumentException(String.format("Invalid Input Statement: %s", tokenManager.peek(0).get()));
         }
-        // TODO Node =
-        List<VariableNode> variables = new ArrayList<>();
-        do {
-            Node node = factor();
-            // index 0
-            if (node instanceof VariableNode) {
-                variables.add((VariableNode) node); // TODO first iteration needs to be a string literal (VariableNode(STRINGLITERAL))
+
+        List<Node> inputs = new ArrayList<>();
+        // First argument should be a string literal
+        if (!peekAndMatch(Token.TokenType.STRINGLITERAL)) {
+            throw new IllegalArgumentException(String.format("Invalid Input Statement: %s", tokenManager.peek(0).get()));
+        } else {
+            inputs.add(new StringNode(tokenManager.matchAndRemove(Token.TokenType.STRINGLITERAL).get().getVal()));
+        }
+
+        while (!peekAndMatch(Token.TokenType.ENDOFLINE)) {
+            if (peekAndMatch(Token.TokenType.COMMA)) {
+                matchAndRemove(Token.TokenType.COMMA);
+                continue;
+            }
+            if (peekAndMatch(Token.TokenType.WORD)) {
+                inputs.add(new VariableNode(tokenManager.matchAndRemove(Token.TokenType.WORD).get().getVal()));
             } else {
                 throw new IllegalArgumentException("Invalid Input Statement");
             }
         } while (matchAndRemove(Token.TokenType.COMMA));
-        return new InputNode(variables);
+        return new InputNode(inputs);
     }
 
 
@@ -151,7 +160,7 @@ public class Parser {
      */
     public StatementNode readStatement() {
         // TODO If the data types don’t match correctly (like the $ was on the wrong variable), that is a runtime error.
-        // ^^^ I think this is handled when interpreting, so probably don't need to handle that
+        // ^^^ I think this is handled when interpreting, so probably don't need to handle that here
         if (!matchAndRemove(Token.TokenType.READ)) {
             throw new IllegalArgumentException("Invalid Read Statement");
         }
@@ -182,7 +191,7 @@ public class Parser {
         List<Node> data = new ArrayList<>();
         do {
             Node node = factor();
-            if (node instanceof VariableNode || node instanceof IntegerNode || node instanceof FloatNode) {
+            if (node instanceof VariableNode || node instanceof IntegerNode || node instanceof FloatNode || node instanceof StringNode) {
                 data.add(node);
             } else {
                 throw new IllegalArgumentException("Invalid token in Data Statement");
@@ -306,15 +315,9 @@ public List<Node> printList() {
             return new VariableNode(wordTokenOpt.get().getVal());
         }
 
-        // TODO do we need another node for a string literal? Because myString% is a variable,
-        //  but we can have "string literal %str" in the code?
         Optional<Token> stringLiteralOpt = tokenManager.matchAndRemove(Token.TokenType.STRINGLITERAL);
         if (stringLiteralOpt.isPresent()) {
-            // NOTE: We'll have to add logic in the interpreter to validate the type of variable ('%', '$', etc)
-            // myVar$ = "someString"
-            // myVar% = Float()
-            // myVar = Int()
-            return new VariableNode(stringLiteralOpt.get().getVal());
+            return new StringNode(stringLiteralOpt.get().getVal());
         }
 
         boolean isNegative = matchAndRemove(Token.TokenType.MINUS);

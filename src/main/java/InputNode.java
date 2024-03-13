@@ -2,13 +2,13 @@ import java.util.List;
 import java.util.Objects;
 
 public class InputNode extends StatementNode {
-    private List<VariableNode> variables;
+    private List<Node> variables;
 
-    public InputNode(List<VariableNode> variables) {
+    public InputNode(List<Node> variables) {
         this.variables = variables;
     }
 
-    public List<VariableNode> getVariables() {
+    public List<Node> getVariables() {
         return variables;
     }
 
