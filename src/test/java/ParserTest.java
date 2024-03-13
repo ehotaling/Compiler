@@ -765,9 +765,9 @@ public class ParserTest {
         ProgramNode program = new Parser(tokens).parse();
         System.out.println(program);
 
-//        LinkedList<Token> tokens2 =  lexer.lex("src/test/resources/read_test.txt");
-//        ProgramNode program2 = new Parser(tokens).parseExpressions();
-//        System.out.println(program2);
+        LinkedList<Token> tokens2 = lexer.lex("src/test/resources/read_test.txt");
+        ProgramNode program2 = new Parser(tokens).parse();
+        System.out.println(program2);
     }
 
 
