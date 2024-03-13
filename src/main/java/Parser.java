@@ -100,13 +100,13 @@ public class Parser {
 
         if (peekAndMatch(Token.TokenType.READ)) {
             return readStatement();
-        } else if (peekAndMatch(Token.TokenType.DATA)) { // TODO won't execute, treated as WORD, not LABEL
+        } else if (peekAndMatch(Token.TokenType.DATA)) {
             return dataStatement();
         } else if (peekAndMatch(Token.TokenType.PRINT)) {
             return printStatement();
-        } else if (peekAndMatch(Token.TokenType.INPUT)) { // TODO won't execute, treated as WORD, not LABEL
+        } else if (peekAndMatch(Token.TokenType.INPUT)) {
             return inputStatement();
-        } else if (peekAndMatch(Token.TokenType.WORD)) { // TODO won't execute, treated as WORD, not LABEL
+        } else if (peekAndMatch(Token.TokenType.WORD)) {
             return assignment();
         }
         return null;
@@ -145,7 +145,7 @@ public class Parser {
             } else {
                 throw new IllegalArgumentException("Invalid Input Statement");
             }
-        } while (matchAndRemove(Token.TokenType.COMMA));
+        }
         return new InputNode(inputs);
     }
 
@@ -345,7 +345,8 @@ public List<Node> printList() {
 
         Optional<Token> numberTokenOpt = tokenManager.matchAndRemove(Token.TokenType.NUMBER);
         if (numberTokenOpt.isEmpty()) {
-            throw new IllegalArgumentException("Unexpected end of factor");
+            Token nextToken = tokenManager.peek(0).orElse(null);
+            throw new IllegalArgumentException("Unexpected end of factor. Next token: " + nextToken);
         }
 
         return number(numberTokenOpt.get(), isNegative);
