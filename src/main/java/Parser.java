@@ -388,7 +388,7 @@ public List<Node> printList() {
 
     /**
      * Wrapper method to peek the next token (Used for logging)
-     * @return
+     * @return Token or null
      */
     private Token peek() {
         return tokenManager.peek(0).orElse(null);
