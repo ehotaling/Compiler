@@ -121,14 +121,16 @@ public class Parser {
      * @return An InputNode representing the parsed input statement.
      */
     public StatementNode inputStatement() {
-        if (!matchAndRemove(Token.TokenType.INPUT)) {
-            throw new IllegalArgumentException(String.format("Invalid Input Statement: %s", tokenManager.peek(0).get()));
+        if (!peekAndMatch(Token.TokenType.INPUT)) {
+            throw new IllegalArgumentException(String.format("Invalid Input Statement: %s", peek()));
+        } else {
+            matchAndRemove(Token.TokenType.INPUT);
         }
 
         List<Node> inputs = new ArrayList<>();
         // First argument should be a string literal
         if (!peekAndMatch(Token.TokenType.STRINGLITERAL)) {
-            throw new IllegalArgumentException(String.format("Invalid Input Statement: %s", tokenManager.peek(0).get()));
+            throw new IllegalArgumentException(String.format("Invalid Input Statement: %s", peek()));
         } else {
             inputs.add(new StringNode(tokenManager.matchAndRemove(Token.TokenType.STRINGLITERAL).get().getVal()));
         }
@@ -141,7 +143,7 @@ public class Parser {
             if (peekAndMatch(Token.TokenType.WORD)) {
                 inputs.add(new VariableNode(tokenManager.matchAndRemove(Token.TokenType.WORD).get().getVal()));
             } else {
-                throw new IllegalArgumentException("Invalid Input Statement");
+                throw new IllegalArgumentException(String.format("Invalid token in Read Statement: %s", peek()));
             }
         }
         return new InputNode(inputs);
@@ -166,7 +168,7 @@ public class Parser {
             if (node instanceof VariableNode) {
                 variables.add((VariableNode) node);
             } else {
-                throw new IllegalArgumentException("Invalid token in Read Statement");
+                throw new IllegalArgumentException(String.format("Invalid token in Read Statement: %s", node));
             }
         } while (matchAndRemove(Token.TokenType.COMMA));
         return new ReadNode(variables);
@@ -190,7 +192,7 @@ public class Parser {
             if (node instanceof VariableNode || node instanceof IntegerNode || node instanceof FloatNode || node instanceof StringNode) {
                 data.add(node);
             } else {
-                throw new IllegalArgumentException("Invalid token in Data Statement");
+                throw new IllegalArgumentException(String.format("Invalid token in Data Statement: %s", node));
             }
         } while (matchAndRemove(Token.TokenType.COMMA));
         return new DataNode(data);
@@ -341,8 +343,7 @@ public List<Node> printList() {
 
         Optional<Token> numberTokenOpt = tokenManager.matchAndRemove(Token.TokenType.NUMBER);
         if (numberTokenOpt.isEmpty()) {
-            Token nextToken = tokenManager.peek(0).orElse(null);
-            throw new IllegalArgumentException("Unexpected end of factor. Next token: " + nextToken);
+            throw new IllegalArgumentException(String.format("Unexpected end of factor: %s", peek()));
         }
 
         return number(numberTokenOpt.get(), isNegative);
@@ -383,6 +384,10 @@ public List<Node> printList() {
     private boolean peekAndMatch(Token.TokenType type) {
         Optional<Token> tokenOpt = tokenManager.peek(0);
         return tokenOpt.isPresent() && tokenOpt.get().getTokenType() == type;
+    }
+
+    private Token peek() {
+        return tokenManager.peek(0).orElse(null);
     }
 }
 
