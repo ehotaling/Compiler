@@ -97,16 +97,15 @@ public class Parser {
      * @return A StatementNode representing the parsed statement, or null if the next token is neither a PRINT nor a WORD token.
      */
     public StatementNode statement() {
-
         if (peekAndMatch(Token.TokenType.READ)) {
             return readStatement();
-        } else if (peekAndMatch(Token.TokenType.DATA)) { // TODO won't execute, treated as WORD, not LABEL
+        } else if (peekAndMatch(Token.TokenType.DATA)) {
             return dataStatement();
         } else if (peekAndMatch(Token.TokenType.PRINT)) {
             return printStatement();
-        } else if (peekAndMatch(Token.TokenType.INPUT)) { // TODO won't execute, treated as WORD, not LABEL
+        } else if (peekAndMatch(Token.TokenType.INPUT)) {
             return inputStatement();
-        } else if (peekAndMatch(Token.TokenType.WORD)) { // TODO won't execute, treated as WORD, not LABEL
+        } else if (peekAndMatch(Token.TokenType.WORD)) {
             return assignment();
         }
         return null;
@@ -121,23 +120,25 @@ public class Parser {
      * @return An InputNode representing the parsed input statement.
      */
     public StatementNode inputStatement() {
-        // TODO "INPUT – expects a string, then any number of variables. Prints the string, then waits for the user to enter the inputs, comma separated. "
-        // ^^^ I think this is is something that we can handle while parsing
         if (!matchAndRemove(Token.TokenType.INPUT)) {
             throw new IllegalArgumentException("Invalid Input Statement");
         }
-        // TODO Node =
-        List<VariableNode> variables = new ArrayList<>();
-        do {
-            Node node = factor();
-            // index 0
-            if (node instanceof VariableNode) {
-                variables.add((VariableNode) node); // TODO first iteration needs to be a string literal (VariableNode(STRINGLITERAL))
+        List<Node> inputs = new ArrayList<>();
+        if (peekAndMatch(Token.TokenType.STRINGLITERAL)) {
+            inputs.add(new StringNode(tokenManager.matchAndRemove(Token.TokenType.STRINGLITERAL).get().getVal()));
+        } else if (peekAndMatch(Token.TokenType.WORD)) {
+            inputs.add(new VariableNode(tokenManager.matchAndRemove(Token.TokenType.WORD).get().getVal()));
+        } else {
+            throw new IllegalArgumentException("Invalid Input Statement");
+        }
+        while (matchAndRemove(Token.TokenType.COMMA)) {
+            if (peekAndMatch(Token.TokenType.WORD)) {
+                inputs.add(new VariableNode(tokenManager.matchAndRemove(Token.TokenType.WORD).get().getVal()));
             } else {
                 throw new IllegalArgumentException("Invalid Input Statement");
             }
-        } while (matchAndRemove(Token.TokenType.COMMA));
-        return new InputNode(variables);
+        }
+        return new InputNode(inputs);
     }
 
 
@@ -182,7 +183,7 @@ public class Parser {
         List<Node> data = new ArrayList<>();
         do {
             Node node = factor();
-            if (node instanceof VariableNode || node instanceof IntegerNode || node instanceof FloatNode) {
+            if (node instanceof VariableNode || node instanceof IntegerNode || node instanceof FloatNode || node instanceof StringNode) {
                 data.add(node);
             } else {
                 throw new IllegalArgumentException("Invalid token in Data Statement");
@@ -306,15 +307,9 @@ public List<Node> printList() {
             return new VariableNode(wordTokenOpt.get().getVal());
         }
 
-        // TODO do we need another node for a string literal? Because myString% is a variable,
-        //  but we can have "string literal %str" in the code?
         Optional<Token> stringLiteralOpt = tokenManager.matchAndRemove(Token.TokenType.STRINGLITERAL);
         if (stringLiteralOpt.isPresent()) {
-            // NOTE: We'll have to add logic in the interpreter to validate the type of variable ('%', '$', etc)
-            // myVar$ = "someString"
-            // myVar% = Float()
-            // myVar = Int()
-            return new VariableNode(stringLiteralOpt.get().getVal());
+            return new StringNode(stringLiteralOpt.get().getVal());
         }
 
         boolean isNegative = matchAndRemove(Token.TokenType.MINUS);
@@ -326,7 +321,6 @@ public List<Node> printList() {
             }
 
             if (isNegative) {
-                // wrap the original expression in a new Term (-1 * expr) to conform to the original grammar
                 innerExpr = new ExpressionNode(
                         new TermNode(
                                 new MathOpNode(
@@ -342,7 +336,8 @@ public List<Node> printList() {
 
         Optional<Token> numberTokenOpt = tokenManager.matchAndRemove(Token.TokenType.NUMBER);
         if (numberTokenOpt.isEmpty()) {
-            throw new IllegalArgumentException("Unexpected end of factor");
+            Token nextToken = tokenManager.peek(0).orElse(null);
+            throw new IllegalArgumentException("Unexpected end of factor. Next token: " + nextToken);
         }
 
         return number(numberTokenOpt.get(), isNegative);

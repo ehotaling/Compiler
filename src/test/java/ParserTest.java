@@ -552,7 +552,7 @@ public class ParserTest {
         // TODO ensure the first node is a stringliteral
         ProgramNode testProgram = parseStatements("input x");
 
-        List<VariableNode> inputs = new ArrayList<>();
+        List<Node> inputs = new ArrayList<>();
         inputs.add(new VariableNode("x"));
 
         StatementNode statement = new InputNode(inputs);
@@ -569,7 +569,7 @@ public class ParserTest {
     public void testInputStatement_MultipleInputs() throws IOException {
         ProgramNode testProgram = parseStatements("input x, y, z");
 
-        List<VariableNode> inputs = new ArrayList<>();
+        List<Node> inputs = new ArrayList<>();
         inputs.add(new VariableNode("x"));
         inputs.add(new VariableNode("y"));
         inputs.add(new VariableNode("z"));
@@ -595,7 +595,7 @@ public class ParserTest {
     public void testInputStatement_WhitespaceBetweenVariablesAndCommas() throws IOException {
         ProgramNode testProgram = parseStatements("input x , y , z");
 
-        List<VariableNode> inputs = new ArrayList<>();
+        List<Node> inputs = new ArrayList<>();
         inputs.add(new VariableNode("x"));
         inputs.add(new VariableNode("y"));
         inputs.add(new VariableNode("z"));
@@ -765,9 +765,9 @@ public class ParserTest {
         ProgramNode program = new Parser(tokens).parseExpressions();
         System.out.println(program);
 
-        LinkedList<Token> tokens2 =  lexer.lex("src/test/resources/read_test.txt");
-        ProgramNode program2 = new Parser(tokens).parseExpressions();
-        System.out.println(program2);
+//        LinkedList<Token> tokens2 =  lexer.lex("src/test/resources/read_test.txt");
+//        ProgramNode program2 = new Parser(tokens).parseExpressions();
+//        System.out.println(program2);
     }
 
 

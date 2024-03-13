@@ -1,1 +1,1 @@
-INPUT “What is your name and age?”, name$, age
+INPUT "What is your name and age?", name$, age
