@@ -758,17 +758,31 @@ public class ParserTest {
     }
 
     @Test
-    public void testPrintInputRead() throws IOException {
-        // TODO
-        // read_test.txt
+    public void testInput() throws IOException {
         LinkedList<Token> tokens =  lexer.lex("src/test/resources/input_test.txt");
         ProgramNode program = new Parser(tokens).parse();
         System.out.println(program);
+    }
 
-        LinkedList<Token> tokens2 = lexer.lex("src/test/resources/read_test.txt");
+    @Test
+    public void testRead() throws IOException {
+        LinkedList<Token> tokens = lexer.lex("src/test/resources/read_test.txt");
         ProgramNode program2 = new Parser(tokens).parse();
         System.out.println(program2);
+
     }
+
+    @Test
+    public void testPrint() throws IOException {
+        LinkedList<Token> tokens = lexer.lex("src/test/resources/print_test.txt");
+        ProgramNode program3 = new Parser(tokens).parse();
+        System.out.println(program3);
+
+
+    }
+
+
+
 
 
 }
