@@ -84,7 +84,6 @@ public class Lexer {
      * The keys represent the words, and the values represent the TokenType enum for the word.
      */
     private void populateKnownWords() {
-        // TODO, I don't think any of this was implemented and should definitely be completed before more work is done on the parser
         knownWords.put("if", Token.TokenType.IF);
         knownWords.put("print", Token.TokenType.PRINT);
         knownWords.put("read", Token.TokenType.READ);

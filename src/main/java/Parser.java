@@ -97,6 +97,7 @@ public class Parser {
      * @return A StatementNode representing the parsed statement, or null if the next token is neither a PRINT nor a WORD token.
      */
     public StatementNode statement() {
+
         if (peekAndMatch(Token.TokenType.READ)) {
             return readStatement();
         } else if (peekAndMatch(Token.TokenType.DATA)) {
@@ -120,22 +121,29 @@ public class Parser {
      * @return An InputNode representing the parsed input statement.
      */
     public StatementNode inputStatement() {
-        if (!matchAndRemove(Token.TokenType.INPUT)) {
-            throw new IllegalArgumentException("Invalid Input Statement");
-        }
-        List<Node> inputs = new ArrayList<>();
-        if (peekAndMatch(Token.TokenType.STRINGLITERAL)) {
-            inputs.add(new StringNode(tokenManager.matchAndRemove(Token.TokenType.STRINGLITERAL).get().getVal()));
-        } else if (peekAndMatch(Token.TokenType.WORD)) {
-            inputs.add(new VariableNode(tokenManager.matchAndRemove(Token.TokenType.WORD).get().getVal()));
+        if (!peekAndMatch(Token.TokenType.INPUT)) {
+            throw new IllegalArgumentException(String.format("Invalid Input Statement: %s", peek()));
         } else {
-            throw new IllegalArgumentException("Invalid Input Statement");
+            matchAndRemove(Token.TokenType.INPUT);
         }
-        while (matchAndRemove(Token.TokenType.COMMA)) {
+
+        List<Node> inputs = new ArrayList<>();
+        // First argument should be a string literal
+        if (!peekAndMatch(Token.TokenType.STRINGLITERAL)) {
+            throw new IllegalArgumentException(String.format("Invalid Input Statement: %s", peek()));
+        } else {
+            inputs.add(new StringNode(tokenManager.matchAndRemove(Token.TokenType.STRINGLITERAL).get().getVal()));
+        }
+
+        while (!peekAndMatch(Token.TokenType.ENDOFLINE)) {
+            if (peekAndMatch(Token.TokenType.COMMA)) {
+                matchAndRemove(Token.TokenType.COMMA);
+                continue;
+            }
             if (peekAndMatch(Token.TokenType.WORD)) {
                 inputs.add(new VariableNode(tokenManager.matchAndRemove(Token.TokenType.WORD).get().getVal()));
             } else {
-                throw new IllegalArgumentException("Invalid Input Statement");
+                throw new IllegalArgumentException(String.format("Invalid token in Read Statement: %s", peek()));
             }
         }
         return new InputNode(inputs);
@@ -151,8 +159,6 @@ public class Parser {
      * @return A ReadNode representing the parsed read statement.
      */
     public StatementNode readStatement() {
-        // TODO If the data types don’t match correctly (like the $ was on the wrong variable), that is a runtime error.
-        // ^^^ I think this is handled when interpreting, so probably don't need to handle that
         if (!matchAndRemove(Token.TokenType.READ)) {
             throw new IllegalArgumentException("Invalid Read Statement");
         }
@@ -162,7 +168,7 @@ public class Parser {
             if (node instanceof VariableNode) {
                 variables.add((VariableNode) node);
             } else {
-                throw new IllegalArgumentException("Invalid token in Read Statement");
+                throw new IllegalArgumentException(String.format("Invalid token in Read Statement: %s", node));
             }
         } while (matchAndRemove(Token.TokenType.COMMA));
         return new ReadNode(variables);
@@ -186,7 +192,7 @@ public class Parser {
             if (node instanceof VariableNode || node instanceof IntegerNode || node instanceof FloatNode || node instanceof StringNode) {
                 data.add(node);
             } else {
-                throw new IllegalArgumentException("Invalid token in Data Statement");
+                throw new IllegalArgumentException(String.format("Invalid token in Data Statement: %s", node));
             }
         } while (matchAndRemove(Token.TokenType.COMMA));
         return new DataNode(data);
@@ -321,6 +327,7 @@ public List<Node> printList() {
             }
 
             if (isNegative) {
+                // wrap the original expression in a new Term (-1 * expr) to conform to the original grammar
                 innerExpr = new ExpressionNode(
                         new TermNode(
                                 new MathOpNode(
@@ -336,8 +343,7 @@ public List<Node> printList() {
 
         Optional<Token> numberTokenOpt = tokenManager.matchAndRemove(Token.TokenType.NUMBER);
         if (numberTokenOpt.isEmpty()) {
-            Token nextToken = tokenManager.peek(0).orElse(null);
-            throw new IllegalArgumentException("Unexpected end of factor. Next token: " + nextToken);
+            throw new IllegalArgumentException(String.format("Unexpected end of factor: %s", peek()));
         }
 
         return number(numberTokenOpt.get(), isNegative);
@@ -378,6 +384,14 @@ public List<Node> printList() {
     private boolean peekAndMatch(Token.TokenType type) {
         Optional<Token> tokenOpt = tokenManager.peek(0);
         return tokenOpt.isPresent() && tokenOpt.get().getTokenType() == type;
+    }
+
+    /**
+     * Wrapper method to peek the next token (Used for logging)
+     * @return Token or null
+     */
+    private Token peek() {
+        return tokenManager.peek(0).orElse(null);
     }
 }
 
