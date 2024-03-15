@@ -690,13 +690,11 @@ public class ParserTest {
     }
 
     @Test
-    public void dataStatement_ValidTokens_ReturnsDataNode() throws IOException {
-        ProgramNode testProgram = parseStatements("data x, y, z");
+    public void dataStatement_StringLiteral_ReturnsDataNode() throws IOException {
+        ProgramNode testProgram = parseStatements("data \"x\"");
 
         List<Node> nodes = new ArrayList<>();
-        nodes.add(new VariableNode("x"));
-        nodes.add(new VariableNode("y"));
-        nodes.add(new VariableNode("z"));
+        nodes.add(new StringNode("x"));
 
         StatementNode statement = new DataNode(nodes);
         StatementsNode statements = new StatementsNode();
@@ -709,12 +707,28 @@ public class ParserTest {
     }
 
     @Test
-    public void dataStatement_SingleVariable_ReturnsDataNode() throws IOException {
-        ProgramNode testProgram = parseStatements("data x");
-        // TODO, but "DATA" is a WORD, not a LABEL
+    public void dataStatement_IntegerLiteral_ReturnsDataNode() throws IOException {
+        ProgramNode testProgram = parseStatements("data 1");
 
         List<Node> nodes = new ArrayList<>();
-        nodes.add(new VariableNode("x"));
+        nodes.add(new IntegerNode(1));
+
+        StatementNode statement = new DataNode(nodes);
+        StatementsNode statements = new StatementsNode();
+        statements.addStatement(statement);
+
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addStatements(statements);
+
+        assertEquals(expectedProgram, testProgram);
+    }
+
+    @Test
+    public void dataStatement_FloatLiteral_ReturnsDataNode() throws IOException {
+        ProgramNode testProgram = parseStatements("data 2.5");
+
+        List<Node> nodes = new ArrayList<>();
+        nodes.add(new FloatNode(2.5f));
 
         StatementNode statement = new DataNode(nodes);
         StatementsNode statements = new StatementsNode();
@@ -734,30 +748,61 @@ public class ParserTest {
     }
 
     @Test
-    public void dataStatement_InvalidTokens_ThrowsException() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            parseStatements("data x, 123, z");
-        });
+    public void dataStatement_SingleInteger_ReturnsDataNodeWithSingleInteger() throws IOException {
+        ProgramNode testProgram = parseStatements("data 5");
+        List<Node> nodes = new ArrayList<>();
+        nodes.add(new IntegerNode(5));
+        StatementNode dataStatement = new DataNode(nodes);
+        StatementsNode statements = new StatementsNode();
+        statements.addStatement(dataStatement);
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addStatements(statements);
+        assertEquals(expectedProgram, testProgram);
     }
 
     @Test
-    public void dataStatement_WhitespaceBetweenVariablesAndCommas_ReturnsDataNode() throws IOException {
-        ProgramNode testProgram = parseStatements("data x , y , z");
-
+    public void dataStatement_MultipleIntegers_ReturnsDataNodeWithAllIntegers() throws IOException {
+        ProgramNode testProgram = parseStatements("data 5, 10, 20");
         List<Node> nodes = new ArrayList<>();
-        nodes.add(new VariableNode("x"));
-        nodes.add(new VariableNode("y"));
-        nodes.add(new VariableNode("z"));
-
-        StatementNode statement = new DataNode(nodes);
+        nodes.add(new IntegerNode(5));
+        nodes.add(new IntegerNode(10));
+        nodes.add(new IntegerNode(20));
+        StatementNode dataStatement = new DataNode(nodes);
         StatementsNode statements = new StatementsNode();
-        statements.addStatement(statement);
-
+        statements.addStatement(dataStatement);
         ProgramNode expectedProgram = new ProgramNode();
         expectedProgram.addStatements(statements);
-
         assertEquals(expectedProgram, testProgram);
     }
+
+    @Test
+    public void dataStatement_SingleFloat_ReturnsDataNodeWithSingleFloat() throws IOException {
+        ProgramNode testProgram = parseStatements("data 3.14159");
+        List<Node> nodes = new ArrayList<>();
+        nodes.add(new FloatNode(3.14159f));
+        StatementNode dataStatement = new DataNode(nodes);
+        StatementsNode statements = new StatementsNode();
+        statements.addStatement(dataStatement);
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addStatements(statements);
+        assertEquals(expectedProgram, testProgram);
+    }
+
+    @Test
+    public void dataStatement_MixedValues_ReturnsDataNodeWithAllValues() throws IOException {
+        ProgramNode testProgram = parseStatements("data 5, \"hello\", 3.14159");
+        List<Node> nodes = new ArrayList<>();
+        nodes.add(new IntegerNode(5));
+        nodes.add(new StringNode("hello"));
+        nodes.add(new FloatNode(3.14159f));
+        StatementNode dataStatement = new DataNode(nodes);
+        StatementsNode statements = new StatementsNode();
+        statements.addStatement(dataStatement);
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addStatements(statements);
+        assertEquals(expectedProgram, testProgram);
+    }
+
 
     @Test
     public void testInput() throws IOException {
@@ -773,19 +818,6 @@ public class ParserTest {
         System.out.println(program2);
 
     }
-
-    @Test
-    public void testPrint() throws IOException {
-        LinkedList<Token> tokens = lexer.lex("src/test/resources/print_test.txt");
-        ProgramNode program3 = new Parser(tokens).parse();
-        System.out.println(program3);
-
-
-    }
-
-
-
-
 
 }
 

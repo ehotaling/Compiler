@@ -189,7 +189,11 @@ public class Parser {
         List<Node> data = new ArrayList<>();
         do {
             Node node = factor();
-            if (node instanceof VariableNode || node instanceof IntegerNode || node instanceof FloatNode || node instanceof StringNode) {
+            //Unwrap the FactorNode to get the actual inner node
+            if (node instanceof FactorNode) {
+                node = ((FactorNode) node).getInnerNode();
+            }
+            if (node instanceof IntegerNode || node instanceof FloatNode || node instanceof StringNode) {
                 data.add(node);
             } else {
                 throw new IllegalArgumentException(String.format("Invalid token in Data Statement: %s", node));

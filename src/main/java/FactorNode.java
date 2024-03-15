@@ -13,6 +13,10 @@ public class FactorNode extends Node {
         return String.format("FactorNode: {%s}", node);
     }
 
+    public Node getInnerNode() {
+        return node;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
