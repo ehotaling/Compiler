@@ -90,15 +90,18 @@ public class Parser {
 
     /**
      * This method is responsible for parsing a statement from the token stream.
-     * It first checks if the next token is a PRINT token. If it is, it calls the printStatement() method to parse a print statement.
-     * If the next token is a WORD token, it calls the assignment() method to parse an assignment statement.
-     * If the next token is neither a PRINT nor a WORD token, it returns null.
      *
-     * @return A StatementNode representing the parsed statement, or null if the next token is neither a PRINT nor a WORD token.
+     * It checks the type of the next token and calls the corresponding method to parse and create the corresponding statement node.
+     * If the next token does not match any statement type, it returns null.
+     *
+     * @return The parsed StatementNode representing the statement, or null if the next token does not match any statement type.
      */
     public StatementNode statement() {
-
-        if (peekAndMatch(Token.TokenType.READ)) {
+        if (peekAndMatch(Token.TokenType.LABEL)) {
+            String label = tokenManager.matchAndRemove(Token.TokenType.LABEL).get().getVal();
+            StatementNode statementNode = statement();
+            return new LabeledStatementNode(label, statementNode);
+        } else if (peekAndMatch(Token.TokenType.READ)) {
             return readStatement();
         } else if (peekAndMatch(Token.TokenType.DATA)) {
             return dataStatement();
