@@ -386,10 +386,14 @@ public List<Node> printList() {
     }
 
     /**
-     * Parses and generates an ExpressionNode from the given tokens. An ExpressionNode represents an expression in the grammar.
-     * It evaluates the input tokens and creates a binary expression tree.
+     * This method is responsible for parsing an expression from the token stream.
+     * It first checks if the next token is a function name. If it is, it calls the functionInvocation() method to parse the function invocation.
+     * If the next token is not a function name, it calls the term() method to parse a term.
+     * It then enters a loop where it checks if the next token is a PLUS or MINUS token. If it is, it creates a new MathOpNode with the parsed term and the term parsed from the next call to the term() method.
+     * The loop continues until the next token is not a PLUS or MINUS token.
+     * Finally, it returns a new ExpressionNode with the parsed term.
      *
-     * @return The ExpressionNode representing the root of the expression tree.
+     * @return An ExpressionNode representing the parsed expression.
      */
     public Node expression() {
         if (peekAndMatch(Token.TokenType.FUNCTIONNAME)) {
@@ -413,14 +417,15 @@ public List<Node> printList() {
             return null;
         }
         String functionName = tokenManager.matchAndRemove(Token.TokenType.FUNCTIONNAME).get().getVal();
-        FunctionNode functionNode = new FunctionNode(functionName);
         if (!matchAndRemove(Token.TokenType.LPAREN)) {
             throw new IllegalArgumentException("Expected LPAREN token");
         }
-        functionNode.setParameters(parameterList());
+        List<Node> parameters = parameterList();
         if (!matchAndRemove(Token.TokenType.RPAREN)) {
             throw new IllegalArgumentException("Expected RPAREN token");
         }
+        FunctionNode functionNode = new FunctionNode(functionName);
+        functionNode.setParameters(parameters);
         return functionNode;
     }
 

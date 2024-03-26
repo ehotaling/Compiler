@@ -144,8 +144,14 @@ public class Lexer {
             return new Token(Token.TokenType.LABEL, token, lineNo,
                     position - wordBuilder.length());
         } else { // If not, create a new WORD Token with the word as its value.
-            return new Token(Token.TokenType.WORD, token, lineNo,
-                    position - wordBuilder.length());
+            // Check if the next character is an opening parenthesis
+            if (!handler.isDone() && handler.peek(0) == '(') {
+                return new Token(Token.TokenType.FUNCTIONNAME, token, lineNo,
+                        position - wordBuilder.length());
+            } else {
+                return new Token(Token.TokenType.WORD, token, lineNo,
+                        position - wordBuilder.length());
+            }
         }
     }
 

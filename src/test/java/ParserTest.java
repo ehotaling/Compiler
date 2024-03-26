@@ -843,6 +843,44 @@ public class ParserTest {
         assertEquals(expectedProgram, actualProgram, "The parsed program did not match the expected program.");
     }
 
+    @Test
+    public void expressionWithFunctionInvocation_ReturnsFunctionNode() throws IOException {
+        ProgramNode testProgram = parseExpressions("random()");
+
+        FunctionNode expectedFunction = new FunctionNode("random");
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addExpression(expectedFunction);
+
+        assertEquals(expectedProgram, testProgram);
+    }
+
+    @Test
+    public void testFunctionNameToken() {
+        Lexer lexer = new Lexer();
+        LinkedList<Token> tokens = lexer.lex("src/test/resources/random_test.txt");
+
+        for (Token token : tokens) {
+            System.out.println(token);
+        }
+        // Check the size of the tokens list
+        assertEquals(4, tokens.size());
+
+        // Check the type of the first token
+        assertEquals(Token.TokenType.FUNCTIONNAME, tokens.get(0).getTokenType());
+
+        // Check the value of the first token
+        assertEquals("random", tokens.get(0).getVal());
+
+        // Check the type of the second token
+        assertEquals(Token.TokenType.LPAREN, tokens.get(1).getTokenType());
+
+        // Check the type of the third token
+        assertEquals(Token.TokenType.RPAREN, tokens.get(2).getTokenType());
+
+        // Check the type of the fourth token
+        assertEquals(Token.TokenType.ENDOFLINE, tokens.get(3).getTokenType());
+    }
+
 }
 
 
