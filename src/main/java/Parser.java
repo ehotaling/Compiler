@@ -161,7 +161,7 @@ public class Parser {
     }
 
     public BooleanExpressionNode booleanExpression() {
-        ExpressionNode left = expression();
+        ExpressionNode left = (ExpressionNode) expression();
         BooleanExpressionNode.OPERATOR operator;
         if (matchAndRemove(Token.TokenType.GREATERTHAN)) {
             operator = BooleanExpressionNode.OPERATOR.GREATERTHAN;
@@ -178,7 +178,7 @@ public class Parser {
         } else {
             throw new IllegalArgumentException("Expected a boolean operator");
         }
-        ExpressionNode right = expression();
+        ExpressionNode right = (ExpressionNode) expression();
         return new BooleanExpressionNode(left, operator, right);
     }
 
@@ -186,15 +186,15 @@ public class Parser {
         matchAndRemove(Token.TokenType.FOR);
         VariableNode variable = (VariableNode) factor();
         matchAndRemove(Token.TokenType.EQUALS);
-        ExpressionNode initialValue = expression();
+        ExpressionNode initialValue = (ExpressionNode) expression();
         matchAndRemove(Token.TokenType.TO);
-        ExpressionNode limit = expression();
+        ExpressionNode limit = (ExpressionNode) expression();
         ExpressionNode increment;
         if (matchAndRemove(Token.TokenType.STEP)) {
             if (!peekAndMatch(Token.TokenType.NUMBER)) {
                 throw new IllegalArgumentException("Expected a number after STEP");
             }
-            increment = expression();
+            increment = (ExpressionNode) expression();
         } else {
             increment = new ExpressionNode(new TermNode(new FactorNode(new IntegerNode(1))));
         }
@@ -391,7 +391,10 @@ public List<Node> printList() {
      *
      * @return The ExpressionNode representing the root of the expression tree.
      */
-    public ExpressionNode expression() {
+    public Node expression() {
+        if (peekAndMatch(Token.TokenType.FUNCTIONNAME)) {
+            return functionInvocation();
+        }
         Node term = term();
         while (true) {
             if (matchAndRemove(Token.TokenType.PLUS)) {
@@ -403,6 +406,39 @@ public List<Node> printList() {
             }
         }
         return new ExpressionNode(term);
+    }
+
+    public FunctionNode functionInvocation() {
+        if (!peekAndMatch(Token.TokenType.FUNCTIONNAME)) {
+            return null;
+        }
+        String functionName = tokenManager.matchAndRemove(Token.TokenType.FUNCTIONNAME).get().getVal();
+        FunctionNode functionNode = new FunctionNode(functionName);
+        if (!matchAndRemove(Token.TokenType.LPAREN)) {
+            throw new IllegalArgumentException("Expected LPAREN token");
+        }
+        functionNode.setParameters(parameterList());
+        if (!matchAndRemove(Token.TokenType.RPAREN)) {
+            throw new IllegalArgumentException("Expected RPAREN token");
+        }
+        return functionNode;
+    }
+
+    public List<Node> parameterList() {
+        List<Node> parameters = new ArrayList<>();
+        while (!peekAndMatch(Token.TokenType.RPAREN)) {
+            if (peekAndMatch(Token.TokenType.STRINGLITERAL)) {
+                parameters.add(new StringNode(tokenManager.matchAndRemove(Token.TokenType.STRINGLITERAL).get().getVal()));
+            } else {
+                parameters.add(expression());
+            }
+            if (peekAndMatch(Token.TokenType.COMMA)) {
+                matchAndRemove(Token.TokenType.COMMA);
+            } else if (!peekAndMatch(Token.TokenType.RPAREN)) {
+                throw new IllegalArgumentException("Expected a comma or RPAREN");
+            }
+        }
+        return parameters;
     }
 
     /**
@@ -445,7 +481,7 @@ public List<Node> printList() {
         boolean isNegative = matchAndRemove(Token.TokenType.MINUS);
 
         if (matchAndRemove(Token.TokenType.LPAREN)) {
-            ExpressionNode innerExpr = expression();
+            ExpressionNode innerExpr = (ExpressionNode) expression();
             if (!matchAndRemove(Token.TokenType.RPAREN)) {
                 throw new IllegalArgumentException("Mismatched parentheses");
             }
