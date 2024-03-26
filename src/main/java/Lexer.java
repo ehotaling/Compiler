@@ -90,15 +90,23 @@ public class Lexer {
         knownWords.put("input", Token.TokenType.INPUT);
         knownWords.put("data", Token.TokenType.DATA);
         knownWords.put("gosub", Token.TokenType.GOSUB);
+        knownWords.put("goto", Token.TokenType.GOTO);
         knownWords.put("for", Token.TokenType.FOR);
-        knownWords.put("to", Token.TokenType.TO); // this is fine
+        knownWords.put("to", Token.TokenType.TO);
         knownWords.put("step", Token.TokenType.STEP);
         knownWords.put("next", Token.TokenType.NEXT);
         knownWords.put("return", Token.TokenType.RETURN);
         knownWords.put("then", Token.TokenType.THEN);
         knownWords.put("function", Token.TokenType.FUNCTION);
         knownWords.put("while", Token.TokenType.WHILE);
-        knownWords.put("end", Token.TokenType.END); // this is fine
+        knownWords.put("end", Token.TokenType.END);
+        knownWords.put("random", Token.TokenType.FUNCTIONNAME);
+        knownWords.put("left$", Token.TokenType.FUNCTIONNAME);
+        knownWords.put("right$", Token.TokenType.FUNCTIONNAME);
+        knownWords.put("mid$", Token.TokenType.FUNCTIONNAME);
+        knownWords.put("num$", Token.TokenType.FUNCTIONNAME);
+        knownWords.put("val", Token.TokenType.FUNCTIONNAME);
+        knownWords.put("val%", Token.TokenType.FUNCTIONNAME);
     }
 
     /**

@@ -109,10 +109,127 @@ public class Parser {
             return printStatement();
         } else if (peekAndMatch(Token.TokenType.INPUT)) {
             return inputStatement();
+        } else if (peekAndMatch(Token.TokenType.GOSUB)) {
+            return gosubStatement();
+        } else if (peekAndMatch(Token.TokenType.RETURN)) {
+            return returnStatement();
         } else if (peekAndMatch(Token.TokenType.WORD)) {
             return assignment();
+        } else if (peekAndMatch(Token.TokenType.FOR)) {
+            return forStatement();
+        } else if (peekAndMatch(Token.TokenType.NEXT)) {
+            return nextStatement();
         }
         return null;
+    }
+
+    public StatementNode whileStatement() {
+        if (!matchAndRemove(Token.TokenType.WHILE)) {
+            throw new IllegalArgumentException("Expected WHILE token");
+        }
+        BooleanExpressionNode condition = booleanExpression();
+        if (!matchAndRemove(Token.TokenType.END)) {
+            throw new IllegalArgumentException("Expected END token");
+        }
+        if (!peekAndMatch(Token.TokenType.WORD)) {
+            throw new IllegalArgumentException("Expected a label identifier after END");
+        }
+        String label = tokenManager.matchAndRemove(Token.TokenType.WORD).get().getVal();
+        return new WhileNode(condition, label);
+    }
+
+    public StatementNode endStatement() {
+        if (!matchAndRemove(Token.TokenType.END)) {
+            throw new IllegalArgumentException("Expected END token");
+        }
+        return new EndNode();
+    }
+
+    public StatementNode ifStatement() {
+        if (!matchAndRemove(Token.TokenType.IF)) {
+            throw new IllegalArgumentException("Expected IF token");
+        }
+        BooleanExpressionNode condition = booleanExpression();
+        if (!matchAndRemove(Token.TokenType.THEN)) {
+            throw new IllegalArgumentException("Expected THEN token");
+        }
+        if (!peekAndMatch(Token.TokenType.WORD)) {
+            throw new IllegalArgumentException("Expected a label identifier after THEN");
+        }
+        String label = tokenManager.matchAndRemove(Token.TokenType.WORD).get().getVal();
+        return new IfNode(condition, label);
+    }
+
+    public BooleanExpressionNode booleanExpression() {
+        ExpressionNode left = expression();
+        BooleanExpressionNode.OPERATOR operator;
+        if (matchAndRemove(Token.TokenType.GREATERTHAN)) {
+            operator = BooleanExpressionNode.OPERATOR.GREATERTHAN;
+        } else if (matchAndRemove(Token.TokenType.GREATERTHANEQUALTO)) {
+            operator = BooleanExpressionNode.OPERATOR.GREATERTHANEQUALTO;
+        } else if (matchAndRemove(Token.TokenType.LESSTHAN)) {
+            operator = BooleanExpressionNode.OPERATOR.LESSTHAN;
+        } else if (matchAndRemove(Token.TokenType.LESSTHANEQUALTO)) {
+            operator = BooleanExpressionNode.OPERATOR.LESSTHANEQUALTO;
+        } else if (matchAndRemove(Token.TokenType.NOTEQUALS)) {
+            operator = BooleanExpressionNode.OPERATOR.NOTEQUALS;
+        } else if (matchAndRemove(Token.TokenType.EQUALS)) {
+            operator = BooleanExpressionNode.OPERATOR.EQUALS;
+        } else {
+            throw new IllegalArgumentException("Expected a boolean operator");
+        }
+        ExpressionNode right = expression();
+        return new BooleanExpressionNode(left, operator, right);
+    }
+
+    public StatementNode forStatement() {
+        matchAndRemove(Token.TokenType.FOR);
+        VariableNode variable = (VariableNode) factor();
+        matchAndRemove(Token.TokenType.EQUALS);
+        ExpressionNode initialValue = expression();
+        matchAndRemove(Token.TokenType.TO);
+        ExpressionNode limit = expression();
+        ExpressionNode increment;
+        if (matchAndRemove(Token.TokenType.STEP)) {
+            if (!peekAndMatch(Token.TokenType.NUMBER)) {
+                throw new IllegalArgumentException("Expected a number after STEP");
+            }
+            increment = expression();
+        } else {
+            increment = new ExpressionNode(new TermNode(new FactorNode(new IntegerNode(1))));
+        }
+        StatementsNode body = new StatementsNode();
+        while (!peekAndMatch(Token.TokenType.NEXT)) {
+            body.addStatement(statement());
+        }
+        matchAndRemove(Token.TokenType.NEXT);
+        return new ForNode(variable, initialValue, limit, increment, body);
+    }
+
+    public StatementNode nextStatement() {
+        matchAndRemove(Token.TokenType.NEXT);
+        if (!peekAndMatch(Token.TokenType.WORD)) {
+            throw new IllegalArgumentException("Expected a variable identifier after NEXT");
+        }
+        VariableNode variable = (VariableNode) factor();
+        return new NextNode(variable);
+    }
+
+    public StatementNode gosubStatement() {
+        matchAndRemove(Token.TokenType.GOSUB);
+        if (!peekAndMatch(Token.TokenType.WORD)) {
+            throw new IllegalArgumentException("Expected a label identifier after GOSUB");
+        }
+        String label = tokenManager.matchAndRemove(Token.TokenType.WORD).get().getVal();
+        return new GosubNode(label);
+    }
+
+    public StatementNode returnStatement() {
+        matchAndRemove(Token.TokenType.RETURN);
+        if (!peekAndMatch(Token.TokenType.ENDOFLINE)) {
+            throw new IllegalArgumentException("RETURN statement should be alone on a line");
+        }
+        return new ReturnNode();
     }
 
     /**

@@ -807,16 +807,40 @@ public class ParserTest {
     @Test
     public void testInput() throws IOException {
         LinkedList<Token> tokens =  lexer.lex("src/test/resources/input_test.txt");
-        ProgramNode program = new Parser(tokens).parse();
-        System.out.println(program);
+        ProgramNode actualProgram = new Parser(tokens).parse();
+
+        // Create expectedProgram with the expected structure
+        List<Node> inputs = new ArrayList<>();
+        inputs.add(new StringNode("What is your name and age?"));
+        inputs.add(new VariableNode("name$"));
+        inputs.add(new VariableNode("age"));
+        StatementNode inputStatement = new InputNode(inputs);
+        StatementsNode statements = new StatementsNode();
+        statements.addStatement(inputStatement);
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addStatements(statements);
+
+        // Compare actualProgram with expectedProgram
+        assertEquals(expectedProgram, actualProgram, "The parsed program did not match the expected program.");
     }
 
     @Test
     public void testRead() throws IOException {
         LinkedList<Token> tokens = lexer.lex("src/test/resources/read_test.txt");
-        ProgramNode program2 = new Parser(tokens).parse();
-        System.out.println(program2);
+        ProgramNode actualProgram = new Parser(tokens).parse();
 
+        // Create expectedProgram with the expected structure
+        List<VariableNode> variables = new ArrayList<>();
+        variables.add(new VariableNode("a"));
+        variables.add(new VariableNode("a$"));
+        StatementNode readStatement = new ReadNode(variables);
+        StatementsNode statements = new StatementsNode();
+        statements.addStatement(readStatement);
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addStatements(statements);
+
+        // Compare actualProgram with expectedProgram
+        assertEquals(expectedProgram, actualProgram, "The parsed program did not match the expected program.");
     }
 
 }

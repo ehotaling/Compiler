@@ -7,12 +7,14 @@ public class LabeledStatementNode extends StatementNode {
         this.statementNode = statementNode;
     }
 
+    // Getter method for label
     public String getLabel() {
-        return label;
+        return this.label;
     }
 
+    // Getter method for statementNode
     public StatementNode getStatementNode() {
-        return statementNode;
+        return this.statementNode;
     }
 
     @Override
