@@ -123,6 +123,20 @@ public class Parser {
         return null;
     }
 
+    /**
+     * This method is responsible for parsing a while statement from the token stream.
+     *
+     * The method follows these steps:
+     * 1. Checks if the next token is a WHILE token. If it is not, it throws an IllegalArgumentException.
+     * 2. Calls the booleanExpression() method to parse the condition of the while statement.
+     * 3. Checks if the next token is an END token. If it is not, it throws an IllegalArgumentException.
+     * 4. Checks if the next token is a WORD token. If it is not, it throws an IllegalArgumentException.
+     * 5. Retrieves the label identifier from the WORD token and assigns it to the label variable.
+     * 6. Creates a new WhileNode with the parsed condition and label, and returns it as a StatementNode.
+     *
+     * @return A StatementNode representing the parsed while statement.
+     * @throws IllegalArgumentException If the next token is not a WHILE token, an END token, or a WORD token.
+     */
     public StatementNode whileStatement() {
         if (!matchAndRemove(Token.TokenType.WHILE)) {
             throw new IllegalArgumentException("Expected WHILE token");
@@ -138,6 +152,16 @@ public class Parser {
         return new WhileNode(condition, label);
     }
 
+    /**
+     * This method is responsible for parsing an end statement from the token stream.
+     *
+     * The method follows these steps:
+     * 1. Checks if the next token is an END token. If it is not, it throws an IllegalArgumentException.
+     * 2. Creates a new EndNode and returns it.
+     *
+     * @return An EndNode representing the parsed end statement.
+     * @throws IllegalArgumentException If the next token is not an END token.
+     */
     public StatementNode endStatement() {
         if (!matchAndRemove(Token.TokenType.END)) {
             throw new IllegalArgumentException("Expected END token");
@@ -145,6 +169,21 @@ public class Parser {
         return new EndNode();
     }
 
+
+    /**
+     * This method is responsible for parsing an if statement from the token stream.
+     *
+     * The method follows these steps:
+     * 1. Checks if the next token is an IF token. If it is not, it throws an IllegalArgumentException.
+     * 2. Calls the booleanExpression() method to parse the condition of the if statement.
+     * 3. Checks if the next token is a THEN token. If it is not, it throws an IllegalArgumentException.
+     * 4. Checks if the next token is a WORD token. If it is not, it throws an IllegalArgumentException.
+     * 5. Retrieves the label identifier from the WORD token and assigns it to the label variable.
+     * 6. Creates a new IfNode with the parsed condition and label, and returns it as a StatementNode.
+     *
+     * @return A StatementNode representing the parsed if statement.
+     * @throws IllegalArgumentException If the next token is not an IF token, a THEN token, or a WORD token.
+     */
     public StatementNode ifStatement() {
         if (!matchAndRemove(Token.TokenType.IF)) {
             throw new IllegalArgumentException("Expected IF token");
@@ -160,6 +199,12 @@ public class Parser {
         return new IfNode(condition, label);
     }
 
+    /**
+     * Parses a boolean expression node.
+     *
+     * @return a BooleanExpressionNode representing the parsed boolean expression
+     * @throws IllegalArgumentException if a boolean operator is not found
+     */
     public BooleanExpressionNode booleanExpression() {
         ExpressionNode left = (ExpressionNode) expression();
         BooleanExpressionNode.OPERATOR operator;
@@ -182,6 +227,12 @@ public class Parser {
         return new BooleanExpressionNode(left, operator, right);
     }
 
+    /**
+     * Executes a for loop statement.
+     *
+     * @return The constructed ForNode representing the for loop.
+     * @throws IllegalArgumentException if a number is not found after "STEP" keyword.
+     */
     public StatementNode forStatement() {
         matchAndRemove(Token.TokenType.FOR);
         VariableNode variable = (VariableNode) factor();
@@ -206,6 +257,12 @@ public class Parser {
         return new ForNode(variable, initialValue, limit, increment, body);
     }
 
+    /**
+     * Retrieves the next statement in the program.
+     *
+     * @return The next statement node.
+     * @throws IllegalArgumentException If a variable identifier is not found after the "NEXT" keyword.
+     */
     public StatementNode nextStatement() {
         matchAndRemove(Token.TokenType.NEXT);
         if (!peekAndMatch(Token.TokenType.WORD)) {
@@ -215,6 +272,14 @@ public class Parser {
         return new NextNode(variable);
     }
 
+    /**
+     * Executes a GOSUB statement by matching and removing the GOSUB token, and then
+     * parsing the label identifier. If the label identifier is not found, an
+     * IllegalArgumentException is thrown.
+     *
+     * @return a new GosubNode representing the GOSUB statement with the parsed label identifier
+     * @throws IllegalArgumentException if a label identifier is not found after the GOSUB token
+     */
     public StatementNode gosubStatement() {
         matchAndRemove(Token.TokenType.GOSUB);
         if (!peekAndMatch(Token.TokenType.WORD)) {
@@ -224,6 +289,12 @@ public class Parser {
         return new GosubNode(label);
     }
 
+    /**
+     * This method is used to generate a return statement node.
+     *
+     * @return A StatementNode object representing a return statement.
+     * @throws IllegalArgumentException if the RETURN statement is not followed by an end of line token.
+     */
     public StatementNode returnStatement() {
         matchAndRemove(Token.TokenType.RETURN);
         if (!peekAndMatch(Token.TokenType.ENDOFLINE)) {
@@ -412,6 +483,13 @@ public List<Node> printList() {
         return new ExpressionNode(term);
     }
 
+    /**
+     * Parses and constructs a FunctionNode by invoking a function.
+     *
+     * @return the constructed FunctionNode with the parsed function name and parameters,
+     *         or null if the next token is not a function name
+     * @throws IllegalArgumentException if the expected LPAREN or RPAREN tokens are missing
+     */
     public FunctionNode functionInvocation() {
         if (!peekAndMatch(Token.TokenType.FUNCTIONNAME)) {
             return null;
@@ -429,6 +507,12 @@ public List<Node> printList() {
         return functionNode;
     }
 
+    /**
+     * Retrieves a list of nodes representing the parameters of a method.
+     *
+     * @return A list of Node objects representing the parameters of a method.
+     * @throws IllegalArgumentException if a comma or RPAREN is missing.
+     */
     public List<Node> parameterList() {
         List<Node> parameters = new ArrayList<>();
         while (!peekAndMatch(Token.TokenType.RPAREN)) {
