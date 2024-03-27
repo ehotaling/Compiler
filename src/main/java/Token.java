@@ -62,7 +62,7 @@ public class Token {
         if (val != null) {
             return String.format("%s(%s)", tokenType, val);
         } else {
-            return tokenType.toString();
+            return String.format("%s(No Value)", tokenType);
         }
     }
 

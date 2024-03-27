@@ -4,25 +4,25 @@ import java.util.Objects;
 
 public class PrintNode extends StatementNode {
 
-    private List<Node> nodes = new ArrayList<>();
+    private List<Node> arguments = new ArrayList<>();
 
     public PrintNode() {}
 
-    public PrintNode(List<Node> nodes) {
-        this.nodes = nodes;
+    public PrintNode(List<Node> arguements) {
+        this.arguments = arguements;
     }
 
     public void addNode(Node node) {
-        nodes.add(node);
+        arguments.add(node);
     }
 
-    public List<Node> getNodes(Node node) {
-        return nodes;
+    public List<Node> getArguements(Node argument) {
+        return arguments;
     }
 
     @Override
     public String toString() {
-        return String.format("PrintNode(%s)", nodes);
+        return String.format("PrintNode(%s)", arguments);
     }
 
     @Override
@@ -30,11 +30,11 @@ public class PrintNode extends StatementNode {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PrintNode printNode = (PrintNode) o;
-        return Objects.equals(nodes, printNode.nodes);
+        return Objects.equals(arguments, printNode.arguments);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(nodes);
+        return Objects.hash(arguments);
     }
 }

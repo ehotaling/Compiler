@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class FunctionNode extends Node {
     private String functionName;
@@ -17,5 +18,19 @@ public class FunctionNode extends Node {
     @Override
     public String toString() {
         return String.format("FunctionNode(%s, %s)", functionName, parameters);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        FunctionNode that = (FunctionNode) o;
+        return Objects.equals(functionName, that.functionName) &&
+                Objects.equals(parameters, that.parameters);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(functionName, parameters);
     }
 }

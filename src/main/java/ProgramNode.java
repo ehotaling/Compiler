@@ -21,6 +21,14 @@ public class ProgramNode extends Node {
         this.statementsNode = statementsNode;
     }
 
+    public List<Node> getExpressions() {
+        return expressions;
+    }
+
+    public List<StatementNode> getStatements() {
+        return this.statementsNode.getStatements();
+    }
+
     @Override
     public String toString() {
         if (statementsNode != null && !statementsNode.getStatements().isEmpty()) {

@@ -137,18 +137,22 @@ public class Lexer {
 
         // Convert the tokenBuilder to a String and check if it's in the knownWords map.
         String token = wordBuilder.toString();
-        if (knownWords.containsKey(token.toLowerCase())) { //If so, return a Token with corresponding TokenType, lineNo, position.
-            return new Token(knownWords.get(token.toLowerCase()), lineNo,
-                    position - wordBuilder.length());
-        } else if (token.charAt(token.length() - 1) == ':') {
-            return new Token(Token.TokenType.LABEL, token, lineNo,
-                    position - wordBuilder.length());
-        } else { // If not, create a new WORD Token with the word as its value.
-            // Check if the next character is an opening parenthesis
-            if (!handler.isDone() && handler.peek(0) == '(') {
-                return new Token(Token.TokenType.FUNCTIONNAME, token, lineNo,
+
+        // Check if the next character is an opening parenthesis
+        if (!handler.isDone() && handler.peek(0) == '(') {
+            // If the token is a known function name, return a FUNCTIONNAME token
+            System.out.println("Assigning function name: " + token);
+            return new Token(Token.TokenType.FUNCTIONNAME, token, lineNo, position - wordBuilder.length());
+        } else {
+            if (knownWords.containsKey(token.toLowerCase())) {
+                // Return a Token with corresponding TokenType, lineNo, position.
+                return new Token(knownWords.get(token.toLowerCase()), lineNo,
+                        position - wordBuilder.length());
+            } else if (token.charAt(token.length() - 1) == ':') {
+                return new Token(Token.TokenType.LABEL, token, lineNo,
                         position - wordBuilder.length());
             } else {
+                // If not, create a new WORD Token with the word as its value.
                 return new Token(Token.TokenType.WORD, token, lineNo,
                         position - wordBuilder.length());
             }

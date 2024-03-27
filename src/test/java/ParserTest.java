@@ -40,6 +40,13 @@ public class ParserTest {
         return new Parser(lexTokens(text)).parse();
     }
 
+    private ProgramNode parseProgram(String text) {
+        Lexer lexer = new Lexer();
+        LinkedList<Token> tokens = lexer.lex(text);
+        Parser parser = new Parser(tokens);
+        return parser.parse();
+    }
+
     private ExpressionNode negate(ExpressionNode expression) {
         return new ExpressionNode(
                 new TermNode(
@@ -857,11 +864,8 @@ public class ParserTest {
     @Test
     public void testFunctionNameToken() {
         Lexer lexer = new Lexer();
-        LinkedList<Token> tokens = lexer.lex("src/test/resources/random_test.txt");
+        LinkedList<Token> tokens = lexer.lex("src/test/resources/function_test.txt");
 
-        for (Token token : tokens) {
-            System.out.println(token);
-        }
         // Check the size of the tokens list
         assertEquals(4, tokens.size());
 
@@ -870,6 +874,7 @@ public class ParserTest {
 
         // Check the value of the first token
         assertEquals("random", tokens.get(0).getVal());
+
 
         // Check the type of the second token
         assertEquals(Token.TokenType.LPAREN, tokens.get(1).getTokenType());
@@ -880,6 +885,14 @@ public class ParserTest {
         // Check the type of the fourth token
         assertEquals(Token.TokenType.ENDOFLINE, tokens.get(3).getTokenType());
     }
+
+    @Test
+    public void testLabeledStatement() throws IOException {
+        ProgramNode program = parseStatements("LABEL: PRINT \"Hello, World!\"");
+        // Check that the first statement in the program is a LabeledStatementNode
+        assertTrue(program.getStatements().get(0) instanceof LabeledStatementNode);
+    }
+
 
 }
 
