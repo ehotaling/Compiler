@@ -2,10 +2,10 @@ public class ForNode extends StatementNode {
     private VariableNode variable;
     private ExpressionNode initialValue;
     private ExpressionNode limit;
-    private ExpressionNode increment;
+    private Node increment;
     private StatementsNode body;
 
-    public ForNode(VariableNode variable, ExpressionNode initialValue, ExpressionNode limit, ExpressionNode increment, StatementsNode body) {
+    public ForNode(VariableNode variable, ExpressionNode initialValue, ExpressionNode limit, Node increment, StatementsNode body) {
         this.variable = variable;
         this.initialValue = initialValue;
         this.limit = limit;
@@ -25,7 +25,7 @@ public class ForNode extends StatementNode {
         return limit;
     }
 
-    public ExpressionNode getIncrement() {
+    public Node getIncrement() {
         return increment;
     }
 

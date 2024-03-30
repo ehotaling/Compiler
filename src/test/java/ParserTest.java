@@ -893,6 +893,33 @@ public class ParserTest {
         assertTrue(program.getStatements().get(0) instanceof LabeledStatementNode);
     }
 
+    @Test
+    public void testGoSub() throws IOException {
+        ProgramNode program = parseStatements("GOSUB LABEL");
+        // Check that the first statement in the program is a GoSubNode
+        assertTrue(program.getStatements().get(0) instanceof GosubNode);
+    }
+
+    @Test
+    public void testReturn() throws IOException {
+        ProgramNode program = parseStatements("RETURN");
+        // Check that the first statement in the program is a ReturnNode
+        assertTrue(program.getStatements().get(0) instanceof ReturnNode);
+    }
+
+    @Test
+    public void testFor() throws IOException {
+        ProgramNode program = parseStatements("FOR I = 1 TO 10 STEP 2\nPRINT I\nNEXT I");
+        // Check that the first statement in the program is a ForNode
+        assertTrue(program.getStatements().get(0) instanceof ForNode);
+    }
+
+    @Test
+    public void testWhile() throws IOException {
+        ProgramNode program = parseStatements("WHILE x < 5 endWhileLabel\nx = x + 1\n endWhileLabel:");
+        // Check that the first statement in the program is a WhileNode
+        assertTrue(program.getStatements().get(0) instanceof WhileNode);
+    }
 
 }
 

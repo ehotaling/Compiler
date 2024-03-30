@@ -119,8 +119,16 @@ public class Parser {
             return forStatement();
         } else if (peekAndMatch(Token.TokenType.NEXT)) {
             return nextStatement();
+        } else if (peekAndMatch(Token.TokenType.ENDOFLINE)) {
+            tokenManager.matchAndRemove(Token.TokenType.ENDOFLINE);
+            return null;
+        } else if (peekAndMatch(Token.TokenType.IF)) {
+            return ifStatement();
+        } else if (peekAndMatch(Token.TokenType.WHILE)) {
+            return whileStatement();
+        } else {
+            return null;
         }
-        return null;
     }
 
     /**
@@ -129,27 +137,39 @@ public class Parser {
      * The method follows these steps:
      * 1. Checks if the next token is a WHILE token. If it is not, it throws an IllegalArgumentException.
      * 2. Calls the booleanExpression() method to parse the condition of the while statement.
-     * 3. Checks if the next token is an END token. If it is not, it throws an IllegalArgumentException.
-     * 4. Checks if the next token is a WORD token. If it is not, it throws an IllegalArgumentException.
-     * 5. Retrieves the label identifier from the WORD token and assigns it to the label variable.
-     * 6. Creates a new WhileNode with the parsed condition and label, and returns it as a StatementNode.
+     * 3. Checks if the next token is a LABEL token. If it is not, it throws an IllegalArgumentException.
+     * 4. Retrieves the label identifier from the LABEL token and assigns it to the label variable.
+     * 5. Creates a new WhileNode with the parsed condition and label, and returns it as a StatementNode.
      *
      * @return A StatementNode representing the parsed while statement.
-     * @throws IllegalArgumentException If the next token is not a WHILE token, an END token, or a WORD token.
+     * @throws IllegalArgumentException If the next token is not a WHILE token or a LABEL token.
      */
     public StatementNode whileStatement() {
         if (!matchAndRemove(Token.TokenType.WHILE)) {
             throw new IllegalArgumentException("Expected WHILE token");
         }
         BooleanExpressionNode condition = booleanExpression();
-        if (!matchAndRemove(Token.TokenType.END)) {
-            throw new IllegalArgumentException("Expected END token");
-        }
-        if (!peekAndMatch(Token.TokenType.WORD)) {
-            throw new IllegalArgumentException("Expected a label identifier after END");
+        if (!matchAndRemove(Token.TokenType.WORD)) {
+            throw new IllegalArgumentException("Expected WORD token");
         }
         String label = tokenManager.matchAndRemove(Token.TokenType.WORD).get().getVal();
-        return new WhileNode(condition, label);
+        StatementsNode body = new StatementsNode();
+        boolean endLabelFound = false;
+        while(!endLabelFound && tokenManager.moreTokens()) {
+            if (peekAndMatch(Token.TokenType.LABEL) && tokenManager.peek(0).get().getVal().equals(label)) {
+                matchAndRemove(Token.TokenType.LABEL);
+                endLabelFound = true;
+            } else {
+                StatementNode statementNode = statement();
+                if (statementNode != null) {
+                    body.addStatement(statementNode);
+                }
+            }
+        }
+        if (!endLabelFound) {
+            throw new IllegalArgumentException("Expected label to end the WHILE loop");
+        }
+        return new WhileNode(condition, label, body);
     }
 
     /**
@@ -234,26 +254,51 @@ public class Parser {
      * @throws IllegalArgumentException if a number is not found after "STEP" keyword.
      */
     public StatementNode forStatement() {
-        matchAndRemove(Token.TokenType.FOR);
+        if(!matchAndRemove(Token.TokenType.FOR)) {
+            throw new IllegalArgumentException("Expected FOR token");
+        }
         VariableNode variable = (VariableNode) factor();
-        matchAndRemove(Token.TokenType.EQUALS);
+        if(!matchAndRemove(Token.TokenType.EQUALS)) {
+            throw new IllegalArgumentException("Expected EQUALS token");
+        }
         ExpressionNode initialValue = (ExpressionNode) expression();
-        matchAndRemove(Token.TokenType.TO);
+        if(!matchAndRemove(Token.TokenType.TO)) {
+            throw new IllegalArgumentException("Expected TO token");
+        }
         ExpressionNode limit = (ExpressionNode) expression();
-        ExpressionNode increment;
+        Node increment = null;
         if (matchAndRemove(Token.TokenType.STEP)) {
-            if (!peekAndMatch(Token.TokenType.NUMBER)) {
-                throw new IllegalArgumentException("Expected a number after STEP");
+            Node node = factor();
+            if (node instanceof FactorNode) {
+                node = ((FactorNode) node).getInnerNode();
             }
-            increment = (ExpressionNode) expression();
+            if (!(node instanceof IntegerNode) && !(node instanceof FloatNode)) {
+                throw new IllegalArgumentException("Expected an integer or float after STEP");
+            }
+            increment = node;
         } else {
-            increment = new ExpressionNode(new TermNode(new FactorNode(new IntegerNode(1))));
+            increment = new IntegerNode(1);
         }
         StatementsNode body = new StatementsNode();
-        while (!peekAndMatch(Token.TokenType.NEXT)) {
-            body.addStatement(statement());
+        boolean nextFound = false;
+        while (!nextFound && tokenManager.moreTokens()) {
+            if (peekAndMatch(Token.TokenType.NEXT)) {
+                matchAndRemove(Token.TokenType.NEXT);
+                if (!peekAndMatch(Token.TokenType.WORD) || !tokenManager.peek(0).get().getVal().equals(variable.getName())) {
+                    throw new IllegalArgumentException("Expected NEXT token followed by the loop variable");
+                }
+                tokenManager.matchAndRemove(Token.TokenType.WORD);
+                nextFound = true;
+            } else {
+                StatementNode statementNode = statement();
+                if (statementNode != null) {
+                    body.addStatement(statementNode);
+                }
+            }
         }
-        matchAndRemove(Token.TokenType.NEXT);
+        if (!nextFound) {
+            throw new IllegalArgumentException("Expected NEXT token for the FOR loop");
+        }
         return new ForNode(variable, initialValue, limit, increment, body);
     }
 
@@ -264,7 +309,9 @@ public class Parser {
      * @throws IllegalArgumentException If a variable identifier is not found after the "NEXT" keyword.
      */
     public StatementNode nextStatement() {
-        matchAndRemove(Token.TokenType.NEXT);
+        if(!matchAndRemove(Token.TokenType.NEXT)) {
+            throw new IllegalArgumentException("Expected NEXT token");
+        }
         if (!peekAndMatch(Token.TokenType.WORD)) {
             throw new IllegalArgumentException("Expected a variable identifier after NEXT");
         }
@@ -281,7 +328,9 @@ public class Parser {
      * @throws IllegalArgumentException if a label identifier is not found after the GOSUB token
      */
     public StatementNode gosubStatement() {
-        matchAndRemove(Token.TokenType.GOSUB);
+        if(!matchAndRemove(Token.TokenType.GOSUB)) {
+            throw new IllegalArgumentException("Expected GOSUB token");
+        }
         if (!peekAndMatch(Token.TokenType.WORD)) {
             throw new IllegalArgumentException("Expected a label identifier after GOSUB");
         }
@@ -296,7 +345,9 @@ public class Parser {
      * @throws IllegalArgumentException if the RETURN statement is not followed by an end of line token.
      */
     public StatementNode returnStatement() {
-        matchAndRemove(Token.TokenType.RETURN);
+        if(!matchAndRemove(Token.TokenType.RETURN)) {
+            throw new IllegalArgumentException("Expected RETURN token");
+        }
         if (!peekAndMatch(Token.TokenType.ENDOFLINE)) {
             throw new IllegalArgumentException("RETURN statement should be alone on a line");
         }
