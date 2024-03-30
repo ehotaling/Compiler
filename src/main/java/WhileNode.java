@@ -1,7 +1,7 @@
 public class WhileNode extends StatementNode {
-    private BooleanExpressionNode condition;
-    private String label;
-    private StatementsNode body;
+    private final BooleanExpressionNode condition;
+    private final String label;
+    private final StatementsNode body;
 
     public WhileNode(BooleanExpressionNode condition, String label, StatementsNode body) {
         this.condition = condition;

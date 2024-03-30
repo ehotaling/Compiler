@@ -915,6 +915,15 @@ public class ParserTest {
     }
 
     @Test
+    public void testForIncrement() throws IOException {
+        ProgramNode program = parseStatements("FOR I = 1 TO 10\nPRINT I\nNEXT I");
+        // Check that the first statement in the program is a ForNode
+        assertTrue(program.getStatements().get(0) instanceof ForNode);
+        // Check that the increment is 1
+        assertEquals(1, ((ForNode) program.getStatements().get(0)).getIncrement());
+    }
+
+    @Test
     public void testWhile() throws IOException {
         ProgramNode program = parseStatements("WHILE x < 5 endWhileLabel\nx = x + 1\n endWhileLabel:");
         // Check that the first statement in the program is a WhileNode
