@@ -851,6 +851,26 @@ public class ParserTest {
     }
 
     @Test
+    public void testForFromFile() throws IOException {
+        LinkedList<Token> tokens = lexer.lex("src/test/resources/while_loop.bas");
+        ProgramNode actualProgram = new Parser(tokens).parse();
+
+        System.out.println(actualProgram.getStatements());
+        // Compare actualProgram with expectedProgram
+//        assertEquals(expectedProgram, actualProgram, "The parsed program did not match the expected program.");
+    }
+
+    @Test
+    public void testForLoopFromFile() throws IOException {
+        LinkedList<Token> tokens = lexer.lex("src/test/resources/for_loop_2.bas");
+        ProgramNode actualProgram = new Parser(tokens).parse();
+
+        System.out.println(actualProgram.getStatements());
+        // Compare actualProgram with expectedProgram
+//        assertEquals(expectedProgram, actualProgram, "The parsed program did not match the expected program.");
+    }
+
+    @Test
     public void expressionWithFunctionInvocation_ReturnsFunctionNode() throws IOException {
         ProgramNode testProgram = parseExpressions("random()");
 
@@ -920,11 +940,12 @@ public class ParserTest {
         // Check that the first statement in the program is a ForNode
         assertTrue(program.getStatements().get(0) instanceof ForNode);
         // Check that the increment is 1
-        assertEquals(1, ((ForNode) program.getStatements().get(0)).getIncrement());
+        assertEquals(new FactorNode(new IntegerNode(1)), ((ForNode) program.getStatements().get(0)).getIncrement());
     }
 
     @Test
     public void testWhile() throws IOException {
+        // TODO test the contents of While node
         ProgramNode program = parseStatements("WHILE x < 5 endWhileLabel\nx = x + 1\n endWhileLabel:");
         // Check that the first statement in the program is a WhileNode
         assertTrue(program.getStatements().get(0) instanceof WhileNode);

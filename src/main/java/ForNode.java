@@ -1,11 +1,11 @@
 public class ForNode extends StatementNode {
     private VariableNode variable;
-    private ExpressionNode initialValue;
-    private ExpressionNode limit;
+    private Node initialValue;
+    private Node limit;
     private Node increment;
     private StatementsNode body;
 
-    public ForNode(VariableNode variable, ExpressionNode initialValue, ExpressionNode limit, Node increment, StatementsNode body) {
+    public ForNode(VariableNode variable, Node initialValue, Node limit, Node increment, StatementsNode body) {
         this.variable = variable;
         this.initialValue = initialValue;
         this.limit = limit;
@@ -17,11 +17,11 @@ public class ForNode extends StatementNode {
         return variable;
     }
 
-    public ExpressionNode getInitialValue() {
+    public Node getInitialValue() {
         return initialValue;
     }
 
-    public ExpressionNode getLimit() {
+    public Node getLimit() {
         return limit;
     }
 

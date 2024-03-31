@@ -120,6 +120,7 @@ public class Parser {
         } else if (peekAndMatch(Token.TokenType.NEXT)) {
             return nextStatement();
         } else if (peekAndMatch(Token.TokenType.ENDOFLINE)) {
+            // TEST WITH A FILE
             tokenManager.matchAndRemove(Token.TokenType.ENDOFLINE);
             return null;
         } else if (peekAndMatch(Token.TokenType.IF)) {
@@ -148,28 +149,15 @@ public class Parser {
         if (!matchAndRemove(Token.TokenType.WHILE)) {
             throw new IllegalArgumentException("Expected WHILE token");
         }
+
+        // TODO ask professor if whileStatement stores body
         BooleanExpressionNode condition = booleanExpression();
-        if (!matchAndRemove(Token.TokenType.WORD)) {
+        if (!peekAndMatch(Token.TokenType.WORD)) {
             throw new IllegalArgumentException("Expected WORD token");
         }
         String label = tokenManager.matchAndRemove(Token.TokenType.WORD).get().getVal();
-        StatementsNode body = new StatementsNode();
-        boolean endLabelFound = false;
-        while(!endLabelFound && tokenManager.moreTokens()) {
-            if (peekAndMatch(Token.TokenType.LABEL) && tokenManager.peek(0).get().getVal().equals(label)) {
-                matchAndRemove(Token.TokenType.LABEL);
-                endLabelFound = true;
-            } else {
-                StatementNode statementNode = statement();
-                if (statementNode != null) {
-                    body.addStatement(statementNode);
-                }
-            }
-        }
-        if (!endLabelFound) {
-            throw new IllegalArgumentException("Expected label to end the WHILE loop");
-        }
-        return new WhileNode(condition, label, body);
+
+        return new WhileNode(condition, label);
     }
 
     /**
@@ -257,34 +245,41 @@ public class Parser {
         if(!matchAndRemove(Token.TokenType.FOR)) {
             throw new IllegalArgumentException("Expected FOR token");
         }
-        VariableNode variable = (VariableNode) factor();
+
+        Optional<Token> wordTokenOpt = tokenManager.matchAndRemove(Token.TokenType.WORD);
+        VariableNode variableNode;
+        if (wordTokenOpt.isPresent()) {
+            variableNode = new VariableNode(wordTokenOpt.get().getVal());
+        } else {
+            throw new IllegalArgumentException("Expected Variable Name");
+        }
+
         if(!matchAndRemove(Token.TokenType.EQUALS)) {
             throw new IllegalArgumentException("Expected EQUALS token");
         }
-        ExpressionNode initialValue = (ExpressionNode) expression();
+
+        // TODO this can be a variable here as well
+        FactorNode initialValue = (FactorNode) factor();
+
         if(!matchAndRemove(Token.TokenType.TO)) {
             throw new IllegalArgumentException("Expected TO token");
         }
-        ExpressionNode limit = (ExpressionNode) expression();
-        Node increment = null;
+
+        Node limit = factor();
+
+        // default to 1
+        FactorNode increment = new FactorNode(new IntegerNode(1));
         if (matchAndRemove(Token.TokenType.STEP)) {
-            Node node = factor();
-            if (node instanceof FactorNode) {
-                node = ((FactorNode) node).getInnerNode();
-            }
-            if (!(node instanceof IntegerNode) && !(node instanceof FloatNode)) {
-                throw new IllegalArgumentException("Expected an integer or float after STEP");
-            }
-            increment = node;
-        } else {
-            increment = new IntegerNode(1);
+            increment = number(tokenManager.matchAndRemove(Token.TokenType.NUMBER).get(), false);
         }
+
+        // TODO ask professor if ForNode stores body
         StatementsNode body = new StatementsNode();
         boolean nextFound = false;
         while (!nextFound && tokenManager.moreTokens()) {
             if (peekAndMatch(Token.TokenType.NEXT)) {
                 matchAndRemove(Token.TokenType.NEXT);
-                if (!peekAndMatch(Token.TokenType.WORD) || !tokenManager.peek(0).get().getVal().equals(variable.getName())) {
+                if (!peekAndMatch(Token.TokenType.WORD) || !tokenManager.peek(0).get().getVal().equals(variableNode.getName())) {
                     throw new IllegalArgumentException("Expected NEXT token followed by the loop variable");
                 }
                 tokenManager.matchAndRemove(Token.TokenType.WORD);
@@ -299,7 +294,7 @@ public class Parser {
         if (!nextFound) {
             throw new IllegalArgumentException("Expected NEXT token for the FOR loop");
         }
-        return new ForNode(variable, initialValue, limit, increment, body);
+        return new ForNode(variableNode, initialValue, limit, increment, body);
     }
 
     /**
