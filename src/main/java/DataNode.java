@@ -29,4 +29,9 @@ public class DataNode extends StatementNode {
     public int hashCode() {
         return Objects.hash(data);
     }
+
+    @Override
+    public void accept(Interpreter.StatementVisitor visitor) {
+    }
+
 }

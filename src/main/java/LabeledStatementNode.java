@@ -36,4 +36,9 @@ public class LabeledStatementNode extends StatementNode {
     public int hashCode() {
         return Objects.hash(label, statementNode);
     }
+
+    @Override
+    public void accept(Interpreter.StatementVisitor visitor) {
+        visitor.visit(this);
+    }
 }

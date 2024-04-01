@@ -29,4 +29,8 @@ public class VariableNode extends StatementNode {
     public int hashCode() {
         return Objects.hash(name);
     }
+
+    @Override
+    public void accept(Interpreter.StatementVisitor visitor) {
+    }
 }

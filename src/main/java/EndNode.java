@@ -3,4 +3,7 @@ public class EndNode extends StatementNode {
     public String toString() {
         return "EndNode()";
     }
+    @Override
+    public void accept(Interpreter.StatementVisitor visitor) {
+    }
 }

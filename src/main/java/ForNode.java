@@ -56,4 +56,8 @@ public class ForNode extends StatementNode {
     public int hashCode() {
         return Objects.hash(variable, initialValue, limit, increment, body);
     }
+
+    @Override
+    public void accept(Interpreter.StatementVisitor visitor) {
+    }
 }

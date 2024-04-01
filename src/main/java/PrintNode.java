@@ -37,4 +37,8 @@ public class PrintNode extends StatementNode {
     public int hashCode() {
         return Objects.hash(arguments);
     }
+
+    @Override
+    public void accept(Interpreter.StatementVisitor visitor) {
+    }
 }

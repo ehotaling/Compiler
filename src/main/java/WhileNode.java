@@ -40,4 +40,8 @@ public class WhileNode extends StatementNode {
     public int hashCode() {
         return Objects.hash(condition, label);
     }
+
+    @Override
+    public void accept(Interpreter.StatementVisitor visitor) {
+    }
 }

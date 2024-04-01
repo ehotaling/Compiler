@@ -13,4 +13,8 @@ public class NextNode extends StatementNode {
     public String toString() {
         return String.format("NextNode(variable=%s)", variable);
     }
+
+    @Override
+    public void accept(Interpreter.StatementVisitor visitor) {
+    }
 }

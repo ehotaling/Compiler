@@ -3,4 +3,8 @@ public class ReturnNode extends StatementNode {
     public String toString() {
         return "ReturnNode";
     }
+
+    @Override
+    public void accept(Interpreter.StatementVisitor visitor) {
+    }
 }

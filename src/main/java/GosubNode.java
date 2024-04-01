@@ -13,4 +13,8 @@ public class GosubNode extends StatementNode {
     public String toString() {
         return String.format("GosubNode(%s)", label);
     }
+
+    @Override
+    public void accept(Interpreter.StatementVisitor visitor) {
+    }
 }
