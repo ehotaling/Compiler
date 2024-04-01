@@ -8,6 +8,11 @@ public class LabelSearchVisitor implements Interpreter.StatementVisitor {
         labels.put(labeledStatementNode.getLabel(), labeledStatementNode);
     }
 
+    @Override
+    public void visit(VariableNode variableNode) {
+        // do nothing
+    }
+
 
     public HashMap<String, LabeledStatementNode> getLabels() {
         return labels;

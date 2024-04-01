@@ -1,3 +1,4 @@
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Queue;
@@ -8,9 +9,10 @@ public class Interpreter {
     private HashMap<String, LabeledStatementNode> labels;
     private Queue<Object> dataQueue;
 
-    private HashMap<String, IntegerNode> intVariables;
-    private HashMap<String, StringNode> stringVariables;
-    private HashMap<String, FloatNode> floatVariables;
+    // TODO confused!! Am I string to datatype mapping or string to value mapping?
+    private HashMap<String, Integer> intVariables;
+    private HashMap<String, String> stringVariables;
+    private HashMap<String, Float> floatVariables;
 
     public Interpreter(ProgramNode programNode) {
         this.programNode = programNode;
@@ -35,6 +37,7 @@ public class Interpreter {
     //  The accept methods are all blank except labeledstatementNode I'm not sure if that's the right way to do it, but it seems to work.
     public interface StatementVisitor {
         void visit(LabeledStatementNode labeledStatementNode);
+        void visit(VariableNode variableNode);
     }
 
     public void searchForLabels() {
@@ -45,6 +48,21 @@ public class Interpreter {
         }
         labels = visitor.getLabels();
 
+    }
+
+    // We will need storage for our variables.
+    // Create HashMaps that map name (string) to data type for our variables.
+    // We will need three hash maps: String->Integer, String->Float and String->String.
+
+    public void searchForVariables() {
+        VariableSearchVisitor visitor = new VariableSearchVisitor();
+        List<StatementNode> statements = programNode.getStatements();
+        for (StatementNode statement: statements) {
+            statement.accept(visitor);
+        }
+        intVariables = visitor.getIntVariables();
+        floatVariables = visitor.getFloatVariables();
+        stringVariables = visitor.getStringVariables();
     }
 
 
