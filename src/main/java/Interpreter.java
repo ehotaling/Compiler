@@ -65,6 +65,13 @@ public class Interpreter {
         stringVariables = visitor.getStringVariables();
     }
 
+    // TODO how do i implement the built in functions??
+
+
+
+
+
+
 
 
 }
