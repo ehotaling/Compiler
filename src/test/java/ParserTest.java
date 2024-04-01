@@ -850,20 +850,29 @@ public class ParserTest {
         assertEquals(expectedProgram, actualProgram, "The parsed program did not match the expected program.");
     }
 
+    // TODO figure out what to do with the labeledstatementnode at the end of the while loop
     @Test
-    public void testForFromFile() throws IOException {
+    public void testWhileFromFile() throws IOException {
         LinkedList<Token> tokens = lexer.lex("src/test/resources/while_loop.bas");
         ProgramNode actualProgram = new Parser(tokens).parse();
+        ProgramNode expectedProgram = new ProgramNode();
+        StatementsNode statements  = new StatementsNode();
 
+
+        // Print the actual statements for debugging
         System.out.println(actualProgram.getStatements());
+
         // Compare actualProgram with expectedProgram
-//        assertEquals(expectedProgram, actualProgram, "The parsed program did not match the expected program.");
+        // assertEquals(expectedProgram, actualProgram, "The parsed program did not match the expected program.");
     }
 
     @Test
     public void testForLoopFromFile() throws IOException {
         LinkedList<Token> tokens = lexer.lex("src/test/resources/for_loop_2.bas");
         ProgramNode actualProgram = new Parser(tokens).parse();
+        ProgramNode expectedProgram = new ProgramNode();
+
+        StatementsNode statements = new StatementsNode();
 
         System.out.println(actualProgram.getStatements());
         // Compare actualProgram with expectedProgram

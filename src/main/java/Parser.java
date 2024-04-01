@@ -150,14 +150,37 @@ public class Parser {
             throw new IllegalArgumentException("Expected WHILE token");
         }
 
-        // TODO ask professor if whileStatement stores body
         BooleanExpressionNode condition = booleanExpression();
         if (!peekAndMatch(Token.TokenType.WORD)) {
             throw new IllegalArgumentException("Expected WORD token");
         }
-        String label = tokenManager.matchAndRemove(Token.TokenType.WORD).get().getVal();
+        tokenManager.matchAndRemove(Token.TokenType.WORD);
 
-        return new WhileNode(condition, label);
+        // WhileNode stores the body of the while loop
+        StatementsNode whileBody = new StatementsNode();
+
+        // Parse the body of the while loop
+        while(tokenManager.moreTokens() && !peekAndMatch(Token.TokenType.LABEL)) {
+            if (peekAndMatch(Token.TokenType.ENDOFLINE)) {
+                tokenManager.matchAndRemove(Token.TokenType.ENDOFLINE);
+                continue;
+            }
+            StatementNode statementNode = statement();
+            if (statementNode != null) {
+                whileBody.addStatement(statementNode);
+            }
+        }
+
+        // Check if the next token is the end label of the while loop
+        if (!peekAndMatch(Token.TokenType.LABEL)) {
+            throw new IllegalArgumentException("Expected LABEL token");
+        }
+
+        // Remove the end label from the token stream, store it as the end label
+        String endLabel = tokenManager.matchAndRemove(Token.TokenType.LABEL).get().getVal();
+
+
+        return new WhileNode(condition, whileBody, endLabel);
     }
 
     /**
@@ -273,7 +296,7 @@ public class Parser {
             increment = number(tokenManager.matchAndRemove(Token.TokenType.NUMBER).get(), false);
         }
 
-        // TODO ask professor if ForNode stores body
+
         StatementsNode body = new StatementsNode();
         boolean nextFound = false;
         while (!nextFound && tokenManager.moreTokens()) {

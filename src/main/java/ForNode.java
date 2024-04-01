@@ -1,3 +1,5 @@
+import java.util.Objects;
+
 public class ForNode extends StatementNode {
     private VariableNode variable;
     private Node initialValue;
@@ -36,5 +38,22 @@ public class ForNode extends StatementNode {
     @Override
     public String toString() {
         return String.format("ForNode(variable=%s, initialValue=%s, limit=%s, increment=%s, body=%s)", variable, initialValue, limit, increment, body);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ForNode forNode = (ForNode) o;
+        return variable.equals(forNode.variable) &&
+                initialValue.equals(forNode.initialValue) &&
+                limit.equals(forNode.limit) &&
+                increment.equals(forNode.increment) &&
+                body.equals(forNode.body);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(variable, initialValue, limit, increment, body);
     }
 }

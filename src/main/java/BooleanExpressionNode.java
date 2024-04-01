@@ -35,4 +35,18 @@ public class BooleanExpressionNode {
     public String toString() {
         return String.format("BooleanExpressionNode(%s %s %s)", left, operator, right);
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof BooleanExpressionNode) {
+            BooleanExpressionNode other = (BooleanExpressionNode) obj;
+            return left.equals(other.left) && operator.equals(other.operator) && right.equals(other.right);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return left.hashCode() + operator.hashCode() + right.hashCode();
+    }
 }
