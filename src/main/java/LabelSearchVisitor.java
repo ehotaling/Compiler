@@ -9,9 +9,10 @@ public class LabelSearchVisitor implements Interpreter.StatementVisitor {
     }
 
     @Override
-    public void visit(VariableNode variableNode) {
+    public void visit(AssignmentNode assignmentNode) {
         // do nothing
     }
+
 
 
     public HashMap<String, LabeledStatementNode> getLabels() {

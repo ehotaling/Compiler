@@ -1,4 +1,3 @@
-import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Queue;
@@ -9,7 +8,6 @@ public class Interpreter {
     private HashMap<String, LabeledStatementNode> labels;
     private Queue<Object> dataQueue;
 
-    // TODO confused!! Am I string to datatype mapping or string to value mapping?
     private HashMap<String, Integer> intVariables;
     private HashMap<String, String> stringVariables;
     private HashMap<String, Float> floatVariables;
@@ -37,7 +35,7 @@ public class Interpreter {
     //  The accept methods are all blank except labeledstatementNode I'm not sure if that's the right way to do it, but it seems to work.
     public interface StatementVisitor {
         void visit(LabeledStatementNode labeledStatementNode);
-        void visit(VariableNode variableNode);
+        void visit(AssignmentNode assignmentNode);
     }
 
     public void searchForLabels() {
