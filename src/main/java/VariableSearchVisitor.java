@@ -10,15 +10,18 @@ public class VariableSearchVisitor implements Interpreter.StatementVisitor {
         VariableNode variableNode = assignmentNode.getVariableNode();
         String name = variableNode.getName();
         String type = variableNode.getType();
-
+        Node valueNode = assignmentNode.getValue();
         if (type.equals("int")) {
-            Integer value = assignmentNode.getValue();
-            intVariables.put(name,value);
+            IntegerNode integerNode = (IntegerNode) valueNode;
+            Integer value = integerNode.getInt();
+            intVariables.put(name, value);
         } else if (type.equals("float")) {
-            Float value = assignmentNode.getValue();
+            FloatNode floatNode = (FloatNode) valueNode;
+            Float value = floatNode.getFloat();
             floatVariables.put(name, value);
         } else if (type.equals("string")) {
-            String value = assignmentNode.getValue();
+            StringNode stringNode = (StringNode) valueNode;
+            String value = stringNode.getValue();
             stringVariables.put(name, value);
         }
 
