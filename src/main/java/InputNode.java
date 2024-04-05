@@ -29,4 +29,7 @@ public class InputNode extends StatementNode {
     public int hashCode() {
         return Objects.hash(variables);
     }
+    @Override
+    public void accept(StatementVisitor visitor) {
+    }
 }
