@@ -90,15 +90,18 @@ public class Parser {
 
     /**
      * This method is responsible for parsing a statement from the token stream.
-     * It first checks if the next token is a PRINT token. If it is, it calls the printStatement() method to parse a print statement.
-     * If the next token is a WORD token, it calls the assignment() method to parse an assignment statement.
-     * If the next token is neither a PRINT nor a WORD token, it returns null.
      *
-     * @return A StatementNode representing the parsed statement, or null if the next token is neither a PRINT nor a WORD token.
+     * It checks the type of the next token and calls the corresponding method to parse and create the corresponding statement node.
+     * If the next token does not match any statement type, it returns null.
+     *
+     * @return The parsed StatementNode representing the statement, or null if the next token does not match any statement type.
      */
     public StatementNode statement() {
-
-        if (peekAndMatch(Token.TokenType.READ)) {
+        if (peekAndMatch(Token.TokenType.LABEL)) {
+            String label = tokenManager.matchAndRemove(Token.TokenType.LABEL).get().getVal();
+            StatementNode statementNode = statement();
+            return new LabeledStatementNode(label, statementNode);
+        } else if (peekAndMatch(Token.TokenType.READ)) {
             return readStatement();
         } else if (peekAndMatch(Token.TokenType.DATA)) {
             return dataStatement();
@@ -106,10 +109,267 @@ public class Parser {
             return printStatement();
         } else if (peekAndMatch(Token.TokenType.INPUT)) {
             return inputStatement();
+        } else if (peekAndMatch(Token.TokenType.GOSUB)) {
+            return gosubStatement();
+        } else if (peekAndMatch(Token.TokenType.RETURN)) {
+            return returnStatement();
         } else if (peekAndMatch(Token.TokenType.WORD)) {
             return assignment();
+        } else if (peekAndMatch(Token.TokenType.FOR)) {
+            return forStatement();
+        } else if (peekAndMatch(Token.TokenType.NEXT)) {
+            return nextStatement();
+        } else if (peekAndMatch(Token.TokenType.ENDOFLINE)) {
+            // TEST WITH A FILE
+            tokenManager.matchAndRemove(Token.TokenType.ENDOFLINE);
+            return null;
+        } else if (peekAndMatch(Token.TokenType.IF)) {
+            return ifStatement();
+        } else if (peekAndMatch(Token.TokenType.WHILE)) {
+            return whileStatement();
+        } else {
+            return null;
         }
-        return null;
+    }
+
+    /**
+     * This method is responsible for parsing a while statement from the token stream.
+     *
+     * The method follows these steps:
+     * 1. Checks if the next token is a WHILE token. If it is not, it throws an IllegalArgumentException.
+     * 2. Calls the booleanExpression() method to parse the condition of the while statement.
+     * 3. Checks if the next token is a LABEL token. If it is not, it throws an IllegalArgumentException.
+     * 4. Retrieves the label identifier from the LABEL token and assigns it to the label variable.
+     * 5. Creates a new WhileNode with the parsed condition and label, and returns it as a StatementNode.
+     *
+     * @return A StatementNode representing the parsed while statement.
+     * @throws IllegalArgumentException If the next token is not a WHILE token or a LABEL token.
+     */
+    public StatementNode whileStatement() {
+        if (!matchAndRemove(Token.TokenType.WHILE)) {
+            throw new IllegalArgumentException("Expected WHILE token");
+        }
+
+        BooleanExpressionNode condition = booleanExpression();
+        if (!peekAndMatch(Token.TokenType.WORD)) {
+            throw new IllegalArgumentException("Expected WORD token");
+        }
+        tokenManager.matchAndRemove(Token.TokenType.WORD);
+
+        // WhileNode stores the body of the while loop
+        StatementsNode whileBody = new StatementsNode();
+
+        // Parse the body of the while loop
+        while(tokenManager.moreTokens() && !peekAndMatch(Token.TokenType.LABEL)) {
+            if (peekAndMatch(Token.TokenType.ENDOFLINE)) {
+                tokenManager.matchAndRemove(Token.TokenType.ENDOFLINE);
+                continue;
+            }
+            StatementNode statementNode = statement();
+            if (statementNode != null) {
+                whileBody.addStatement(statementNode);
+            }
+        }
+
+        // Check if the next token is the end label of the while loop
+        if (!peekAndMatch(Token.TokenType.LABEL)) {
+            throw new IllegalArgumentException("Expected LABEL token");
+        }
+
+        // Remove the end label from the token stream, store it as the end label
+        String endLabel = tokenManager.matchAndRemove(Token.TokenType.LABEL).get().getVal();
+
+
+        return new WhileNode(condition, whileBody, endLabel);
+    }
+
+    /**
+     * This method is responsible for parsing an end statement from the token stream.
+     *
+     * The method follows these steps:
+     * 1. Checks if the next token is an END token. If it is not, it throws an IllegalArgumentException.
+     * 2. Creates a new EndNode and returns it.
+     *
+     * @return An EndNode representing the parsed end statement.
+     * @throws IllegalArgumentException If the next token is not an END token.
+     */
+    public StatementNode endStatement() {
+        if (!matchAndRemove(Token.TokenType.END)) {
+            throw new IllegalArgumentException("Expected END token");
+        }
+        return new EndNode();
+    }
+
+
+    /**
+     * This method is responsible for parsing an if statement from the token stream.
+     *
+     * The method follows these steps:
+     * 1. Checks if the next token is an IF token. If it is not, it throws an IllegalArgumentException.
+     * 2. Calls the booleanExpression() method to parse the condition of the if statement.
+     * 3. Checks if the next token is a THEN token. If it is not, it throws an IllegalArgumentException.
+     * 4. Checks if the next token is a WORD token. If it is not, it throws an IllegalArgumentException.
+     * 5. Retrieves the label identifier from the WORD token and assigns it to the label variable.
+     * 6. Creates a new IfNode with the parsed condition and label, and returns it as a StatementNode.
+     *
+     * @return A StatementNode representing the parsed if statement.
+     * @throws IllegalArgumentException If the next token is not an IF token, a THEN token, or a WORD token.
+     */
+    public StatementNode ifStatement() {
+        if (!matchAndRemove(Token.TokenType.IF)) {
+            throw new IllegalArgumentException("Expected IF token");
+        }
+        BooleanExpressionNode condition = booleanExpression();
+        if (!matchAndRemove(Token.TokenType.THEN)) {
+            throw new IllegalArgumentException("Expected THEN token");
+        }
+        if (!peekAndMatch(Token.TokenType.WORD)) {
+            throw new IllegalArgumentException("Expected a label identifier after THEN");
+        }
+        String label = tokenManager.matchAndRemove(Token.TokenType.WORD).get().getVal();
+        return new IfNode(condition, label);
+    }
+
+    /**
+     * Parses a boolean expression node.
+     *
+     * @return a BooleanExpressionNode representing the parsed boolean expression
+     * @throws IllegalArgumentException if a boolean operator is not found
+     */
+    public BooleanExpressionNode booleanExpression() {
+        ExpressionNode left = (ExpressionNode) expression();
+        BooleanExpressionNode.OPERATOR operator;
+        if (matchAndRemove(Token.TokenType.GREATERTHAN)) {
+            operator = BooleanExpressionNode.OPERATOR.GREATERTHAN;
+        } else if (matchAndRemove(Token.TokenType.GREATERTHANEQUALTO)) {
+            operator = BooleanExpressionNode.OPERATOR.GREATERTHANEQUALTO;
+        } else if (matchAndRemove(Token.TokenType.LESSTHAN)) {
+            operator = BooleanExpressionNode.OPERATOR.LESSTHAN;
+        } else if (matchAndRemove(Token.TokenType.LESSTHANEQUALTO)) {
+            operator = BooleanExpressionNode.OPERATOR.LESSTHANEQUALTO;
+        } else if (matchAndRemove(Token.TokenType.NOTEQUALS)) {
+            operator = BooleanExpressionNode.OPERATOR.NOTEQUALS;
+        } else if (matchAndRemove(Token.TokenType.EQUALS)) {
+            operator = BooleanExpressionNode.OPERATOR.EQUALS;
+        } else {
+            throw new IllegalArgumentException("Expected a boolean operator");
+        }
+        ExpressionNode right = (ExpressionNode) expression();
+        return new BooleanExpressionNode(left, operator, right);
+    }
+
+    /**
+     * Executes a for loop statement.
+     *
+     * @return The constructed ForNode representing the for loop.
+     * @throws IllegalArgumentException if a number is not found after "STEP" keyword.
+     */
+    public StatementNode forStatement() {
+        if(!matchAndRemove(Token.TokenType.FOR)) {
+            throw new IllegalArgumentException("Expected FOR token");
+        }
+
+        Optional<Token> wordTokenOpt = tokenManager.matchAndRemove(Token.TokenType.WORD);
+        VariableNode variableNode;
+        if (wordTokenOpt.isPresent()) {
+            variableNode = new VariableNode(wordTokenOpt.get().getVal());
+        } else {
+            throw new IllegalArgumentException("Expected Variable Name");
+        }
+
+        if(!matchAndRemove(Token.TokenType.EQUALS)) {
+            throw new IllegalArgumentException("Expected EQUALS token");
+        }
+
+        // TODO this can be a variable here as well
+        FactorNode initialValue = (FactorNode) factor();
+
+        if(!matchAndRemove(Token.TokenType.TO)) {
+            throw new IllegalArgumentException("Expected TO token");
+        }
+
+        Node limit = factor();
+
+        // default to 1
+        FactorNode increment = new FactorNode(new IntegerNode(1));
+        if (matchAndRemove(Token.TokenType.STEP)) {
+            increment = number(tokenManager.matchAndRemove(Token.TokenType.NUMBER).get(), false);
+        }
+
+
+        StatementsNode body = new StatementsNode();
+        boolean nextFound = false;
+        while (!nextFound && tokenManager.moreTokens()) {
+            if (peekAndMatch(Token.TokenType.NEXT)) {
+                matchAndRemove(Token.TokenType.NEXT);
+                if (!peekAndMatch(Token.TokenType.WORD) || !tokenManager.peek(0).get().getVal().equals(variableNode.getName())) {
+                    throw new IllegalArgumentException("Expected NEXT token followed by the loop variable");
+                }
+                tokenManager.matchAndRemove(Token.TokenType.WORD);
+                nextFound = true;
+            } else {
+                StatementNode statementNode = statement();
+                if (statementNode != null) {
+                    body.addStatement(statementNode);
+                }
+            }
+        }
+        if (!nextFound) {
+            throw new IllegalArgumentException("Expected NEXT token for the FOR loop");
+        }
+        return new ForNode(variableNode, initialValue, limit, increment, body);
+    }
+
+    /**
+     * Retrieves the next statement in the program.
+     *
+     * @return The next statement node.
+     * @throws IllegalArgumentException If a variable identifier is not found after the "NEXT" keyword.
+     */
+    public StatementNode nextStatement() {
+        if(!matchAndRemove(Token.TokenType.NEXT)) {
+            throw new IllegalArgumentException("Expected NEXT token");
+        }
+        if (!peekAndMatch(Token.TokenType.WORD)) {
+            throw new IllegalArgumentException("Expected a variable identifier after NEXT");
+        }
+        VariableNode variable = (VariableNode) factor();
+        return new NextNode(variable);
+    }
+
+    /**
+     * Executes a GOSUB statement by matching and removing the GOSUB token, and then
+     * parsing the label identifier. If the label identifier is not found, an
+     * IllegalArgumentException is thrown.
+     *
+     * @return a new GosubNode representing the GOSUB statement with the parsed label identifier
+     * @throws IllegalArgumentException if a label identifier is not found after the GOSUB token
+     */
+    public StatementNode gosubStatement() {
+        if(!matchAndRemove(Token.TokenType.GOSUB)) {
+            throw new IllegalArgumentException("Expected GOSUB token");
+        }
+        if (!peekAndMatch(Token.TokenType.WORD)) {
+            throw new IllegalArgumentException("Expected a label identifier after GOSUB");
+        }
+        String label = tokenManager.matchAndRemove(Token.TokenType.WORD).get().getVal();
+        return new GosubNode(label);
+    }
+
+    /**
+     * This method is used to generate a return statement node.
+     *
+     * @return A StatementNode object representing a return statement.
+     * @throws IllegalArgumentException if the RETURN statement is not followed by an end of line token.
+     */
+    public StatementNode returnStatement() {
+        if(!matchAndRemove(Token.TokenType.RETURN)) {
+            throw new IllegalArgumentException("Expected RETURN token");
+        }
+        if (!peekAndMatch(Token.TokenType.ENDOFLINE)) {
+            throw new IllegalArgumentException("RETURN statement should be alone on a line");
+        }
+        return new ReturnNode();
     }
 
     /**
@@ -189,7 +449,11 @@ public class Parser {
         List<Node> data = new ArrayList<>();
         do {
             Node node = factor();
-            if (node instanceof VariableNode || node instanceof IntegerNode || node instanceof FloatNode || node instanceof StringNode) {
+            //Unwrap the FactorNode to get the actual inner node
+            if (node instanceof FactorNode) {
+                node = ((FactorNode) node).getInnerNode();
+            }
+            if (node instanceof IntegerNode || node instanceof FloatNode || node instanceof StringNode) {
                 data.add(node);
             } else {
                 throw new IllegalArgumentException(String.format("Invalid token in Data Statement: %s", node));
@@ -262,12 +526,19 @@ public List<Node> printList() {
     }
 
     /**
-     * Parses and generates an ExpressionNode from the given tokens. An ExpressionNode represents an expression in the grammar.
-     * It evaluates the input tokens and creates a binary expression tree.
+     * This method is responsible for parsing an expression from the token stream.
+     * It first checks if the next token is a function name. If it is, it calls the functionInvocation() method to parse the function invocation.
+     * If the next token is not a function name, it calls the term() method to parse a term.
+     * It then enters a loop where it checks if the next token is a PLUS or MINUS token. If it is, it creates a new MathOpNode with the parsed term and the term parsed from the next call to the term() method.
+     * The loop continues until the next token is not a PLUS or MINUS token.
+     * Finally, it returns a new ExpressionNode with the parsed term.
      *
-     * @return The ExpressionNode representing the root of the expression tree.
+     * @return An ExpressionNode representing the parsed expression.
      */
-    public ExpressionNode expression() {
+    public Node expression() {
+        if (peekAndMatch(Token.TokenType.FUNCTIONNAME)) {
+            return functionInvocation();
+        }
         Node term = term();
         while (true) {
             if (matchAndRemove(Token.TokenType.PLUS)) {
@@ -279,6 +550,53 @@ public List<Node> printList() {
             }
         }
         return new ExpressionNode(term);
+    }
+
+    /**
+     * Parses and constructs a FunctionNode by invoking a function.
+     *
+     * @return the constructed FunctionNode with the parsed function name and parameters,
+     *         or null if the next token is not a function name
+     * @throws IllegalArgumentException if the expected LPAREN or RPAREN tokens are missing
+     */
+    public FunctionNode functionInvocation() {
+        if (!peekAndMatch(Token.TokenType.FUNCTIONNAME)) {
+            return null;
+        }
+        String functionName = tokenManager.matchAndRemove(Token.TokenType.FUNCTIONNAME).get().getVal();
+        if (!matchAndRemove(Token.TokenType.LPAREN)) {
+            throw new IllegalArgumentException("Expected LPAREN token");
+        }
+        List<Node> parameters = parameterList();
+        if (!matchAndRemove(Token.TokenType.RPAREN)) {
+            throw new IllegalArgumentException("Expected RPAREN token");
+        }
+        FunctionNode functionNode = new FunctionNode(functionName);
+        functionNode.setParameters(parameters);
+        return functionNode;
+    }
+
+    /**
+     * Retrieves a list of nodes representing the parameters of a method.
+     *
+     * @return A list of Node objects representing the parameters of a method.
+     * @throws IllegalArgumentException if a comma or RPAREN is missing.
+     */
+    public List<Node> parameterList() {
+        List<Node> parameters = new ArrayList<>();
+        while (!peekAndMatch(Token.TokenType.RPAREN)) {
+            if (peekAndMatch(Token.TokenType.STRINGLITERAL)) {
+                parameters.add(new StringNode(tokenManager.matchAndRemove(Token.TokenType.STRINGLITERAL).get().getVal()));
+            } else {
+                parameters.add(expression());
+            }
+            if (peekAndMatch(Token.TokenType.COMMA)) {
+                matchAndRemove(Token.TokenType.COMMA);
+            } else if (!peekAndMatch(Token.TokenType.RPAREN)) {
+                throw new IllegalArgumentException("Expected a comma or RPAREN");
+            }
+        }
+        return parameters;
     }
 
     /**
@@ -321,7 +639,7 @@ public List<Node> printList() {
         boolean isNegative = matchAndRemove(Token.TokenType.MINUS);
 
         if (matchAndRemove(Token.TokenType.LPAREN)) {
-            ExpressionNode innerExpr = expression();
+            ExpressionNode innerExpr = (ExpressionNode) expression();
             if (!matchAndRemove(Token.TokenType.RPAREN)) {
                 throw new IllegalArgumentException("Mismatched parentheses");
             }

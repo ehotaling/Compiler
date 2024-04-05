@@ -90,15 +90,23 @@ public class Lexer {
         knownWords.put("input", Token.TokenType.INPUT);
         knownWords.put("data", Token.TokenType.DATA);
         knownWords.put("gosub", Token.TokenType.GOSUB);
+        knownWords.put("goto", Token.TokenType.GOTO);
         knownWords.put("for", Token.TokenType.FOR);
-        knownWords.put("to", Token.TokenType.TO); // this is fine
+        knownWords.put("to", Token.TokenType.TO);
         knownWords.put("step", Token.TokenType.STEP);
         knownWords.put("next", Token.TokenType.NEXT);
         knownWords.put("return", Token.TokenType.RETURN);
         knownWords.put("then", Token.TokenType.THEN);
         knownWords.put("function", Token.TokenType.FUNCTION);
         knownWords.put("while", Token.TokenType.WHILE);
-        knownWords.put("end", Token.TokenType.END); // this is fine
+        knownWords.put("end", Token.TokenType.END);
+        knownWords.put("random", Token.TokenType.FUNCTIONNAME);
+        knownWords.put("left$", Token.TokenType.FUNCTIONNAME);
+        knownWords.put("right$", Token.TokenType.FUNCTIONNAME);
+        knownWords.put("mid$", Token.TokenType.FUNCTIONNAME);
+        knownWords.put("num$", Token.TokenType.FUNCTIONNAME);
+        knownWords.put("val", Token.TokenType.FUNCTIONNAME);
+        knownWords.put("val%", Token.TokenType.FUNCTIONNAME);
     }
 
     /**
@@ -129,15 +137,25 @@ public class Lexer {
 
         // Convert the tokenBuilder to a String and check if it's in the knownWords map.
         String token = wordBuilder.toString();
-        if (knownWords.containsKey(token.toLowerCase())) { //If so, return a Token with corresponding TokenType, lineNo, position.
-            return new Token(knownWords.get(token.toLowerCase()), lineNo,
-                    position - wordBuilder.length());
-        } else if (token.charAt(token.length() - 1) == ':') {
-            return new Token(Token.TokenType.LABEL, token, lineNo,
-                    position - wordBuilder.length());
-        } else { // If not, create a new WORD Token with the word as its value.
-            return new Token(Token.TokenType.WORD, token, lineNo,
-                    position - wordBuilder.length());
+
+        // Check if the next character is an opening parenthesis
+        if (!handler.isDone() && handler.peek(0) == '(') {
+            // If the token is a known function name, return a FUNCTIONNAME token
+            System.out.println("Assigning function name: " + token);
+            return new Token(Token.TokenType.FUNCTIONNAME, token, lineNo, position - wordBuilder.length());
+        } else {
+            if (knownWords.containsKey(token.toLowerCase())) {
+                // Return a Token with corresponding TokenType, lineNo, position.
+                return new Token(knownWords.get(token.toLowerCase()), lineNo,
+                        position - wordBuilder.length());
+            } else if (token.charAt(token.length() - 1) == ':') {
+                return new Token(Token.TokenType.LABEL, token, lineNo,
+                        position - wordBuilder.length());
+            } else {
+                // If not, create a new WORD Token with the word as its value.
+                return new Token(Token.TokenType.WORD, token, lineNo,
+                        position - wordBuilder.length());
+            }
         }
     }
 

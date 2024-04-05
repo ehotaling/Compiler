@@ -13,9 +13,9 @@ public class Token {
      * Each type represents a distinct category of token found in the source code.
      */
     public enum TokenType {
-        WORD, NUMBER, IF, PRINT, READ, INPUT, DATA, GOSUB, FOR, TO, STEP, NEXT, RETURN, THEN, FUNCTION, WHILE,
+        WORD, NUMBER, IF, PRINT, READ, INPUT, DATA, GOSUB, GOTO, FOR, TO, STEP, NEXT, RETURN, THEN, FUNCTION, WHILE,
         END, ENDOFLINE, STRINGLITERAL, GREATERTHANEQUALTO, LESSTHANEQUALTO, NOTEQUALS, EQUALS, LESSTHAN, GREATERTHAN,
-        LPAREN, RPAREN, PLUS, MINUS, MULTIPLY, DIVIDE, LABEL, COMMA
+        LPAREN, RPAREN, PLUS, MINUS, MULTIPLY, DIVIDE, LABEL, COMMA, FUNCTIONNAME
     }
     /**
      * Represents a single token in the source code.
@@ -62,7 +62,7 @@ public class Token {
         if (val != null) {
             return String.format("%s(%s)", tokenType, val);
         } else {
-            return tokenType.toString();
+            return String.format("%s(No Value)", tokenType);
         }
     }
 

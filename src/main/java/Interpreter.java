@@ -5,7 +5,6 @@ import java.util.Queue;
 
 public class Interpreter {
     private final ProgramNode programNode;
-
     private final StatementVisitorImpl statementVisitor;
     private HashMap<String, LabeledStatementNode> labels;
     private Queue<DataNode> dataQueue;

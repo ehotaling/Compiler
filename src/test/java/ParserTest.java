@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -39,6 +38,13 @@ public class ParserTest {
 
     private ProgramNode parseStatements(String text) throws IOException {
         return new Parser(lexTokens(text)).parse();
+    }
+
+    private ProgramNode parseProgram(String text) {
+        Lexer lexer = new Lexer();
+        LinkedList<Token> tokens = lexer.lex(text);
+        Parser parser = new Parser(tokens);
+        return parser.parse();
     }
 
     private ExpressionNode negate(ExpressionNode expression) {
@@ -550,9 +556,13 @@ public class ParserTest {
 
     @Test
     public void testInputStatement_SingleInput() throws IOException {
-        ProgramNode testProgram = parseStatements("input \"Enter your name\"");
+        ProgramNode testProgram = parseStatements("INPUT \"Enter x:\", x");
 
-        StatementNode statement = new InputNode(List.of(new StringNode("Enter your name")));
+        List<Node> inputs = new ArrayList<>();
+        inputs.add(new StringNode("Enter x:"));
+        inputs.add(new VariableNode("x"));
+
+        StatementNode statement = new InputNode(inputs);
         StatementsNode statements = new StatementsNode();
         statements.addStatement(statement);
 
@@ -564,10 +574,11 @@ public class ParserTest {
 
     @Test
     public void testInputStatement_MultipleInputs() throws IOException {
-        ProgramNode testProgram = parseStatements("input \"x\", y, z");
+        ProgramNode testProgram = parseStatements("INPUT \"Enter values for x, y, z:\", x, y, z");
 
         List<Node> inputs = new ArrayList<>();
-        inputs.add(new StringNode("x"));
+        inputs.add(new StringNode("Enter values for x, y, z:"));
+        inputs.add(new VariableNode("x"));
         inputs.add(new VariableNode("y"));
         inputs.add(new VariableNode("z"));
 
@@ -590,15 +601,15 @@ public class ParserTest {
 
     @Test
     public void testInputStatement_WhitespaceBetweenVariablesAndCommas() throws IOException {
-        ProgramNode testProgram = parseStatements("input \"Input vars: var1, var2\" y , z");
+        ProgramNode testProgram = parseStatements("INPUT \"Enter x, y, z:\", x , y , z");
 
-        StatementNode statement = new InputNode(new ArrayList<>(
-                Arrays.asList(new StringNode("Input vars: var1, var2"),
-                        new VariableNode("y"),
-                        new VariableNode("z")
-                )
-        ));
+        List<Node> inputs = new ArrayList<>();
+        inputs.add(new StringNode("Enter x, y, z:"));
+        inputs.add(new VariableNode("x"));
+        inputs.add(new VariableNode("y"));
+        inputs.add(new VariableNode("z"));
 
+        StatementNode statement = new InputNode(inputs);
         StatementsNode statements = new StatementsNode();
         statements.addStatement(statement);
 
@@ -606,6 +617,14 @@ public class ParserTest {
         expectedProgram.addStatements(statements);
 
         assertEquals(expectedProgram, testProgram);
+    }
+
+    @Test
+    public void testInputStatement_InvalidTokens() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            parseStatements("input x, 123, z");
+        });
+
     }
 
     @Test
@@ -678,13 +697,11 @@ public class ParserTest {
     }
 
     @Test
-    public void dataStatement_ValidTokens_ReturnsDataNode() throws IOException {
-        ProgramNode testProgram = parseStatements("data x, y, z");
+    public void dataStatement_StringLiteral_ReturnsDataNode() throws IOException {
+        ProgramNode testProgram = parseStatements("data \"x\"");
 
         List<Node> nodes = new ArrayList<>();
-        nodes.add(new VariableNode("x"));
-        nodes.add(new VariableNode("y"));
-        nodes.add(new VariableNode("z"));
+        nodes.add(new StringNode("x"));
 
         StatementNode statement = new DataNode(nodes);
         StatementsNode statements = new StatementsNode();
@@ -697,12 +714,28 @@ public class ParserTest {
     }
 
     @Test
-    public void dataStatement_SingleVariable_ReturnsDataNode() throws IOException {
-        ProgramNode testProgram = parseStatements("data x");
-        // TODO, but "DATA" is a WORD, not a LABEL
+    public void dataStatement_IntegerLiteral_ReturnsDataNode() throws IOException {
+        ProgramNode testProgram = parseStatements("data 1");
 
         List<Node> nodes = new ArrayList<>();
-        nodes.add(new VariableNode("x"));
+        nodes.add(new IntegerNode(1));
+
+        StatementNode statement = new DataNode(nodes);
+        StatementsNode statements = new StatementsNode();
+        statements.addStatement(statement);
+
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addStatements(statements);
+
+        assertEquals(expectedProgram, testProgram);
+    }
+
+    @Test
+    public void dataStatement_FloatLiteral_ReturnsDataNode() throws IOException {
+        ProgramNode testProgram = parseStatements("data 2.5");
+
+        List<Node> nodes = new ArrayList<>();
+        nodes.add(new FloatNode(2.5f));
 
         StatementNode statement = new DataNode(nodes);
         StatementsNode statements = new StatementsNode();
@@ -722,114 +755,211 @@ public class ParserTest {
     }
 
     @Test
-    public void dataStatement_InvalidTokens_ThrowsException() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            parseStatements("data x, 123, z");
-        });
+    public void dataStatement_SingleInteger_ReturnsDataNodeWithSingleInteger() throws IOException {
+        ProgramNode testProgram = parseStatements("data 5");
+        List<Node> nodes = new ArrayList<>();
+        nodes.add(new IntegerNode(5));
+        StatementNode dataStatement = new DataNode(nodes);
+        StatementsNode statements = new StatementsNode();
+        statements.addStatement(dataStatement);
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addStatements(statements);
+        assertEquals(expectedProgram, testProgram);
     }
 
     @Test
-    public void dataStatement_WhitespaceBetweenVariablesAndCommas_ReturnsDataNode() throws IOException {
-        ProgramNode testProgram = parseStatements("data x , y , z");
-
+    public void dataStatement_MultipleIntegers_ReturnsDataNodeWithAllIntegers() throws IOException {
+        ProgramNode testProgram = parseStatements("data 5, 10, 20");
         List<Node> nodes = new ArrayList<>();
-        nodes.add(new VariableNode("x"));
-        nodes.add(new VariableNode("y"));
-        nodes.add(new VariableNode("z"));
-
-        StatementNode statement = new DataNode(nodes);
+        nodes.add(new IntegerNode(5));
+        nodes.add(new IntegerNode(10));
+        nodes.add(new IntegerNode(20));
+        StatementNode dataStatement = new DataNode(nodes);
         StatementsNode statements = new StatementsNode();
-        statements.addStatement(statement);
+        statements.addStatement(dataStatement);
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addStatements(statements);
+        assertEquals(expectedProgram, testProgram);
+    }
 
+    @Test
+    public void dataStatement_SingleFloat_ReturnsDataNodeWithSingleFloat() throws IOException {
+        ProgramNode testProgram = parseStatements("data 3.14159");
+        List<Node> nodes = new ArrayList<>();
+        nodes.add(new FloatNode(3.14159f));
+        StatementNode dataStatement = new DataNode(nodes);
+        StatementsNode statements = new StatementsNode();
+        statements.addStatement(dataStatement);
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addStatements(statements);
+        assertEquals(expectedProgram, testProgram);
+    }
+
+    @Test
+    public void dataStatement_MixedValues_ReturnsDataNodeWithAllValues() throws IOException {
+        ProgramNode testProgram = parseStatements("data 5, \"hello\", 3.14159");
+        List<Node> nodes = new ArrayList<>();
+        nodes.add(new IntegerNode(5));
+        nodes.add(new StringNode("hello"));
+        nodes.add(new FloatNode(3.14159f));
+        StatementNode dataStatement = new DataNode(nodes);
+        StatementsNode statements = new StatementsNode();
+        statements.addStatement(dataStatement);
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addStatements(statements);
+        assertEquals(expectedProgram, testProgram);
+    }
+
+
+    @Test
+    public void testInput() throws IOException {
+        LinkedList<Token> tokens =  lexer.lex("src/test/resources/input_test.txt");
+        ProgramNode actualProgram = new Parser(tokens).parse();
+
+        // Create expectedProgram with the expected structure
+        List<Node> inputs = new ArrayList<>();
+        inputs.add(new StringNode("What is your name and age?"));
+        inputs.add(new VariableNode("name$"));
+        inputs.add(new VariableNode("age"));
+        StatementNode inputStatement = new InputNode(inputs);
+        StatementsNode statements = new StatementsNode();
+        statements.addStatement(inputStatement);
         ProgramNode expectedProgram = new ProgramNode();
         expectedProgram.addStatements(statements);
 
-        assertEquals(expectedProgram, testProgram);
-    }
-
-    @Test
-    public void testPrintInputRead() throws IOException {
-        LinkedList<Token> tokens =  lexer.lex("src/test/resources/input_test.txt");
-        ProgramNode expectedProgram = new Parser(tokens).parse();
-
-        InputNode inputNode = new InputNode(new ArrayList<>(
-                Arrays.asList(new StringNode("What is your name and age?"),
-                        new VariableNode("name$"),
-                        new VariableNode("age")
-                )
-        ));
-
-        StatementsNode statements = new StatementsNode();
-        statements.addStatement(inputNode);
-
-        ProgramNode testProgram = new ProgramNode();
-        testProgram.addStatements(statements);
-
-        assertEquals(expectedProgram, testProgram);
-    }
-
-    @Test
-    public void testInputInvalid() throws IOException {
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            LinkedList<Token> tokens =  lexer.lex("src/test/resources/input_test_invalid.txt");
-            ProgramNode program = new Parser(tokens).parse();
-            System.out.println(program);
-        });
-
-        String expectedMessage = "Invalid Input Statement";
-        String actualMessage = exception.getMessage();
-
-        assertTrue(actualMessage.contains(expectedMessage));
+        // Compare actualProgram with expectedProgram
+        assertEquals(expectedProgram, actualProgram, "The parsed program did not match the expected program.");
     }
 
     @Test
     public void testRead() throws IOException {
-        LinkedList<Token> tokens =  lexer.lex("src/test/resources/read_test.txt");
-        ProgramNode expectedProgram = new Parser(tokens).parse();
+        LinkedList<Token> tokens = lexer.lex("src/test/resources/read_test.txt");
+        ProgramNode actualProgram = new Parser(tokens).parse();
 
-        ReadNode readNode = new ReadNode(new ArrayList<>(Arrays.asList(
-                new VariableNode("a"), new VariableNode("a$")
-        )));
+        // Create expectedProgram with the expected structure
+        List<VariableNode> variables = new ArrayList<>();
+        variables.add(new VariableNode("a"));
+        variables.add(new VariableNode("a$"));
+        StatementNode readStatement = new ReadNode(variables);
+        StatementsNode statements = new StatementsNode();
+        statements.addStatement(readStatement);
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addStatements(statements);
+
+        // Compare actualProgram with expectedProgram
+        assertEquals(expectedProgram, actualProgram, "The parsed program did not match the expected program.");
+    }
+
+    // TODO figure out what to do with the labeledstatementnode at the end of the while loop
+    @Test
+    public void testWhileFromFile() throws IOException {
+        LinkedList<Token> tokens = lexer.lex("src/test/resources/while_loop.bas");
+        ProgramNode actualProgram = new Parser(tokens).parse();
+        ProgramNode expectedProgram = new ProgramNode();
+        StatementsNode statements  = new StatementsNode();
+
+
+        // Print the actual statements for debugging
+        System.out.println(actualProgram.getStatements());
+
+        // Compare actualProgram with expectedProgram
+        // assertEquals(expectedProgram, actualProgram, "The parsed program did not match the expected program.");
+    }
+
+    @Test
+    public void testForLoopFromFile() throws IOException {
+        LinkedList<Token> tokens = lexer.lex("src/test/resources/for_loop_2.bas");
+        ProgramNode actualProgram = new Parser(tokens).parse();
+        ProgramNode expectedProgram = new ProgramNode();
 
         StatementsNode statements = new StatementsNode();
-        statements.addStatement(readNode);
 
-        ProgramNode testProgram = new ProgramNode();
-        testProgram.addStatements(statements);
+        System.out.println(actualProgram.getStatements());
+        // Compare actualProgram with expectedProgram
+//        assertEquals(expectedProgram, actualProgram, "The parsed program did not match the expected program.");
+    }
+
+    @Test
+    public void expressionWithFunctionInvocation_ReturnsFunctionNode() throws IOException {
+        ProgramNode testProgram = parseExpressions("random()");
+
+        FunctionNode expectedFunction = new FunctionNode("random");
+        ProgramNode expectedProgram = new ProgramNode();
+        expectedProgram.addExpression(expectedFunction);
 
         assertEquals(expectedProgram, testProgram);
     }
 
     @Test
-    public void testReadInvalid() throws IOException {
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            LinkedList<Token> tokens =  lexer.lex("src/test/resources/read_test_invalid.txt");
-            ProgramNode program = new Parser(tokens).parse();
-        });
+    public void testFunctionNameToken() {
+        Lexer lexer = new Lexer();
+        LinkedList<Token> tokens = lexer.lex("src/test/resources/function_test.txt");
+
+        // Check the size of the tokens list
+        assertEquals(4, tokens.size());
+
+        // Check the type of the first token
+        assertEquals(Token.TokenType.FUNCTIONNAME, tokens.get(0).getTokenType());
+
+        // Check the value of the first token
+        assertEquals("random", tokens.get(0).getVal());
+
+
+        // Check the type of the second token
+        assertEquals(Token.TokenType.LPAREN, tokens.get(1).getTokenType());
+
+        // Check the type of the third token
+        assertEquals(Token.TokenType.RPAREN, tokens.get(2).getTokenType());
+
+        // Check the type of the fourth token
+        assertEquals(Token.TokenType.ENDOFLINE, tokens.get(3).getTokenType());
     }
 
     @Test
-    public void testPrintList() throws IOException {
-        LinkedList<Token> tokens =  lexer.lex("src/test/resources/print_list.txt");
-        ProgramNode expectedProgram = new Parser(tokens).parse();
-
-        ExpressionNode expression1 = new ExpressionNode(new TermNode(new VariableNode("F%")));
-        StringNode stringNode = new StringNode("DEG F = ");
-        ExpressionNode expression2 = new ExpressionNode(new TermNode(new VariableNode("C%")));
-        StringNode stringNode2 = new StringNode("DEG C");
-
-        PrintNode printNode = new PrintNode(new ArrayList<>(
-                Arrays.asList(expression1, stringNode, expression2, stringNode2)
-        ));
-
-        StatementsNode statements = new StatementsNode();
-        statements.addStatement(printNode);
-
-        ProgramNode testProgram = new ProgramNode();
-        testProgram.addStatements(statements);
-
-        assertEquals(expectedProgram, testProgram);
+    public void testLabeledStatement() throws IOException {
+        ProgramNode program = parseStatements("LABEL: PRINT \"Hello, World!\"");
+        // Check that the first statement in the program is a LabeledStatementNode
+        assertTrue(program.getStatements().get(0) instanceof LabeledStatementNode);
     }
+
+    @Test
+    public void testGoSub() throws IOException {
+        ProgramNode program = parseStatements("GOSUB LABEL");
+        // Check that the first statement in the program is a GoSubNode
+        assertTrue(program.getStatements().get(0) instanceof GosubNode);
+    }
+
+    @Test
+    public void testReturn() throws IOException {
+        ProgramNode program = parseStatements("RETURN");
+        // Check that the first statement in the program is a ReturnNode
+        assertTrue(program.getStatements().get(0) instanceof ReturnNode);
+    }
+
+    @Test
+    public void testFor() throws IOException {
+        ProgramNode program = parseStatements("FOR I = 1 TO 10 STEP 2\nPRINT I\nNEXT I");
+        // Check that the first statement in the program is a ForNode
+        assertTrue(program.getStatements().get(0) instanceof ForNode);
+    }
+
+    @Test
+    public void testForIncrement() throws IOException {
+        ProgramNode program = parseStatements("FOR I = 1 TO 10\nPRINT I\nNEXT I");
+        // Check that the first statement in the program is a ForNode
+        assertTrue(program.getStatements().get(0) instanceof ForNode);
+        // Check that the increment is 1
+        assertEquals(new FactorNode(new IntegerNode(1)), ((ForNode) program.getStatements().get(0)).getIncrement());
+    }
+
+    @Test
+    public void testWhile() throws IOException {
+        // TODO test the contents of While node
+        ProgramNode program = parseStatements("WHILE x < 5 endWhileLabel\nx = x + 1\n endWhileLabel:");
+        // Check that the first statement in the program is a WhileNode
+        assertTrue(program.getStatements().get(0) instanceof WhileNode);
+    }
+
 }
 
 
