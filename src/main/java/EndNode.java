@@ -4,6 +4,6 @@ public class EndNode extends StatementNode {
         return "EndNode()";
     }
     @Override
-    public void accept(Interpreter.StatementVisitor visitor) {
+    public void accept(StatementVisitor visitor) {
     }
 }

@@ -58,6 +58,6 @@ public class ForNode extends StatementNode {
     }
 
     @Override
-    public void accept(Interpreter.StatementVisitor visitor) {
+    public void accept(StatementVisitor visitor) {
     }
 }

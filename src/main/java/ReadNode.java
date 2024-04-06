@@ -31,6 +31,6 @@ public class ReadNode extends StatementNode {
     }
 
     @Override
-    public void accept(Interpreter.StatementVisitor visitor) {
+    public void accept(StatementVisitor visitor) {
     }
 }

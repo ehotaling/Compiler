@@ -19,4 +19,9 @@ public class IfNode extends StatementNode {
     public String toString() {
         return String.format("IfNode(%s, %s)", condition, label);
     }
+
+    @Override
+    public void accept(StatementVisitor visitor) {
+
+    }
 }
