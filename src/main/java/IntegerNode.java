@@ -18,6 +18,11 @@ public class IntegerNode extends Node {
     }
 
     @Override
+    public void accept(StatementVisitor visitor) {
+
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

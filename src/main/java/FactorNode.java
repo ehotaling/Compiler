@@ -13,6 +13,11 @@ public class FactorNode extends Node {
         return String.format("FactorNode: {%s}", node);
     }
 
+    @Override
+    public void accept(StatementVisitor visitor) {
+
+    }
+
     public Node getInnerNode() {
         return node;
     }

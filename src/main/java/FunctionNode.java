@@ -20,6 +20,14 @@ public class FunctionNode extends Node {
         return String.format("FunctionNode(%s, %s)", functionName, parameters);
     }
 
+    public String getFunctionName() {
+        return functionName;
+    }
+
+    public List<Node> getParameters() {
+        return parameters;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -32,5 +40,10 @@ public class FunctionNode extends Node {
     @Override
     public int hashCode() {
         return Objects.hash(functionName, parameters);
+    }
+
+    @Override
+    public void accept(StatementVisitor visitor) {
+        visitor.visit(this);
     }
 }

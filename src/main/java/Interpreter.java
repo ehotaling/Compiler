@@ -18,8 +18,6 @@ public class Interpreter {
         this.statementVisitor = new StatementVisitorImpl();
     }
 
-    // TODO Is method this good?
-    //  Walk the AST, searching for the DATA statements. Insert their contents into a Java collection that we can use for READ.
     public void visitStatements() {
         List<StatementNode> statements = programNode.getStatements();
         for (StatementNode statement: statements) {
@@ -32,4 +30,5 @@ public class Interpreter {
         dataQueue = statementVisitor.getDataNodes();
         labels = statementVisitor.getLabels();
     }
+
 }
