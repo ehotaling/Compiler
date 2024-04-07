@@ -1,0 +1,3 @@
+DATA 10, "mphipps", 10.0
+
+beginning: PRINT "Hello!"
