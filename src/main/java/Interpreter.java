@@ -31,4 +31,24 @@ public class Interpreter {
         labels = statementVisitor.getLabels();
     }
 
+    public HashMap<String, Integer> getIntVariables() {
+        return intVariables;
+    }
+
+    public HashMap<String, String> getStringVariables() {
+        return stringVariables;
+    }
+
+    public HashMap<String, Float> getFloatVariables() {
+        return floatVariables;
+    }
+
+    public HashMap<String, LabeledStatementNode> getLabels() {
+        return labels;
+    }
+
+    public Queue<DataNode> getDataQueue() {
+        return dataQueue;
+    }
+
 }

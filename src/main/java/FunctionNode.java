@@ -42,8 +42,4 @@ public class FunctionNode extends Node {
         return Objects.hash(functionName, parameters);
     }
 
-    @Override
-    public void accept(StatementVisitor visitor) {
-        visitor.visit(this);
-    }
 }

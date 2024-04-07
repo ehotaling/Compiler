@@ -25,10 +25,6 @@ public class StatementsNode extends Node {
         return String.format("StatementsNode(%s)", statements);
     }
 
-    @Override
-    public void accept(StatementVisitor visitor) {
-
-    }
 
     @Override
     public boolean equals(Object o) {

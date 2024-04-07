@@ -41,10 +41,6 @@ public class ProgramNode extends Node {
                 "}";
     }
 
-    @Override
-    public void accept(StatementVisitor visitor) {
-
-    }
 
     @Override
     public boolean equals(Object o) {

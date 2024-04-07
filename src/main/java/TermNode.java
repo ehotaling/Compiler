@@ -1,4 +1,3 @@
-import java.util.LinkedList;
 import java.util.Objects;
 
 
@@ -14,10 +13,6 @@ public class TermNode extends Node {
         return String.format("TermNode: {%s}", this.node);
     }
 
-    @Override
-    public void accept(StatementVisitor visitor) {
-
-    }
 
     @Override
     public boolean equals(Object o) {

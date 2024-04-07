@@ -32,10 +32,6 @@ public class MathOpNode extends Node {
         return String.format("MathOpNode(%s %s %s)", left, operation, right);
     }
 
-    @Override
-    public void accept(StatementVisitor visitor) {
-
-    }
 
     @Override
     public boolean equals(Object o) {

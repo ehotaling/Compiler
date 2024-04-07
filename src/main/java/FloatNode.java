@@ -21,10 +21,7 @@ public class FloatNode extends Node {
         return String.format("FloatNode(%f)", value);
     }
 
-    @Override
-    public void accept(StatementVisitor visitor) {
 
-    }
 
     @Override
     public boolean equals(Object o) {
