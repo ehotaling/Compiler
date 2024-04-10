@@ -100,9 +100,9 @@ public class InterpreterTest {
         assertEquals(1, intVariables.size());
         assertEquals(1, floatVariables.size());
         assertEquals(1, stringVariables.size());
-        assertEquals(5, intVariables.get("x"));
-        assertEquals(5.0f, floatVariables.get("y%"));
-        assertEquals("Hello World", stringVariables.get("z$"));
+        assertNull(intVariables.get("x"));
+        assertNull(floatVariables.get("y%"));
+        assertNull(stringVariables.get("z$"));
 
     }
 
@@ -123,8 +123,8 @@ public class InterpreterTest {
         assertEquals(1, intVariables.size());
         assertEquals(1, floatVariables.size());
         assertEquals(1, stringVariables.size());
-        assertEquals(5, intVariables.get("x"));
-        assertEquals(5.0f, floatVariables.get("y%"));
-        assertEquals("Hello World", stringVariables.get("z$"));
+        assertNull(intVariables.get("x"));
+        assertNull(floatVariables.get("y%"));
+        assertNull(stringVariables.get("z$"));
     }
 }

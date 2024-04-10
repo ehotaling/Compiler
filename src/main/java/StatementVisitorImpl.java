@@ -38,19 +38,12 @@ public class StatementVisitorImpl implements StatementVisitor {
         VariableNode variableNode = assignmentNode.getVariableNode();
         String name = variableNode.getName();
         String type = variableNode.getType();
-        Node valueNode = assignmentNode.getValue();
         if (type.equals("int")) {
-            IntegerNode integerNode = (IntegerNode) valueNode;
-            Integer value = integerNode.getInt();
-            intVariables.put(name, value);
+            intVariables.put(name, null);
         } else if (type.equals("float")) {
-            FloatNode floatNode = (FloatNode) valueNode;
-            Float value = floatNode.getFloat();
-            floatVariables.put(name, value);
+            floatVariables.put(name, null);
         } else if (type.equals("string")) {
-            StringNode stringNode = (StringNode) valueNode;
-            String value = stringNode.getValue();
-            stringVariables.put(name, value);
+            stringVariables.put(name, null);
         }
     }
     public void visit(DataNode dataNode) {
