@@ -8,6 +8,10 @@ public class TermNode extends Node {
         this.node = node;
     }
 
+    public Node getNode() {
+        return this.node;
+    }
+
     @Override
     public String toString() {
         return String.format("TermNode: {%s}", this.node);

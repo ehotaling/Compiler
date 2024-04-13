@@ -27,6 +27,10 @@ public class MathOpNode extends Node {
         return right;
     }
 
+    public OPERATION getOperator() {
+        return operation;
+    }
+
     @Override
     public String toString() {
         return String.format("MathOpNode(%s %s %s)", left, operation, right);

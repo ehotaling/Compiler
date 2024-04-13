@@ -113,7 +113,6 @@ public class InterpreterTest {
 
         // Run Interpreter on it
         Interpreter interpreter = new Interpreter(actualProgram);
-        // TODO solve ClassCastException: class ExpressionNode cannot be cast to class IntegerNode
         interpreter.visitStatements();
 
         HashMap<String, Integer> intVariables = interpreter.getIntVariables();
@@ -126,5 +125,36 @@ public class InterpreterTest {
         assertNull(intVariables.get("x"));
         assertNull(floatVariables.get("y%"));
         assertNull(stringVariables.get("z$"));
+    }
+
+    @Test
+    public void testStringVariableStorage() throws IOException {
+        LinkedList<Token> tokens = lexer.lex("src/test/resources/string_storage.bas");
+        ProgramNode actualProgram = new Parser(tokens).parse();
+
+        // Run Interpreter on it
+        Interpreter interpreter = new Interpreter(actualProgram);
+        interpreter.visitStatements();
+
+        HashMap<String, String> stringVariables = interpreter.getStringVariables();
+
+        assertEquals(1, stringVariables.size());
+        assertEquals("Eric", stringVariables.get("name$"));
+    }
+
+    @Test
+    public void testIntVariableStorage() throws IOException {
+        LinkedList<Token> tokens = lexer.lex("src/test/resources/int_storage.bas");
+        ProgramNode actualProgram = new Parser(tokens).parse();
+
+        // Run Interpreter on it
+        Interpreter interpreter = new Interpreter(actualProgram);
+        interpreter.visitStatements();
+
+        HashMap<String, Integer> intVariables = interpreter.getIntVariables();
+
+//        assertEquals(2, intVariables.size());
+        assertEquals(28, intVariables.get("age"));
+        assertEquals(28, intVariables.get("age2"));
     }
 }

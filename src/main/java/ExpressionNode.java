@@ -4,6 +4,10 @@ public class ExpressionNode extends Node {
 
     private final Node node;
 
+    public Node getNode() {
+        return node;
+    }
+
     public ExpressionNode(Node node) {
         this.node = node;
     }
