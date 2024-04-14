@@ -110,9 +110,9 @@ public class StatementVisitorImpl implements StatementVisitor {
                     String str = (String) evaluate(parameters.get(0));
                     return BuiltInFunctions.VAL(str);
                 }
-                if (functionName.equals("VAL$")) {
+                if (functionName.equals("VALF")) {
                     String str = (String) evaluate(parameters.get(0));
-                    return BuiltInFunctions.VAL$(str);
+                    return BuiltInFunctions.VALF(str);
                 }
             }
 

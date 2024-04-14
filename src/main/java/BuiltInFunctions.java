@@ -16,11 +16,11 @@ public class BuiltInFunctions {
         return str.substring(Math.max(0, str.length() - n));
     }
 
-    // Returns a substring of a string starting at a specified position.
+    // returns the characters of the string, starting from the 2nd argument and taking the 3rd argument as the count
     public static String MID$(String str, int start, int count) {
         return str.substring(start, Math.min(start + count, str.length()));
     }
-    // Returns the length of a string.
+    // converts a number to a string
     public static String NUM$(Number num) {
         return num.toString();
     }
@@ -31,7 +31,7 @@ public class BuiltInFunctions {
     }
 
     // Converts a string to a float.
-    public static float VAL$(String str) {
+    public static float VALF(String str) {
         return Float.parseFloat(str);
     }
 }

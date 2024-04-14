@@ -44,7 +44,7 @@ public class BuiltInFunctionsTest {
 
     @Test
     public void testVal$() {
-        float result = BuiltInFunctions.VAL$("123.45");
+        float result = BuiltInFunctions.VALF("123.45");
         assertEquals(123.45f, result);
     }
 }
