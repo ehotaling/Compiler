@@ -107,30 +107,32 @@ public class Interpreter {
             Object left = evaluate(mathOpNode.getLeft());
             Object right = evaluate(mathOpNode.getRight());
 
+            if (!isNumeric(left, right)) {
+                throw new IllegalArgumentException(String.format("Illegal math operation for arguments: \n%s\n%s\n", left, right));
+            }
+
             if (mathOpNode.getOperator() == MathOpNode.OPERATION.ADD) {
-                if (left instanceof Integer && right instanceof Integer) {
+                if (isInteger(left, right)) {
                     return (Integer) left + (Integer) right;
-                } else if (left instanceof String && right instanceof String) {
-                    return (String) left + (String) right;
-                } else {
+                } else if (isNumeric(left, right)) {
                     return ((Number) left).floatValue() + ((Number) right).floatValue();
                 }
             } else if (mathOpNode.getOperator() == MathOpNode.OPERATION.SUBTRACT) {
-                if (left instanceof Integer && right instanceof Integer) {
+                if (isInteger(left, right)) {
                     return (Integer) left - (Integer) right;
-                } else {
+                } else if (isNumeric(left, right)) {
                     return ((Number) left).floatValue() - ((Number) right).floatValue();
                 }
             } else if (mathOpNode.getOperator() == MathOpNode.OPERATION.MULTIPLY) {
-                if (left instanceof Integer && right instanceof Integer) {
+                if (isInteger(left, right)) {
                     return (Integer) left * (Integer) right;
-                } else {
+                } else if (isNumeric(left, right)) {
                     return ((Number) left).floatValue() * ((Number) right).floatValue();
                 }
             } else if (mathOpNode.getOperator() == MathOpNode.OPERATION.DIVIDE) {
-                if (left instanceof Integer && right instanceof Integer) {
+                if (isInteger(left, right)) {
                     return (Integer) left / (Integer) right;
-                } else {
+                } else if (isNumeric(left, right)) {
                     return ((Number) left).floatValue() / ((Number) right).floatValue();
                 }
             }
@@ -156,6 +158,15 @@ public class Interpreter {
             return evaluate(assignmentNode.getValue());
         }
         throw new RuntimeException("Unknown node type: " + node.getClass());
+    }
+
+    private boolean isInteger(Object left, Object right) {
+        return left instanceof Integer && right instanceof Integer;
+    }
+
+    private boolean isNumeric(Object left, Object right) {
+        return (left instanceof Float || left instanceof Integer) &&
+                (right instanceof Float || right instanceof Integer);
     }
 
     public HashMap<String, Integer> getIntVariables() {
