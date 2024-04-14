@@ -53,11 +53,11 @@ public class Interpreter {
             String name = variableNode.getName();
             String type = variableNode.getType();
             Object value = evaluate(variableNode.getVal());
-            if (type.equals("int") && value instanceof IntegerNode) {
+            if (type.equals("int") && value instanceof Integer) {
                 return intVariables.get(name);
-            } else if (type.equals("float") && value instanceof FloatNode) {
+            } else if (type.equals("float") && value instanceof Float) {
                 return floatVariables.get(name);
-            } else if (type.equals("string") && value instanceof StringNode) {
+            } else if (type.equals("string") && value instanceof String) {
                 return stringVariables.get(name);
             } else {
                 throw new IllegalArgumentException(String.format("Invalid value %s for variable: %s", value, variableNode));
@@ -107,30 +107,32 @@ public class Interpreter {
             Object left = evaluate(mathOpNode.getLeft());
             Object right = evaluate(mathOpNode.getRight());
 
+            if (!isNumeric(left, right)) {
+                throw new IllegalArgumentException(String.format("Illegal math operation for arguments: \n%s\n%s\n", left, right));
+            }
+
             if (mathOpNode.getOperator() == MathOpNode.OPERATION.ADD) {
-                if (left instanceof Integer && right instanceof Integer) {
+                if (isInteger(left, right)) {
                     return (Integer) left + (Integer) right;
-                } else if (left instanceof String && right instanceof String) {
-                    return (String) left + (String) right;
-                } else {
+                } else if (isNumeric(left, right)) {
                     return ((Number) left).floatValue() + ((Number) right).floatValue();
                 }
             } else if (mathOpNode.getOperator() == MathOpNode.OPERATION.SUBTRACT) {
-                if (left instanceof Integer && right instanceof Integer) {
+                if (isInteger(left, right)) {
                     return (Integer) left - (Integer) right;
-                } else {
+                } else if (isNumeric(left, right)) {
                     return ((Number) left).floatValue() - ((Number) right).floatValue();
                 }
             } else if (mathOpNode.getOperator() == MathOpNode.OPERATION.MULTIPLY) {
-                if (left instanceof Integer && right instanceof Integer) {
+                if (isInteger(left, right)) {
                     return (Integer) left * (Integer) right;
-                } else {
+                } else if (isNumeric(left, right)) {
                     return ((Number) left).floatValue() * ((Number) right).floatValue();
                 }
             } else if (mathOpNode.getOperator() == MathOpNode.OPERATION.DIVIDE) {
-                if (left instanceof Integer && right instanceof Integer) {
+                if (isInteger(left, right)) {
                     return (Integer) left / (Integer) right;
-                } else {
+                } else if (isNumeric(left, right)) {
                     return ((Number) left).floatValue() / ((Number) right).floatValue();
                 }
             }
@@ -153,9 +155,30 @@ public class Interpreter {
 
         if (node instanceof AssignmentNode) {
             AssignmentNode assignmentNode = (AssignmentNode) node;
-            return evaluate(assignmentNode.getValue());
+            String name = assignmentNode.getVariableNode().getName();
+            Object value = evaluate(assignmentNode.getValue());
+            String type = assignmentNode.getVariableNode().getType();
+
+            if (type.equals("int") && value instanceof Integer) {
+                return intVariables.put(name, (Integer) value);
+            } else if (type.equals("float") && value instanceof Float) {
+                return floatVariables.put(name, (Float) value);
+            } else if (type.equals("string") && value instanceof String) {
+                return stringVariables.put(name, (String) value);
+            } else {
+                throw new IllegalArgumentException(String.format("Invalid type %s for variable %s with value: %s", type, name, value));
+            }
         }
         throw new RuntimeException("Unknown node type: " + node.getClass());
+    }
+
+    private boolean isInteger(Object left, Object right) {
+        return left instanceof Integer && right instanceof Integer;
+    }
+
+    private boolean isNumeric(Object left, Object right) {
+        return (left instanceof Float || left instanceof Integer) &&
+                (right instanceof Float || right instanceof Integer);
     }
 
     public HashMap<String, Integer> getIntVariables() {
