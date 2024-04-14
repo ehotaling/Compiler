@@ -1,4 +1,3 @@
-valPlusVal = VAL("5") + 5
 randomNumber = RANDOM()
 leftString$ = LEFT$("HELLO", 3)
 rightString$ = RIGHT$("HELLO", 2)

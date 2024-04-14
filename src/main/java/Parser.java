@@ -535,11 +535,32 @@ public List<Node> printList() {
      *
      * @return An ExpressionNode representing the parsed expression.
      */
+//    public Node expression() {
+//        if (peekAndMatch(Token.TokenType.FUNCTIONNAME)) {
+//            return functionInvocation();
+//        }
+//        Node term = term();
+//        while (true) {
+//            if (matchAndRemove(Token.TokenType.PLUS)) {
+//                term = new MathOpNode(MathOpNode.OPERATION.ADD, term, term());
+//            } else if (matchAndRemove(Token.TokenType.MINUS)) {
+//                term = new MathOpNode(MathOpNode.OPERATION.SUBTRACT, term, term());
+//            } else {
+//                break;
+//            }
+//        }
+//        return new ExpressionNode(term);
+//    }
+
+
+    // TODO I just made this new version of expression below trying to figure out how to solve the issue
     public Node expression() {
+        Node term;
         if (peekAndMatch(Token.TokenType.FUNCTIONNAME)) {
-            return functionInvocation();
+            term = functionInvocation();
+        } else {
+            term = term();
         }
-        Node term = term();
         while (true) {
             if (matchAndRemove(Token.TokenType.PLUS)) {
                 term = new MathOpNode(MathOpNode.OPERATION.ADD, term, term());
@@ -551,6 +572,7 @@ public List<Node> printList() {
         }
         return new ExpressionNode(term);
     }
+
 
     /**
      * Parses and constructs a FunctionNode by invoking a function.
