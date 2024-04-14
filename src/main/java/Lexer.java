@@ -141,7 +141,6 @@ public class Lexer {
         // Check if the next character is an opening parenthesis
         if (!handler.isDone() && handler.peek(0) == '(') {
             // If the token is a known function name, return a FUNCTIONNAME token
-            System.out.println("Assigning function name: " + token);
             return new Token(Token.TokenType.FUNCTIONNAME, token, lineNo, position - wordBuilder.length());
         } else {
             if (knownWords.containsKey(token.toLowerCase())) {

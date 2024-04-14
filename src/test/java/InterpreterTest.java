@@ -100,9 +100,9 @@ public class InterpreterTest {
         assertEquals(1, intVariables.size());
         assertEquals(1, floatVariables.size());
         assertEquals(1, stringVariables.size());
-        assertNull(intVariables.get("x"));
-        assertNull(floatVariables.get("y%"));
-        assertNull(stringVariables.get("z$"));
+        assertEquals(intVariables.get("x"), 5);
+        assertEquals(floatVariables.get("y%"), 5.0f);
+        assertEquals(stringVariables.get("z$"), "Hello World");
 
     }
 
@@ -122,9 +122,9 @@ public class InterpreterTest {
         assertEquals(1, intVariables.size());
         assertEquals(1, floatVariables.size());
         assertEquals(1, stringVariables.size());
-        assertNull(intVariables.get("x"));
-        assertNull(floatVariables.get("y%"));
-        assertNull(stringVariables.get("z$"));
+        assertEquals(intVariables.get("x"), 5);
+        assertEquals(floatVariables.get("y%"), 5.0f);
+        assertEquals(stringVariables.get("z$"), "Hello World");
     }
 
     @Test
@@ -153,8 +153,28 @@ public class InterpreterTest {
 
         HashMap<String, Integer> intVariables = interpreter.getIntVariables();
 
-//        assertEquals(2, intVariables.size());
+//        assertEquals(3, intVariables.size());
         assertEquals(28, intVariables.get("age"));
         assertEquals(28, intVariables.get("age2"));
+        assertEquals(20, intVariables.get("age3"));
+        assertEquals(25, intVariables.get("age4"));
+    }
+
+    @Test
+    public void testFunctionsFromFile() throws IOException {
+        LinkedList<Token> tokens = lexer.lex("src/test/resources/function_storage.bas");
+        ProgramNode actualProgram = new Parser(tokens).parse();
+
+        // Run Interpreter on it
+        Interpreter interpreter = new Interpreter(actualProgram);
+        interpreter.visitStatements();
+
+        HashMap<String, Integer> intVariables = interpreter.getIntVariables();
+        HashMap<String, Float> floatVariables = interpreter.getFloatVariables();
+        HashMap<String, String> stringVariables = interpreter.getStringVariables();
+
+        assertEquals(1, intVariables.size());
+        assertNull(intVariables.get("x"));
+
     }
 }
