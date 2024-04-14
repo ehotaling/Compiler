@@ -53,11 +53,11 @@ public class Interpreter {
             String name = variableNode.getName();
             String type = variableNode.getType();
             Object value = evaluate(variableNode.getVal());
-            if (type.equals("int") && value instanceof IntegerNode) {
+            if (type.equals("int") && value instanceof Integer) {
                 return intVariables.get(name);
-            } else if (type.equals("float") && value instanceof FloatNode) {
+            } else if (type.equals("float") && value instanceof Float) {
                 return floatVariables.get(name);
-            } else if (type.equals("string") && value instanceof StringNode) {
+            } else if (type.equals("string") && value instanceof String) {
                 return stringVariables.get(name);
             } else {
                 throw new IllegalArgumentException(String.format("Invalid value %s for variable: %s", value, variableNode));
@@ -155,7 +155,19 @@ public class Interpreter {
 
         if (node instanceof AssignmentNode) {
             AssignmentNode assignmentNode = (AssignmentNode) node;
-            return evaluate(assignmentNode.getValue());
+            String name = assignmentNode.getVariableNode().getName();
+            Object value = evaluate(assignmentNode.getValue());
+            String type = assignmentNode.getVariableNode().getType();
+
+            if (type.equals("int") && value instanceof Integer) {
+                return intVariables.put(name, (Integer) value);
+            } else if (type.equals("float") && value instanceof Float) {
+                return floatVariables.put(name, (Float) value);
+            } else if (type.equals("string") && value instanceof String) {
+                return stringVariables.put(name, (String) value);
+            } else {
+                throw new IllegalArgumentException(String.format("Invalid type %s for variable %s with value: %s", type, name, value));
+            }
         }
         throw new RuntimeException("Unknown node type: " + node.getClass());
     }
