@@ -52,6 +52,13 @@ public class Interpreter {
             VariableNode variableNode = (VariableNode) node;
             String name = variableNode.getName();
             String type = variableNode.getType();
+            if (type.equals("int") && intVariables.containsKey(name)) {
+                return intVariables.get(name);
+            } else if (type.equals("float") && floatVariables.containsKey(name)) {
+                return floatVariables.get(name);
+            } else if (type.equals("string") && stringVariables.containsKey(name)) {
+                return stringVariables.get(name);
+            }
             Object value = evaluate(variableNode.getVal());
             if (type.equals("int") && value instanceof Integer) {
                 return intVariables.get(name);
@@ -187,8 +194,6 @@ public class Interpreter {
             if (statement instanceof AssignmentNode) {
                 AssignmentNode assignmentNode = (AssignmentNode) statement;
                 evaluate(assignmentNode);
-            } else {
-                evaluate(statement);
             }
         }
     }

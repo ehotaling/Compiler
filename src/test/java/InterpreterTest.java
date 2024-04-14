@@ -208,7 +208,6 @@ public class InterpreterTest {
     }
 
 
-    // TODO: Resolve stack overflow error
     @Test
     public void testMathOperations() throws IOException {
         LinkedList<Token> tokens = lexer.lex("src/test/resources/math_operations.bas");
@@ -229,10 +228,6 @@ public class InterpreterTest {
         assertEquals(1.0f, floatVariables.get("floatVar4%"));
     }
 
-    // TODO running into issues with
-    //  valPlusInt = VAL("5") + 5
-    //  valPlusVal = VAL("5") + VAL("5")
-    //  valPlusVal = (VAL("5") + VAL("5"))
     @Test
     public void testFunctionMathOperations() throws IOException {
         LinkedList<Token> tokens = lexer.lex("src/test/resources/function_math_ops.bas");
@@ -245,7 +240,7 @@ public class InterpreterTest {
         HashMap<String, Integer> intVariables = interpreter.getIntVariables();
         HashMap<String, Float> floatVariables = interpreter.getFloatVariables();
 
-//        assertEquals(10, intVariables.get("valPlusInt"));
-//        assertEquals(10, intVariables.get("valPlusVal"));
+        assertEquals(10, intVariables.get("valPlusInt"));
+        assertEquals(10, intVariables.get("valPlusVal"));
     }
 }
