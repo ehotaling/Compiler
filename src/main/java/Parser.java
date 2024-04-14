@@ -566,6 +566,10 @@ public List<Node> printList() {
                 term = new MathOpNode(MathOpNode.OPERATION.ADD, term, term());
             } else if (matchAndRemove(Token.TokenType.MINUS)) {
                 term = new MathOpNode(MathOpNode.OPERATION.SUBTRACT, term, term());
+            } else if (matchAndRemove(Token.TokenType.MULTIPLY)) {
+                term = new MathOpNode(MathOpNode.OPERATION.MULTIPLY, term, term());
+            } else if (matchAndRemove(Token.TokenType.DIVIDE)) {
+                term = new MathOpNode(MathOpNode.OPERATION.DIVIDE, term, term());
             } else {
                 break;
             }
@@ -648,6 +652,9 @@ public List<Node> printList() {
      * @return The FactorNode representing the root of the factor tree.
      */
     public Node factor() {
+        if (peekAndMatch(Token.TokenType.FUNCTIONNAME)) {
+            return functionInvocation();
+        }
         Optional<Token> wordTokenOpt = tokenManager.matchAndRemove(Token.TokenType.WORD);
         if (wordTokenOpt.isPresent()) {
             return new VariableNode(wordTokenOpt.get().getVal());

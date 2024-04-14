@@ -18,7 +18,7 @@ public class Interpreter {
         this.statementVisitor = new StatementVisitorImpl();
     }
 
-    public void visitStatements() {
+    private void visitStatements() {
         List<StatementNode> statements = programNode.getStatements();
         for (StatementNode statement: statements) {
             statement.accept(statementVisitor);
@@ -96,7 +96,7 @@ public class Interpreter {
                 String str = (String) evaluate(parameters.get(0));
                 return BuiltInFunctions.VAL(str);
             }
-            if (functionName.equals("VALF")) {
+            if (functionName.equals("VAL%")) {
                 String str = (String) evaluate(parameters.get(0));
                 return BuiltInFunctions.VALF(str);
             }
@@ -179,6 +179,18 @@ public class Interpreter {
     private boolean isNumeric(Object left, Object right) {
         return (left instanceof Float || left instanceof Integer) &&
                 (right instanceof Float || right instanceof Integer);
+    }
+
+    public void interpret() {
+        visitStatements();
+        for (StatementNode statement: programNode.getStatements()) {
+            if (statement instanceof AssignmentNode) {
+                AssignmentNode assignmentNode = (AssignmentNode) statement;
+                evaluate(assignmentNode);
+            } else {
+                evaluate(statement);
+            }
+        }
     }
 
     public HashMap<String, Integer> getIntVariables() {
