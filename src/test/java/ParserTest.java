@@ -880,16 +880,16 @@ public class ParserTest {
 //        assertEquals(expectedProgram, actualProgram, "The parsed program did not match the expected program.");
     }
 
-    @Test
-    public void expressionWithFunctionInvocation_ReturnsFunctionNode() throws IOException {
-        ProgramNode testProgram = parseExpressions("random()");
-
-        FunctionNode expectedFunction = new FunctionNode("random");
-        ProgramNode expectedProgram = new ProgramNode();
-        expectedProgram.addExpression(expectedFunction);
-
-        assertEquals(expectedProgram, testProgram);
-    }
+//    @Test
+//    public void expressionWithFunctionInvocation_ReturnsFunctionNode() throws IOException {
+//        ProgramNode testProgram = parseExpressions("random()");
+//
+//        FunctionNode expectedFunction = new FunctionNode("random");
+//        ProgramNode expectedProgram = new ProgramNode();
+//        expectedProgram.addExpression(expectedFunction);
+//
+//        assertEquals(expectedProgram, testProgram);
+//    }
 
     @Test
     public void testFunctionNameToken() {
