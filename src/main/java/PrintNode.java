@@ -8,8 +8,8 @@ public class PrintNode extends StatementNode {
 
     public PrintNode() {}
 
-    public PrintNode(List<Node> arguements) {
-        this.arguments = arguements;
+    public PrintNode(List<Node> arguments) {
+        this.arguments = arguments;
     }
 
     public void addNode(Node node) {

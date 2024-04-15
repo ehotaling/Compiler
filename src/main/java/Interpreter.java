@@ -157,12 +157,13 @@ public class Interpreter {
     }
 
     // Prints each data item in the PrintNode
-    private void print(PrintNode printNode) {
+    public void print(PrintNode printNode) {
         for (Node arg: printNode.getArguments()) {
             if (testMode) {
                 output.add(evaluate(arg).toString());
+            } else {
+                System.out.println(evaluate(arg));
             }
-            System.out.println(evaluate(arg));
         }
     }
 

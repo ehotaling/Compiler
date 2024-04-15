@@ -301,9 +301,19 @@ public class InterpreterTest {
         assertEquals("Hello", interpreter.getStringVariables().get("stringVar$"));
     }
 
+    // Tests the ability to print strings, integers, and floats
     @Test
     public void testPrint() {
+        LinkedList<Token> tokens = lexer.lex("src/test/resources/test_print.bas");
+        ProgramNode actualProgram = new Parser(tokens).parse();
+        List<String> expectedPrint = Arrays.asList("hello", "5", "5.0", "5", "5.0", "hello");
 
+        // Run Interpreter on it
+        Interpreter interpreter = new Interpreter(actualProgram);
+        interpreter.setTestMode(true);
+        interpreter.interpret();
+        List<String> actualPrint = interpreter.getOutput();
+        assertEquals(expectedPrint, actualPrint);
     }
 
 }
