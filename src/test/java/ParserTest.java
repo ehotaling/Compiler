@@ -3,10 +3,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -559,11 +556,7 @@ public class ParserTest {
     public void testInputStatement_SingleInput() throws IOException {
         ProgramNode testProgram = parseStatements("INPUT \"Enter x:\", x");
 
-        List<Node> inputs = new ArrayList<>();
-        inputs.add(new StringNode("Enter x:"));
-        inputs.add(new VariableNode("x"));
-
-        StatementNode statement = new InputNode(inputs);
+        StatementNode statement = new InputNode(new StringNode("Enter x:"), List.of((new VariableNode("x"))));
         StatementsNode statements = new StatementsNode();
         statements.addStatement(statement);
 
@@ -577,13 +570,12 @@ public class ParserTest {
     public void testInputStatement_MultipleInputs() throws IOException {
         ProgramNode testProgram = parseStatements("INPUT \"Enter values for x, y, z:\", x, y, z");
 
-        List<Node> inputs = new ArrayList<>();
-        inputs.add(new StringNode("Enter values for x, y, z:"));
+        List<VariableNode> inputs = new ArrayList<>();
         inputs.add(new VariableNode("x"));
         inputs.add(new VariableNode("y"));
         inputs.add(new VariableNode("z"));
 
-        StatementNode statement = new InputNode(inputs);
+        StatementNode statement = new InputNode(new StringNode("Enter values for x, y, z:"), inputs);
         StatementsNode statements = new StatementsNode();
         statements.addStatement(statement);
 
@@ -604,13 +596,12 @@ public class ParserTest {
     public void testInputStatement_WhitespaceBetweenVariablesAndCommas() throws IOException {
         ProgramNode testProgram = parseStatements("INPUT \"Enter x, y, z:\", x , y , z");
 
-        List<Node> inputs = new ArrayList<>();
-        inputs.add(new StringNode("Enter x, y, z:"));
+        List<VariableNode> inputs = new ArrayList<>();
         inputs.add(new VariableNode("x"));
         inputs.add(new VariableNode("y"));
         inputs.add(new VariableNode("z"));
 
-        StatementNode statement = new InputNode(inputs);
+        StatementNode statement = new InputNode(new StringNode("Enter x, y, z:"), inputs);
         StatementsNode statements = new StatementsNode();
         statements.addStatement(statement);
 
@@ -818,11 +809,10 @@ public class ParserTest {
         ProgramNode actualProgram = new Parser(tokens).parse();
 
         // Create expectedProgram with the expected structure
-        List<Node> inputs = new ArrayList<>();
-        inputs.add(new StringNode("What is your name and age?"));
+        List<VariableNode> inputs = new ArrayList<>();
         inputs.add(new VariableNode("name$"));
         inputs.add(new VariableNode("age"));
-        StatementNode inputStatement = new InputNode(inputs);
+        StatementNode inputStatement = new InputNode(new StringNode("What is your name and age?"), inputs);
         StatementsNode statements = new StatementsNode();
         statements.addStatement(inputStatement);
         ProgramNode expectedProgram = new ProgramNode();

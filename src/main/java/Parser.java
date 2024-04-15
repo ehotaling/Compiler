@@ -387,14 +387,15 @@ public class Parser {
             matchAndRemove(Token.TokenType.INPUT);
         }
 
-        List<Node> inputs = new ArrayList<>();
         // First argument should be a string literal
+        StringNode promptNode;
         if (!peekAndMatch(Token.TokenType.STRINGLITERAL)) {
             throw new IllegalArgumentException(String.format("Invalid Input Statement: %s", peek()));
         } else {
-            inputs.add(new StringNode(tokenManager.matchAndRemove(Token.TokenType.STRINGLITERAL).get().getVal()));
+            promptNode = new StringNode(tokenManager.matchAndRemove(Token.TokenType.STRINGLITERAL).get().getVal());
         }
 
+        List<VariableNode> inputs = new ArrayList<>();
         while (!peekAndMatch(Token.TokenType.ENDOFLINE)) {
             if (peekAndMatch(Token.TokenType.COMMA)) {
                 matchAndRemove(Token.TokenType.COMMA);
@@ -406,7 +407,7 @@ public class Parser {
                 throw new IllegalArgumentException(String.format("Invalid token in Read Statement: %s", peek()));
             }
         }
-        return new InputNode(inputs);
+        return new InputNode(promptNode, inputs);
     }
 
 
