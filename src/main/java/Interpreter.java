@@ -1,6 +1,7 @@
 import java.util.HashMap;
 import java.util.List;
 import java.util.Queue;
+import java.util.Scanner;
 
 
 public class Interpreter {
@@ -12,6 +13,8 @@ public class Interpreter {
     private HashMap<String, Integer> intVariables;
     private HashMap<String, String> stringVariables;
     private HashMap<String, Float> floatVariables;
+    
+    private final Scanner scanner = new Scanner(System.in);
 
     public Interpreter(ProgramNode programNode) {
         this.programNode = programNode;
@@ -43,11 +46,81 @@ public class Interpreter {
         visitStatements();
         for (StatementNode statement : programNode.getStatements()) {
             if (statement instanceof AssignmentNode) {
-                AssignmentNode assignmentNode = (AssignmentNode) statement;
-                evaluate(assignmentNode);
+                assignment((AssignmentNode) statement);
             } else if (statement instanceof ReadNode) {
                 // read data from the data queue and assign it to variables
+                read((ReadNode) statement);
+            } else if (statement instanceof InputNode) {
+                // read data from the data queue and assign it to variables
+                input((InputNode) statement);
+            } else if (statement instanceof PrintNode) {
+                // read data from the data queue and assign it to variables
+                print((PrintNode) statement);
             }
+        }
+    }
+
+    private void assignment(AssignmentNode assignmentNode) {
+        String name = assignmentNode.getVariableNode().getName();
+        Object value = evaluate(assignmentNode.getValue());
+        String type = assignmentNode.getVariableNode().getType();
+
+        if (type.equals("int") && value instanceof Integer) {
+            intVariables.put(name, (Integer) value);
+        } else if (type.equals("float") && value instanceof Float) {
+            floatVariables.put(name, (Float) value);
+        } else if (type.equals("string") && value instanceof String) {
+            stringVariables.put(name, (String) value);
+        } else {
+            throw new IllegalArgumentException(String.format("Invalid type %s for variable %s with value: %s", type, name, value));
+        }
+    }
+
+    private void input(InputNode inputNode) {
+        System.out.println(inputNode.getPrompt());
+
+        for (VariableNode variableNode: inputNode.getVariables()) {
+            String name = variableNode.getName();
+            String type = variableNode.getType();
+            switch (type) {
+                case "int":
+                    intVariables.put(name, Integer.parseInt(scanner.nextLine()));
+                    break;
+                case "float":
+                    floatVariables.put(name, Float.parseFloat(scanner.nextLine()));
+                    break;
+                case "string":
+                    stringVariables.put(name, scanner.nextLine());
+                    break;
+            }
+        }
+    }
+
+    private void read(ReadNode readNode) {
+        for (VariableNode variableNode: readNode.getVariables()) {
+            if (dataQueue.isEmpty()) {
+                throw new IllegalStateException("Cannot read from empty DATA queue");
+            }
+
+            String name = variableNode.getName();
+            String type = variableNode.getType();
+            Node value = dataQueue.poll();
+
+            if (type.equals("string") && value instanceof StringNode) {
+                stringVariables.put(name, ((StringNode) value).getValue());
+            } else if (type.equals("float") && value instanceof FloatNode) {
+                floatVariables.put(name, ((FloatNode) value).getFloat());
+            } else if (type.equals("int") && value instanceof IntegerNode) {
+                intVariables.put(name, ((IntegerNode) value).getInt());
+            } else {
+                throw new IllegalArgumentException(String.format("Cannot assign value: %s to variable %s of type: %s", value, name, type));
+            }
+        }
+    }
+
+    private void print(PrintNode printNode) {
+        for (Node arg: printNode.getArguments()) {
+            System.out.println(evaluate(arg));
         }
     }
 
@@ -178,23 +251,6 @@ public class Interpreter {
         if (node instanceof FactorNode) {
             FactorNode factorNode = (FactorNode) node;
             return evaluate(factorNode.getInnerNode());
-        }
-
-        if (node instanceof AssignmentNode) {
-            AssignmentNode assignmentNode = (AssignmentNode) node;
-            String name = assignmentNode.getVariableNode().getName();
-            Object value = evaluate(assignmentNode.getValue());
-            String type = assignmentNode.getVariableNode().getType();
-
-            if (type.equals("int") && value instanceof Integer) {
-                return intVariables.put(name, (Integer) value);
-            } else if (type.equals("float") && value instanceof Float) {
-                return floatVariables.put(name, (Float) value);
-            } else if (type.equals("string") && value instanceof String) {
-                return stringVariables.put(name, (String) value);
-            } else {
-                throw new IllegalArgumentException(String.format("Invalid type %s for variable %s with value: %s", type, name, value));
-            }
         }
         throw new RuntimeException("Unknown node type: " + node.getClass());
     }

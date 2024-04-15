@@ -16,7 +16,7 @@ public class PrintNode extends StatementNode {
         arguments.add(node);
     }
 
-    public List<Node> getArguements(Node argument) {
+    public List<Node> getArguments() {
         return arguments;
     }
 
