@@ -1,8 +1,9 @@
 import java.util.List;
 import java.util.Objects;
+import java.util.Queue;
 
 public class DataNode extends StatementNode {
-    private List<Node> data;
+    private final List<Node> data;
 
     public DataNode(List<Node> data) {
         this.data = data;
@@ -16,6 +17,7 @@ public class DataNode extends StatementNode {
     public List<Node> getData() {
         return data;
     }
+
 
     @Override
     public boolean equals(Object o) {

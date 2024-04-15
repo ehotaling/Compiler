@@ -20,8 +20,16 @@ public class Interpreter {
 
     private void visitStatements() {
         List<StatementNode> statements = programNode.getStatements();
-        for (StatementNode statement: statements) {
-            statement.accept(statementVisitor);
+        StatementNode prev = null;
+        for (StatementNode curr : statements) {
+            curr.accept(statementVisitor);
+
+            // link the current statement to the previous one
+            if (prev != null) {
+                prev.setNext(curr);
+            }
+
+            prev = curr;
         }
 
         intVariables = statementVisitor.getIntVariables();
@@ -31,7 +39,21 @@ public class Interpreter {
         labels = statementVisitor.getLabels();
     }
 
-    public Object evaluate(Node node) {
+    public void interpret() {
+        visitStatements();
+        for (StatementNode statement : programNode.getStatements()) {
+            if (statement instanceof AssignmentNode) {
+                AssignmentNode assignmentNode = (AssignmentNode) statement;
+                evaluate(assignmentNode);
+            } else if (statement instanceof ReadNode) {
+                // read data from the data queue and assign it to variables
+            }
+        }
+    }
+
+
+
+    private Object evaluate(Node node) {
 
         if (node instanceof IntegerNode) {
             IntegerNode integerNode = (IntegerNode) node;
@@ -188,15 +210,7 @@ public class Interpreter {
                 (right instanceof Float || right instanceof Integer);
     }
 
-    public void interpret() {
-        visitStatements();
-        for (StatementNode statement: programNode.getStatements()) {
-            if (statement instanceof AssignmentNode) {
-                AssignmentNode assignmentNode = (AssignmentNode) statement;
-                evaluate(assignmentNode);
-            }
-        }
-    }
+
 
     public HashMap<String, Integer> getIntVariables() {
         return intVariables;

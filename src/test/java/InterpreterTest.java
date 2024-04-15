@@ -119,7 +119,6 @@ public class InterpreterTest {
         HashMap<String, Float> floatVariables = interpreter.getFloatVariables();
         HashMap<String, String> stringVariables = interpreter.getStringVariables();
 
-        // TODO, add test once evaluate is finished
 
         assertEquals(1, intVariables.size());
         assertEquals(1, floatVariables.size());
@@ -200,7 +199,7 @@ public class InterpreterTest {
         assertTrue(intVariables.containsKey("stringToNum"));
         assertEquals(5, intVariables.get("stringToNum"));
 
-        // Testing VALF() function
+        // Testing VAL%() function
         assertTrue(floatVariables.containsKey("stringToFloat%"));
         assertEquals(5.0f, floatVariables.get("stringToFloat%"));
 
@@ -226,6 +225,10 @@ public class InterpreterTest {
         assertEquals(10.0f, floatVariables.get("floatVar2%"));
         assertEquals(25.0f, floatVariables.get("floatVar3%"));
         assertEquals(1.0f, floatVariables.get("floatVar4%"));
+        assertEquals(10.0f, floatVariables.get("floatVar5%"));
+        assertEquals(0.0f, floatVariables.get("floatVar6%"));
+        assertEquals(41, intVariables.get("intVar2"));
+        assertEquals(9, intVariables.get("intVar3"));
     }
 
     @Test
@@ -243,4 +246,20 @@ public class InterpreterTest {
         assertEquals(10, intVariables.get("valPlusInt"));
         assertEquals(10, intVariables.get("valPlusVal"));
     }
+
+//    @Test
+//    public void testReadData() throws IOException {
+//        LinkedList<Token> tokens = lexer.lex("src/test/resources/read_and_data.bas");
+//        ProgramNode actualProgram = new Parser(tokens).parse();
+//
+//        // Run Interpreter on it
+//        Interpreter interpreter = new Interpreter(actualProgram);
+//        interpreter.interpret();
+//
+//        HashMap<String, Integer> intVariables = interpreter.getIntVariables();
+//        HashMap<String, Float> floatVariables = interpreter.getFloatVariables();
+//        HashMap<String, String> stringVariables = interpreter.getStringVariables();
+//
+//        assertEquals(1, intVariables.size());
+//    }
 }
