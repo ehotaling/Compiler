@@ -2,7 +2,7 @@ import java.util.*;
 
 public class StatementVisitorImpl implements StatementVisitor {
 
-    private final Queue<DataNode> dataNodes = new LinkedList<>();
+    private final Queue<Node> dataNodes = new LinkedList<>();
 
     private final HashMap<String, Integer> intVariables = new HashMap<>();
     private final HashMap<String, Float> floatVariables = new HashMap<>();
@@ -22,7 +22,7 @@ public class StatementVisitorImpl implements StatementVisitor {
         return stringVariables;
     }
 
-    public Queue<DataNode> getDataNodes() {
+    public Queue<Node> getDataNodes() {
         return dataNodes;
     }
 
@@ -46,10 +46,9 @@ public class StatementVisitorImpl implements StatementVisitor {
             stringVariables.put(name, null);
         }
     }
-
-
-
-        public void visit (DataNode dataNode){
-            this.dataNodes.add(dataNode);
+    public void visit (DataNode dataNode){
+        for (Node node: dataNode.getData()) {
+            this.dataNodes.add(node);
         }
+    }
 }

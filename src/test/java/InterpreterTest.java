@@ -36,20 +36,45 @@ public class InterpreterTest {
 
         // Check that the data and labels were correctly stored
         HashMap<String, LabeledStatementNode> labels = interpreter.getLabels();
-        Queue<DataNode> dataQueue = interpreter.getDataQueue();
+        Queue<Node> dataQueue = interpreter.getDataQueue();
 
         assertEquals(1, labels.size());
         assertTrue(labels.containsKey("label:"));
         assertEquals(labeledStatementNode, labels.get("label:"));
 
-        assertEquals(1, dataQueue.size());
-        assertEquals(dataNode, dataQueue.peek());
-
+        assertEquals(3, dataQueue.size());
+        assertEquals(dataNode.getData(), new ArrayList<>(dataQueue));
     }
 
     @Test
-    public void testDataAndLabelProcessingFromFile()  throws IOException {
-        LinkedList<Token> tokens = lexer.lex("src/test/resources/data_and_label.bas");
+    public void testDataProcessingFromFile()  throws IOException {
+        LinkedList<Token> tokens = lexer.lex("src/test/resources/data.bas");
+        ProgramNode actualProgram = new Parser(tokens).parse();
+
+        Interpreter interpreter = new Interpreter(actualProgram);
+        interpreter.interpret();
+
+        Queue<Node> dataQueue = interpreter.getDataQueue();
+
+        assertEquals(3, dataQueue.size());
+
+        Node node1 = dataQueue.poll();
+        Node node2 = dataQueue.poll();
+        Node node3 = dataQueue.poll();
+
+        assertInstanceOf(IntegerNode.class, node1);
+        assertEquals(10, ((IntegerNode) node1).getInt());
+
+        assertInstanceOf(StringNode.class, node2);
+        assertEquals("mphipps", ((StringNode) node2).getValue());
+
+        assertInstanceOf(FloatNode.class, node3);
+        assertEquals(10.0f, ((FloatNode) node3).getFloat());
+    }
+
+    @Test
+    public void testLabelProcessingFromFile()  throws IOException {
+        LinkedList<Token> tokens = lexer.lex("src/test/resources/label.bas");
         ProgramNode actualProgram = new Parser(tokens).parse();
 
         // Run Interpreter on it
@@ -57,19 +82,12 @@ public class InterpreterTest {
         interpreter.interpret();
 
         HashMap<String, LabeledStatementNode> labels = interpreter.getLabels();
-        Queue<DataNode> dataQueue = interpreter.getDataQueue();
 
         LabeledStatementNode labeledStatementNode = new LabeledStatementNode(
                 "beginning:", new PrintNode(List.of(new StringNode("Hello!"))));
 
-        assertEquals(1, labels.size());
         assertTrue(labels.containsKey("beginning:"));
         assertEquals(labeledStatementNode, labels.get("beginning:"));
-        assertEquals(1, dataQueue.size());
-        assertEquals(3, dataQueue.peek().getData().size());
-        assertEquals(10, ((IntegerNode) dataQueue.peek().getData().get(0)).getInt());
-        assertEquals("mphipps", ((StringNode) dataQueue.peek().getData().get(1)).getValue());
-        assertEquals(10.0f, ((FloatNode) dataQueue.peek().getData().get(2)).getFloat());
     }
 
     @Test

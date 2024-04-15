@@ -8,6 +8,14 @@ public class VariableNode extends StatementNode {
 
     public VariableNode(String name) {
         this.name = name;
+        // if the name ends with a $ then it is a string
+        if (name.endsWith("$")) {
+            this.type = "string";
+        } else if (name.endsWith("%")) {
+            this.type = "float";
+        } else {
+            this.type = "int";
+        }
     }
 
     public String getName() {
@@ -15,14 +23,6 @@ public class VariableNode extends StatementNode {
     }
 
     public String getType() {
-        // if the name ends with a $ then it is a string
-        if (name.endsWith("$")) {
-            type = "string";
-        } else if (name.endsWith("%")) {
-            type = "float";
-        } else {
-            type = "int";
-        }
         return type;
     }
 

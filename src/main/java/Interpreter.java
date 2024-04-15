@@ -7,7 +7,7 @@ public class Interpreter {
     private final ProgramNode programNode;
     private final StatementVisitorImpl statementVisitor;
     private HashMap<String, LabeledStatementNode> labels;
-    private Queue<DataNode> dataQueue;
+    private Queue<Node> dataQueue;
 
     private HashMap<String, Integer> intVariables;
     private HashMap<String, String> stringVariables;
@@ -50,8 +50,6 @@ public class Interpreter {
             }
         }
     }
-
-
 
     private Object evaluate(Node node) {
 
@@ -210,8 +208,6 @@ public class Interpreter {
                 (right instanceof Float || right instanceof Integer);
     }
 
-
-
     public HashMap<String, Integer> getIntVariables() {
         return intVariables;
     }
@@ -228,7 +224,7 @@ public class Interpreter {
         return labels;
     }
 
-    public Queue<DataNode> getDataQueue() {
+    public Queue<Node> getDataQueue() {
         return dataQueue;
     }
 
