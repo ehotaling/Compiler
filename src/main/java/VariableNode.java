@@ -4,7 +4,7 @@ public class VariableNode extends StatementNode {
 
     private final String name;
 
-    private String type;
+    private final String type;
 
     public VariableNode(String name) {
         this.name = name;

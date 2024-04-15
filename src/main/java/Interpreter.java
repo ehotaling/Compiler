@@ -1,7 +1,4 @@
-import java.util.HashMap;
-import java.util.List;
-import java.util.Queue;
-import java.util.Scanner;
+import java.util.*;
 
 
 public class Interpreter {
@@ -10,17 +7,35 @@ public class Interpreter {
     private HashMap<String, LabeledStatementNode> labels;
     private Queue<Node> dataQueue;
 
-    private HashMap<String, Integer> intVariables;
-    private HashMap<String, String> stringVariables;
-    private HashMap<String, Float> floatVariables;
+    private HashMap<String, Integer> intVariables = new HashMap<>();
+    private HashMap<String, String> stringVariables = new HashMap<>();
+    private HashMap<String, Float> floatVariables = new HashMap<>();
     
     private final Scanner scanner = new Scanner(System.in);
+
+    private boolean testMode = false;
+    private List<String> testInput = new ArrayList<>();
+    private List<String> output = new ArrayList<>();
 
     public Interpreter(ProgramNode programNode) {
         this.programNode = programNode;
         this.statementVisitor = new StatementVisitorImpl();
     }
 
+    // Sets the test mode
+    public void setTestMode(boolean testMode) {
+        this.testMode = testMode;
+    }
+    // Sets the input
+    public void setInput(List<String> input) {
+        this.testInput = new ArrayList<>(input);
+    }
+    // Gets the output
+    public List<String> getOutput() {
+        return output;
+    }
+
+    // Visits the statements in the program
     private void visitStatements() {
         List<StatementNode> statements = programNode.getStatements();
         StatementNode prev = null;
@@ -41,7 +56,7 @@ public class Interpreter {
         dataQueue = statementVisitor.getDataNodes();
         labels = statementVisitor.getLabels();
     }
-
+    // Interprets the program
     public void interpret() {
         visitStatements();
         for (StatementNode statement : programNode.getStatements()) {
@@ -60,6 +75,7 @@ public class Interpreter {
         }
     }
 
+    // Evaluates assignment statements and assigns the value to the variable
     private void assignment(AssignmentNode assignmentNode) {
         String name = assignmentNode.getVariableNode().getName();
         Object value = evaluate(assignmentNode.getValue());
@@ -76,26 +92,48 @@ public class Interpreter {
         }
     }
 
-    private void input(InputNode inputNode) {
-        System.out.println(inputNode.getPrompt());
-
-        for (VariableNode variableNode: inputNode.getVariables()) {
-            String name = variableNode.getName();
-            String type = variableNode.getType();
-            switch (type) {
-                case "int":
-                    intVariables.put(name, Integer.parseInt(scanner.nextLine()));
-                    break;
-                case "float":
-                    floatVariables.put(name, Float.parseFloat(scanner.nextLine()));
-                    break;
-                case "string":
-                    stringVariables.put(name, scanner.nextLine());
-                    break;
+    // Prints the prompt. Reads data and sets the variable(s)
+    // If in test mode, reads from the test input list
+    public void input(InputNode inputNode) {
+        if (testMode) {
+            for (VariableNode variableNode : inputNode.getVariables()) {
+                String name = variableNode.getName();
+                String type = variableNode.getType();
+                System.out.println(testInput.get(0));
+                String inputValue = testInput.remove(0); // Get and remove the first element from the test input list
+                switch (type) {
+                    case "int":
+                        intVariables.put(name, Integer.parseInt(inputValue));
+                        break;
+                    case "float":
+                        floatVariables.put(name, Float.parseFloat(inputValue));
+                        break;
+                    case "string":
+                        stringVariables.put(name, inputValue);
+                        break;
+                }
+            }
+        } else {
+            System.out.println(inputNode.getPrompt());
+            for (VariableNode variableNode : inputNode.getVariables()) {
+                String name = variableNode.getName();
+                String type = variableNode.getType();
+                switch (type) {
+                    case "int":
+                        intVariables.put(name, Integer.parseInt(scanner.nextLine()));
+                        break;
+                    case "float":
+                        floatVariables.put(name, Float.parseFloat(scanner.nextLine()));
+                        break;
+                    case "string":
+                        stringVariables.put(name, scanner.nextLine());
+                        break;
+                }
             }
         }
     }
 
+    // Reads and removes from internal collection. Updates variable(s)
     private void read(ReadNode readNode) {
         for (VariableNode variableNode: readNode.getVariables()) {
             if (dataQueue.isEmpty()) {
@@ -118,12 +156,17 @@ public class Interpreter {
         }
     }
 
+    // Prints each data item in the PrintNode
     private void print(PrintNode printNode) {
         for (Node arg: printNode.getArguments()) {
+            if (testMode) {
+                output.add(evaluate(arg).toString());
+            }
             System.out.println(evaluate(arg));
         }
     }
 
+    // Evaluates the node and returns the value
     private Object evaluate(Node node) {
 
         if (node instanceof IntegerNode) {
@@ -140,7 +183,7 @@ public class Interpreter {
             StringNode stringNode = (StringNode) node;
             return stringNode.getValue();
         }
-
+        // Evaluates the variable and returns the value
         if (node instanceof VariableNode) {
             VariableNode variableNode = (VariableNode) node;
             String name = variableNode.getName();
@@ -163,7 +206,7 @@ public class Interpreter {
                 throw new IllegalArgumentException(String.format("Invalid value %s for variable: %s", value, variableNode));
             }
         }
-
+        // Evaluates the function and returns the value
         if (node instanceof FunctionNode) {
             // evaluate parameters and call the right function based on name
             FunctionNode functionNode = (FunctionNode) node;
@@ -201,7 +244,7 @@ public class Interpreter {
                 return BuiltInFunctions.VALF(str);
             }
         }
-
+        // Evaluates the math operation and returns the value
         if (node instanceof MathOpNode) {
             MathOpNode mathOpNode = (MathOpNode) node;
             Object left = evaluate(mathOpNode.getLeft());
@@ -237,17 +280,17 @@ public class Interpreter {
                 }
             }
         }
-
+        // Evaluates the expression and returns the value
         if (node instanceof ExpressionNode) {
             ExpressionNode expressionNode = (ExpressionNode) node;
             return evaluate(expressionNode.getNode());
         }
-
+        // Evaluates the term and returns the value
         if (node instanceof TermNode) {
             TermNode termNode = (TermNode) node;
             return evaluate(termNode.getNode());
         }
-
+        // Evaluates the factor and returns the value
         if (node instanceof FactorNode) {
             FactorNode factorNode = (FactorNode) node;
             return evaluate(factorNode.getInnerNode());
@@ -255,10 +298,12 @@ public class Interpreter {
         throw new RuntimeException("Unknown node type: " + node.getClass());
     }
 
+    // Checks if both arguments are integers
     private boolean isInteger(Object left, Object right) {
         return left instanceof Integer && right instanceof Integer;
     }
 
+    // Checks if both arguments are numeric
     private boolean isNumeric(Object left, Object right) {
         return (left instanceof Float || left instanceof Integer) &&
                 (right instanceof Float || right instanceof Integer);

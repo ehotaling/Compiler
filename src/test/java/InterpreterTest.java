@@ -9,6 +9,7 @@ public class InterpreterTest {
 
     Lexer lexer = new Lexer();
 
+    // Tests the ability to store labels and data
     @Test
     public void testDataAndLabelProcessing() throws IOException {
         // Create a mock ProgramNode with some DATA statements and labels
@@ -46,6 +47,7 @@ public class InterpreterTest {
         assertEquals(dataNode.getData(), new ArrayList<>(dataQueue));
     }
 
+    // Tests the ability to store data from a file
     @Test
     public void testDataProcessingFromFile()  throws IOException {
         LinkedList<Token> tokens = lexer.lex("src/test/resources/data.bas");
@@ -72,6 +74,7 @@ public class InterpreterTest {
         assertEquals(10.0f, ((FloatNode) node3).getFloat());
     }
 
+    // Tests the ability to store labels from a file
     @Test
     public void testLabelProcessingFromFile()  throws IOException {
         LinkedList<Token> tokens = lexer.lex("src/test/resources/label.bas");
@@ -90,6 +93,7 @@ public class InterpreterTest {
         assertEquals(labeledStatementNode, labels.get("beginning:"));
     }
 
+    // Tests the ability to store variables assigned to integers, floats, and strings
     @Test
     public void testVariableStorage() throws IOException {
         // Create a mock ProgramNode with some variable assignments
@@ -124,6 +128,7 @@ public class InterpreterTest {
 
     }
 
+    // Test the ability to store variables from a file
     @Test
     public void testVariableStorageFromFile() throws IOException {
         LinkedList<Token> tokens = lexer.lex("src/test/resources/variable_storage.bas");
@@ -146,6 +151,7 @@ public class InterpreterTest {
         assertEquals(stringVariables.get("z$"), "Hello World");
     }
 
+    // Tests the ability to store variables assigned to strings
     @Test
     public void testStringVariableStorage() throws IOException {
         LinkedList<Token> tokens = lexer.lex("src/test/resources/string_storage.bas");
@@ -161,6 +167,7 @@ public class InterpreterTest {
         assertEquals("Eric", stringVariables.get("name$"));
     }
 
+    // Tests the ability to store variables assigned to integers
     @Test
     public void testIntVariableStorage() throws IOException {
         LinkedList<Token> tokens = lexer.lex("src/test/resources/int_storage.bas");
@@ -179,7 +186,7 @@ public class InterpreterTest {
         assertEquals(25, intVariables.get("age4"));
     }
 
-
+    // Tests the ability to store variables assigned to function calls
     @Test
     public void testFunctionsFromFile() throws IOException {
         LinkedList<Token> tokens = lexer.lex("src/test/resources/function_storage.bas");
@@ -224,7 +231,7 @@ public class InterpreterTest {
 
     }
 
-
+    // Tests the ability to perform math operations
     @Test
     public void testMathOperations() throws IOException {
         LinkedList<Token> tokens = lexer.lex("src/test/resources/math_operations.bas");
@@ -249,6 +256,7 @@ public class InterpreterTest {
         assertEquals(9, intVariables.get("intVar3"));
     }
 
+    // Tests the ability to perform math operations with functions
     @Test
     public void testFunctionMathOperations() throws IOException {
         LinkedList<Token> tokens = lexer.lex("src/test/resources/function_math_ops.bas");
@@ -265,19 +273,37 @@ public class InterpreterTest {
         assertEquals(10, intVariables.get("valPlusVal"));
     }
 
-//    @Test
-//    public void testReadData() throws IOException {
-//        LinkedList<Token> tokens = lexer.lex("src/test/resources/read_and_data.bas");
-//        ProgramNode actualProgram = new Parser(tokens).parse();
-//
-//        // Run Interpreter on it
-//        Interpreter interpreter = new Interpreter(actualProgram);
-//        interpreter.interpret();
-//
-//        HashMap<String, Integer> intVariables = interpreter.getIntVariables();
-//        HashMap<String, Float> floatVariables = interpreter.getFloatVariables();
-//        HashMap<String, String> stringVariables = interpreter.getStringVariables();
-//
-//        assertEquals(1, intVariables.size());
-//    }
+    @Test
+    public void testInput() {
+        // Create an instance of Interpreter
+        Interpreter interpreter = new Interpreter(new ProgramNode());
+
+        // Set the test mode to true
+        interpreter.setTestMode(true);
+
+        // Prepare the test input
+        List<String> testInput = Arrays.asList("10", "20.5", "Hello");
+        interpreter.setInput(testInput);
+
+        // Prepare the variables for the InputNode
+        VariableNode intVar = new VariableNode("intVar");
+        VariableNode floatVar = new VariableNode("floatVar%");
+        VariableNode stringVar = new VariableNode("stringVar$");
+        List<VariableNode> variables = Arrays.asList(intVar, floatVar, stringVar);
+
+        // Create an InputNode and call the input method
+        InputNode inputNode = new InputNode(new StringNode("Enter values:"), variables);
+        interpreter.input(inputNode);
+
+        // Check if the variables have the expected values
+        assertEquals(Integer.valueOf(10), interpreter.getIntVariables().get("intVar"));
+        assertEquals(Float.valueOf(20.5f), interpreter.getFloatVariables().get("floatVar%"));
+        assertEquals("Hello", interpreter.getStringVariables().get("stringVar$"));
+    }
+
+    @Test
+    public void testPrint() {
+
+    }
+
 }

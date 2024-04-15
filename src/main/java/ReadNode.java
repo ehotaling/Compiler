@@ -2,7 +2,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class ReadNode extends StatementNode {
-    private List<VariableNode> variables;
+    private final List<VariableNode> variables;
 
     public ReadNode(List<VariableNode> variables) {
         this.variables = variables;
