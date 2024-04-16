@@ -114,7 +114,7 @@ public class Interpreter {
                 }
             }
         } else {
-            System.out.println(inputNode.getPrompt());
+            System.out.println(inputNode.getPrompt().getValue());
             for (VariableNode variableNode : inputNode.getVariables()) {
                 String name = variableNode.getName();
                 InterpreterDataType type = variableNode.getType();
@@ -162,9 +162,10 @@ public class Interpreter {
             if (testMode) {
                 output.add(evaluate(arg).toString());
             } else {
-                System.out.println(evaluate(arg));
+                System.out.print(evaluate(arg));
             }
         }
+        System.out.println();
     }
 
     // Evaluates the node and returns the value
