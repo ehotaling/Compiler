@@ -1,20 +1,19 @@
 import java.util.Objects;
 
 public class VariableNode extends StatementNode {
-
     private final String name;
 
-    private final String type;
+    private final InterpreterDataType type;
 
     public VariableNode(String name) {
         this.name = name;
         // if the name ends with a $ then it is a string
         if (name.endsWith("$")) {
-            this.type = "string";
+            this.type = InterpreterDataType.STRING;
         } else if (name.endsWith("%")) {
-            this.type = "float";
+            this.type = InterpreterDataType.FLOAT;
         } else {
-            this.type = "int";
+            this.type = InterpreterDataType.INTEGER;
         }
     }
 
@@ -22,7 +21,7 @@ public class VariableNode extends StatementNode {
         return name;
     }
 
-    public String getType() {
+    public InterpreterDataType getType() {
         return type;
     }
 

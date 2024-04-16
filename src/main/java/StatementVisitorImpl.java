@@ -37,7 +37,7 @@ public class StatementVisitorImpl implements StatementVisitor {
     public void visit(AssignmentNode assignmentNode) {
         VariableNode variableNode = assignmentNode.getVariableNode();
         String name = variableNode.getName();
-        String type = variableNode.getType();
+        InterpreterDataType type = variableNode.getType();
         if (type.equals("int")) {
             intVariables.put(name, null);
         } else if (type.equals("float")) {

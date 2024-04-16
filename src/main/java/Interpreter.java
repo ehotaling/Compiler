@@ -79,13 +79,13 @@ public class Interpreter {
     private void assignment(AssignmentNode assignmentNode) {
         String name = assignmentNode.getVariableNode().getName();
         Object value = evaluate(assignmentNode.getValue());
-        String type = assignmentNode.getVariableNode().getType();
+        InterpreterDataType type = assignmentNode.getVariableNode().getType();
 
-        if (type.equals("int") && value instanceof Integer) {
+        if (type == InterpreterDataType.INTEGER && value instanceof Integer) {
             intVariables.put(name, (Integer) value);
-        } else if (type.equals("float") && value instanceof Float) {
+        } else if (type == InterpreterDataType.FLOAT && value instanceof Float) {
             floatVariables.put(name, (Float) value);
-        } else if (type.equals("string") && value instanceof String) {
+        } else if (type == InterpreterDataType.STRING && value instanceof String) {
             stringVariables.put(name, (String) value);
         } else {
             throw new IllegalArgumentException(String.format("Invalid type %s for variable %s with value: %s", type, name, value));
@@ -98,17 +98,17 @@ public class Interpreter {
         if (testMode) {
             for (VariableNode variableNode : inputNode.getVariables()) {
                 String name = variableNode.getName();
-                String type = variableNode.getType();
+                InterpreterDataType type = variableNode.getType();
                 System.out.println(testInput.get(0));
                 String inputValue = testInput.remove(0); // Get and remove the first element from the test input list
                 switch (type) {
-                    case "int":
+                    case INTEGER:
                         intVariables.put(name, Integer.parseInt(inputValue));
                         break;
-                    case "float":
+                    case FLOAT:
                         floatVariables.put(name, Float.parseFloat(inputValue));
                         break;
-                    case "string":
+                    case STRING:
                         stringVariables.put(name, inputValue);
                         break;
                 }
@@ -117,15 +117,15 @@ public class Interpreter {
             System.out.println(inputNode.getPrompt());
             for (VariableNode variableNode : inputNode.getVariables()) {
                 String name = variableNode.getName();
-                String type = variableNode.getType();
+                InterpreterDataType type = variableNode.getType();
                 switch (type) {
-                    case "int":
+                    case INTEGER:
                         intVariables.put(name, Integer.parseInt(scanner.nextLine()));
                         break;
-                    case "float":
+                    case FLOAT:
                         floatVariables.put(name, Float.parseFloat(scanner.nextLine()));
                         break;
-                    case "string":
+                    case STRING:
                         stringVariables.put(name, scanner.nextLine());
                         break;
                 }
@@ -141,14 +141,14 @@ public class Interpreter {
             }
 
             String name = variableNode.getName();
-            String type = variableNode.getType();
+            InterpreterDataType type = variableNode.getType();
             Node value = dataQueue.poll();
 
-            if (type.equals("string") && value instanceof StringNode) {
+            if (type == InterpreterDataType.STRING  && value instanceof StringNode) {
                 stringVariables.put(name, ((StringNode) value).getValue());
-            } else if (type.equals("float") && value instanceof FloatNode) {
+            } else if (type == InterpreterDataType.FLOAT && value instanceof FloatNode) {
                 floatVariables.put(name, ((FloatNode) value).getFloat());
-            } else if (type.equals("int") && value instanceof IntegerNode) {
+            } else if (type == InterpreterDataType.INTEGER && value instanceof IntegerNode) {
                 intVariables.put(name, ((IntegerNode) value).getInt());
             } else {
                 throw new IllegalArgumentException(String.format("Cannot assign value: %s to variable %s of type: %s", value, name, type));
@@ -188,20 +188,20 @@ public class Interpreter {
         if (node instanceof VariableNode) {
             VariableNode variableNode = (VariableNode) node;
             String name = variableNode.getName();
-            String type = variableNode.getType();
-            if (type.equals("int") && intVariables.containsKey(name)) {
+            InterpreterDataType type = variableNode.getType();
+            if (type == InterpreterDataType.INTEGER && intVariables.containsKey(name)) {
                 return intVariables.get(name);
-            } else if (type.equals("float") && floatVariables.containsKey(name)) {
+            } else if (type == InterpreterDataType.FLOAT && floatVariables.containsKey(name)) {
                 return floatVariables.get(name);
-            } else if (type.equals("string") && stringVariables.containsKey(name)) {
+            } else if (type == InterpreterDataType.STRING && stringVariables.containsKey(name)) {
                 return stringVariables.get(name);
             }
             Object value = evaluate(variableNode.getVal());
-            if (type.equals("int") && value instanceof Integer) {
+            if (type == InterpreterDataType.INTEGER && value instanceof Integer) {
                 return intVariables.get(name);
-            } else if (type.equals("float") && value instanceof Float) {
+            } else if (type == InterpreterDataType.FLOAT && value instanceof Float) {
                 return floatVariables.get(name);
-            } else if (type.equals("string") && value instanceof String) {
+            } else if (type == InterpreterDataType.STRING && value instanceof String) {
                 return stringVariables.get(name);
             } else {
                 throw new IllegalArgumentException(String.format("Invalid value %s for variable: %s", value, variableNode));
