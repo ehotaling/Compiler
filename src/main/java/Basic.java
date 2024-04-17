@@ -2,10 +2,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 /**
  * The Basic class is the entry point for the lexer program. It processes
@@ -13,7 +10,9 @@ import java.util.Scanner;
  */
 public class Basic {
 
-    public static Scanner scanner = new Scanner(System.in);
+    private static final Scanner scanner = new Scanner(System.in);
+
+    private static boolean DEBUG = false;
 
     /**
      * Starting point to initiate the tokenization process.
@@ -24,30 +23,46 @@ public class Basic {
     public static void main(String[] args) {
 
         // Validate that exactly one argument (filename) is provided
-        if (args.length != 1) {
-            System.out.println("Error: A single filename is required as an argument.");
+        if (args.length < 1) {
+            System.out.println("Usage: java -jar app.jar [filename] [-interactive] [-i] [-debug] [-d]");
             System.exit(1); //  Exiting with an error status
         }
 
-        if (args[0].equals("-interactive") || args[0].equals("-i")) {
+        Set<String> arguments = new HashSet<>(List.of(args));
+        if (arguments.contains("-interactive") || arguments.contains("-i")) {
             runInteractiveInterpreter();
+        } else if (arguments.contains("-debug") || arguments.contains("-d")) {
+            DEBUG = true;
         }
 
-        Lexer lexer = new Lexer();
-
         // Perform lexical analysis on the file and store the resulting tokens
+        Lexer lexer = new Lexer();
         LinkedList<Token> tokens = lexer.lex(args[0]);
 
         // Iterating through each of the tokens and printing their string representation
-        for (Token token : tokens) {
-            System.out.println(token.toString());
+        if (DEBUG) {
+            printBanner();
+            System.out.println("TOKENS");
+            printBanner();
+            for (Token token : tokens) {
+                System.out.println(token.toString());
+            }
         }
 
+        // Parse the tokens, create an AST, and return the root
         Parser parser = new Parser(tokens);
+        ProgramNode program = parser.parse();
 
-        Node ast = parser.parse();
+        if (DEBUG) {
+            printBanner();
+            System.out.println("AST");
+            printBanner();
+            System.out.println(program);
+            printBanner();
+        }
 
-        System.out.println(ast.toString());
+        Interpreter interpreter = new Interpreter(program);
+        interpreter.interpret();
     }
 
     private static void runInteractiveInterpreter() {
@@ -70,9 +85,9 @@ public class Basic {
                 System.out.println("Current program discarded");
                 program.clear();
             } else if (input.equalsIgnoreCase("OUTPUT")) {
-                System.out.println("============================================================");
+                printBanner();
                 System.out.println(String.join("\n", program));
-                System.out.println("============================================================");
+                printBanner();
             } else if (input.split(" ")[0].equalsIgnoreCase("SAVE")) {
                 String[] saveCommand = input.split(" ");
 
@@ -127,5 +142,9 @@ public class Basic {
         Path tempFilePath = Files.createTempFile("interactive_program", ".txt");
         Files.writeString(tempFilePath, text);
         return lexer.lex(tempFilePath.toString());
+    }
+
+    private static void printBanner() {
+        System.out.println("======================================================================");
     }
 }
