@@ -88,7 +88,7 @@ public class Interpreter {
         } else if (type == InterpreterDataType.STRING && value instanceof String) {
             stringVariables.put(name, (String) value);
         } else {
-            throw new IllegalArgumentException(String.format("Invalid type %s for variable %s with value: %s", type, name, value));
+            throw new IllegalArgumentException(String.format("Cannot assign %s to variable '%s' with type %s", value, name, type));
         }
     }
 
@@ -196,16 +196,8 @@ public class Interpreter {
                 return floatVariables.get(name);
             } else if (type == InterpreterDataType.STRING && stringVariables.containsKey(name)) {
                 return stringVariables.get(name);
-            }
-            Object value = evaluate(variableNode.getVal());
-            if (type == InterpreterDataType.INTEGER && value instanceof Integer) {
-                return intVariables.get(name);
-            } else if (type == InterpreterDataType.FLOAT && value instanceof Float) {
-                return floatVariables.get(name);
-            } else if (type == InterpreterDataType.STRING && value instanceof String) {
-                return stringVariables.get(name);
             } else {
-                throw new IllegalArgumentException(String.format("Invalid value %s for variable: %s", value, variableNode));
+                throw new IllegalArgumentException(String.format("Variable '%s' is not defined", name));
             }
         }
         // Evaluates the function and returns the value

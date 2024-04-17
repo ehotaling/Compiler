@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -11,6 +12,8 @@ import java.util.Scanner;
  * a file to tokenize its content and prints out the tokens.
  */
 public class Basic {
+
+    public static Scanner scanner = new Scanner(System.in);
 
     /**
      * Starting point to initiate the tokenization process.
@@ -48,26 +51,52 @@ public class Basic {
     }
 
     private static void runInteractiveInterpreter() {
+        System.out.println("SimpleBASIC (0.9)");
+        printOptions();
+
         List<String> program = new ArrayList<>();
 
         String input;
-        Scanner scanner = new Scanner(System.in);
         while (true) {
-            System.out.print("> ");
+            System.out.print(">>> ");
             input = scanner.nextLine();
             if (input.equalsIgnoreCase("RUN")) {
-                break;
+                runProgram(program);
+            } else if (input.equalsIgnoreCase("HELP")) {
+                printOptions();
             } else if (input.equalsIgnoreCase("EXIT")) {
                 System.exit(0);
+            } else if (input.equalsIgnoreCase("NEW")) {
+                System.out.println("Current program discarded");
+                program.clear();
+            } else if (input.equalsIgnoreCase("OUTPUT")) {
+                System.out.println("============================================================");
+                System.out.println(String.join("\n", program));
+                System.out.println("============================================================");
+            } else if (input.split(" ")[0].equalsIgnoreCase("SAVE")) {
+                String[] saveCommand = input.split(" ");
+
+                String fileName = saveCommand.length > 1 ? saveCommand[1] : "output.txt";
+                System.out.printf("Writing to file '%s'%n", fileName);
+
+                writeToFile(fileName, String.join("\n", program));
+            } else if (!input.isBlank()) {
+                program.add(input);
             }
-            program.add(input);
         }
+    }
 
-        System.out.println("\nExecuting Program...");
-        if (program.isEmpty()) {
-            System.exit(0);
-        }
+    private static void printOptions() {
+        System.out.println("HELP           Print help options");
+        System.out.println("RUN            Compile and run the current program");
+        System.out.println("NEW            Start a new program discarding the current one");
+        System.out.println("OUTPUT         Output the current program");
+        System.out.println("SAVE           Save current program to current directory as 'output.txt'");
+        System.out.println("SAVE [file]    Save current program to current directory as 'file'");
+        System.out.println("EXIT           Quit the interpreter");
+    }
 
+    private static void runProgram(List<String> program) {
         LinkedList<Token> tokens;
         try {
             tokens = runLexerOnText(String.join("\n", program), new Lexer());
@@ -78,10 +107,19 @@ public class Basic {
             Interpreter interpreter = new Interpreter(programNode);
             interpreter.interpret();
 
-            System.exit(0);
+        } catch (Exception e) {
+            e.printStackTrace(System.err);
+        }
+    }
+
+    private static boolean writeToFile(String fileName, String contents) {
+        try {
+            Path filePath = Paths.get(fileName);
+            Files.write(filePath, String.join("\n", contents).getBytes());
+            return true;
         } catch (IOException e) {
             e.printStackTrace(System.err);
-            System.exit(-1);
+            return false;
         }
     }
 
