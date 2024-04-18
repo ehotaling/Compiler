@@ -9,9 +9,9 @@ public class BooleanExpressionNode {
         EQUALS
     }
 
-    private ExpressionNode left;
-    private OPERATOR operator;
-    private ExpressionNode right;
+    private final ExpressionNode left;
+    private final OPERATOR operator;
+    private final ExpressionNode right;
 
     public BooleanExpressionNode(ExpressionNode left, OPERATOR operator, ExpressionNode right) {
         this.left = left;

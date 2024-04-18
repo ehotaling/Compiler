@@ -7,6 +7,8 @@ public class Interpreter {
     private HashMap<String, LabeledStatementNode> labels;
     private Queue<Node> dataQueue;
 
+    private Stack<StatementNode> stack = new Stack<>();
+
     private HashMap<String, Integer> intVariables = new HashMap<>();
     private HashMap<String, String> stringVariables = new HashMap<>();
     private HashMap<String, Float> floatVariables = new HashMap<>();
@@ -16,6 +18,8 @@ public class Interpreter {
     private boolean testMode = false;
     private List<String> testInput = new ArrayList<>();
     private final List<String> output = new ArrayList<>();
+
+    private boolean loop = false;
 
     public Interpreter(ProgramNode programNode) {
         this.programNode = programNode;
@@ -49,7 +53,10 @@ public class Interpreter {
             curr.accept(statementVisitor);
 
             // link the current statement to the previous one
-            if (prev != null) {
+            if (prev instanceof LabeledStatementNode) {
+                // TODO is there a better way to do this?
+                ((LabeledStatementNode) prev).getStatementNode().setNext(curr);
+            } else if (prev != null) {
                 prev.setNext(curr);
             }
 
@@ -65,25 +72,48 @@ public class Interpreter {
 
     // Interprets the program
     public void interpret() {
+        if (programNode.getStatements().isEmpty()) {
+            return;
+        }
+
         visitStatements();
-        for (StatementNode statement : programNode.getStatements()) {
-            if (statement instanceof AssignmentNode) {
-                assignment((AssignmentNode) statement);
-            } else if (statement instanceof ReadNode) {
-                // read data from the data queue and assign it to variables
-                read((ReadNode) statement);
-            } else if (statement instanceof InputNode) {
-                // read data from the data queue and assign it to variables
-                input((InputNode) statement);
-            } else if (statement instanceof PrintNode) {
-                // read data from the data queue and assign it to variables
-                print((PrintNode) statement);
-            }
+
+        StatementNode curr = programNode.getStatements().get(0);
+        StatementNode next;
+        while (!(curr instanceof EndNode)) {
+            next = interpretStatement(curr);
+            curr = next;
         }
     }
 
+    private StatementNode interpretStatement(StatementNode statement) {
+        if (statement instanceof AssignmentNode) {
+            return assignment((AssignmentNode) statement);
+        } else if (statement instanceof ReadNode) {
+            // read data from the data queue and assign it to variables
+            return read((ReadNode) statement);
+        } else if (statement instanceof InputNode) {
+            // read data from the data queue and assign it to variables
+            return input((InputNode) statement);
+        } else if (statement instanceof PrintNode) {
+            // read data from the data queue and assign it to variables
+            return print((PrintNode) statement);
+        } else if (statement instanceof IfNode) {
+            return ifStatement((IfNode) statement);
+        } else if (statement instanceof GoSubNode) {
+            return goSubStatement((GoSubNode) statement);
+        } else if (statement instanceof ReturnNode) {
+            return returnStatement((ReturnNode) statement);
+        } else if (statement instanceof LabeledStatementNode) {
+            return labeledStatement((LabeledStatementNode) statement);
+        }
+
+        // TODO have to throw an exception here if the program does not end with "END" statement
+        return new EndNode();
+    }
+
     // Evaluates assignment statements and assigns the value to the variable
-    private void assignment(AssignmentNode assignmentNode) {
+    private StatementNode assignment(AssignmentNode assignmentNode) {
         String name = assignmentNode.getVariableNode().getName();
         Object value = evaluate(assignmentNode.getValue());
         InterpreterDataType type = assignmentNode.getVariableNode().getType();
@@ -97,16 +127,17 @@ public class Interpreter {
         } else {
             throw new IllegalArgumentException(String.format("Cannot assign %s to variable '%s' with type %s", value, name, type));
         }
+        return assignmentNode.getNext();
     }
 
     // Prints the prompt. Reads data and sets the variable(s)
     // If in test mode, reads from the test input list
-    public void input(InputNode inputNode) {
+    public StatementNode input(InputNode inputNode) {
         if (testMode) {
             for (VariableNode variableNode : inputNode.getVariables()) {
                 String name = variableNode.getName();
                 InterpreterDataType type = variableNode.getType();
-                System.out.println(testInput.get(0));
+                System.out.print(testInput.get(0));
                 String inputValue = testInput.remove(0); // Get and remove the first element from the test input list
                 switch (type) {
                     case INTEGER:
@@ -121,7 +152,7 @@ public class Interpreter {
                 }
             }
         } else {
-            System.out.println(inputNode.getPrompt().getValue());
+            System.out.print(inputNode.getPrompt().getValue());
             for (VariableNode variableNode : inputNode.getVariables()) {
                 String name = variableNode.getName();
                 InterpreterDataType type = variableNode.getType();
@@ -138,10 +169,11 @@ public class Interpreter {
                 }
             }
         }
+        return inputNode.getNext();
     }
 
     // Reads and removes from internal collection. Updates variable(s)
-    private void read(ReadNode readNode) {
+    private StatementNode read(ReadNode readNode) {
         for (VariableNode variableNode: readNode.getVariables()) {
             if (dataQueue.isEmpty()) {
                 throw new IllegalStateException("Cannot read from empty DATA queue");
@@ -161,10 +193,11 @@ public class Interpreter {
                 throw new IllegalArgumentException(String.format("Cannot assign value: %s to variable %s of type: %s", value, name, type));
             }
         }
+        return readNode.getNext();
     }
 
     // Prints each data item in the PrintNode
-    public void print(PrintNode printNode) {
+    public StatementNode print(PrintNode printNode) {
         for (Node arg: printNode.getArguments()) {
             if (testMode) {
                 output.add(evaluate(arg).toString());
@@ -173,7 +206,79 @@ public class Interpreter {
             }
         }
         System.out.println();
+        return printNode.getNext();
     }
+
+    private StatementNode ifStatement(IfNode ifNode) {
+        String label = ifNode.getLabel();
+        Object left = evaluate(ifNode.getCondition().getLeft());
+        Object right = evaluate(ifNode.getCondition().getRight());
+        BooleanExpressionNode.OPERATOR operator = ifNode.getCondition().getOperator();
+
+        if (!isInteger(left, right) || !isNumeric(left, right)) {
+            throw new RuntimeException(String.format("Unsupported comparison for operands: '%s' and '%s'", left, right));
+        }
+
+        // Jump to this statement if any of the conditions are true
+        StatementNode labeledStatement = labels.get(label).getStatementNode();
+
+        if (operator == BooleanExpressionNode.OPERATOR.LESSTHAN) {
+            if (isInteger(left, right) && (Integer) left < (Integer) right) {
+                return labeledStatement;
+            } else if (isNumeric(left, right) && ((Number) left).floatValue() < ((Number) right).floatValue()) {
+                return labeledStatement;
+            }
+        } else if (operator == BooleanExpressionNode.OPERATOR.LESSTHANEQUALTO) {
+            if (isInteger(left, right) && (Integer) left <= (Integer) right) {
+                return labeledStatement;
+            } else if (isNumeric(left, right) && ((Number) left).floatValue() <= ((Number) right).floatValue()) {
+                return labeledStatement;
+            }
+        } else if (operator == BooleanExpressionNode.OPERATOR.GREATERTHAN) {
+            if (isInteger(left, right) && (Integer) left > (Integer) right) {
+                return labeledStatement;
+            } else if (isNumeric(left, right) && ((Number) left).floatValue() > ((Number) right).floatValue()) {
+                return labeledStatement;
+            }
+        } else if (operator == BooleanExpressionNode.OPERATOR.GREATERTHANEQUALTO) {
+            if (isInteger(left, right) && (Integer) left >= (Integer) right) {
+                return labeledStatement;
+            } else if (isNumeric(left, right) && ((Number) left).floatValue() >= ((Number) right).floatValue()) {
+                return labeledStatement;
+            }
+        } else if (operator == BooleanExpressionNode.OPERATOR.NOTEQUALS) {
+            if (isInteger(left, right) && !left.equals(right)) {
+                return labeledStatement;
+            } else if (isNumeric(left, right) && ((Number) left).floatValue() != ((Number) right).floatValue()) {
+                return labeledStatement;
+            }
+        } else if (operator == BooleanExpressionNode.OPERATOR.EQUALS) {
+            if (isInteger(left, right) && left.equals(right)) {
+                return labeledStatement;
+            } else if (isNumeric(left, right) && ((Number) left).floatValue() == ((Number) right).floatValue()) {
+                return labeledStatement;
+            }
+        }
+        return ifNode.getNext();
+    }
+
+    private StatementNode goSubStatement(GoSubNode goSubNode) {
+        stack.push(goSubNode.getNext());
+        return labels.get(goSubNode.getLabel()).getStatementNode();
+    }
+
+    private StatementNode returnStatement(ReturnNode returnNode) {
+        return stack.pop();
+    }
+
+    private StatementNode labeledStatement(LabeledStatementNode labeledStatementNode) {
+        return labeledStatementNode.getStatementNode();
+    }
+
+//    private StatementNode forStatement(ForNode forNode) {
+//        VariableNode variableNode = forNode.getVariable();
+//        intVariables.put(variableNode.getName(), forNode.getInitialValue())
+//    }
 
     // Evaluates the node and returns the value
     private Object evaluate(Node node) {

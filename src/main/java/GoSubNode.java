@@ -1,7 +1,7 @@
-public class GosubNode extends StatementNode {
-    private String label;
+public class GoSubNode extends StatementNode {
+    private final String label;
 
-    public GosubNode(String label) {
+    public GoSubNode(String label) {
         this.label = label;
     }
 
@@ -11,7 +11,7 @@ public class GosubNode extends StatementNode {
 
     @Override
     public String toString() {
-        return String.format("GosubNode(%s)", label);
+        return String.format("GoSubNode(%s)", label);
     }
 
     @Override

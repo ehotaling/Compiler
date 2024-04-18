@@ -87,10 +87,10 @@ public class InterpreterTest {
         HashMap<String, LabeledStatementNode> labels = interpreter.getLabels();
 
         LabeledStatementNode labeledStatementNode = new LabeledStatementNode(
-                "beginning:", new PrintNode(List.of(new StringNode("Hello!"))));
+                "beginning", new PrintNode(List.of(new StringNode("Hello!"))));
 
-        assertTrue(labels.containsKey("beginning:"));
-        assertEquals(labeledStatementNode, labels.get("beginning:"));
+        assertTrue(labels.containsKey("beginning"));
+        assertEquals(labeledStatementNode, labels.get("beginning"));
     }
 
     // Tests the ability to store variables assigned to integers, floats, and strings
@@ -307,6 +307,21 @@ public class InterpreterTest {
         LinkedList<Token> tokens = lexer.lex("src/test/resources/test_print.bas");
         ProgramNode actualProgram = new Parser(tokens).parse();
         List<String> expectedPrint = Arrays.asList("hello", "5", "5.0", "5", "5.0", "hello");
+
+        // Run Interpreter on it
+        Interpreter interpreter = new Interpreter(actualProgram);
+        interpreter.setTestMode(true);
+        interpreter.interpret();
+        List<String> actualPrint = interpreter.getOutput();
+        assertEquals(expectedPrint, actualPrint);
+    }
+
+    // Tests the ability to print strings, integers, and floats
+    @Test
+    public void testGoSub() {
+        LinkedList<Token> tokens = lexer.lex("src/test/resources/go_sub.bas");
+        ProgramNode actualProgram = new Parser(tokens).parse();
+        List<String> expectedPrint = List.of("22");
 
         // Run Interpreter on it
         Interpreter interpreter = new Interpreter(actualProgram);

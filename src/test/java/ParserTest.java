@@ -910,28 +910,28 @@ public class ParserTest {
     public void testLabeledStatement() throws IOException {
         ProgramNode program = parseStatements("LABEL: PRINT \"Hello, World!\"");
         // Check that the first statement in the program is a LabeledStatementNode
-        assertTrue(program.getStatements().get(0) instanceof LabeledStatementNode);
+        assertInstanceOf(LabeledStatementNode.class, program.getStatements().get(0));
     }
 
     @Test
     public void testGoSub() throws IOException {
         ProgramNode program = parseStatements("GOSUB LABEL");
         // Check that the first statement in the program is a GoSubNode
-        assertTrue(program.getStatements().get(0) instanceof GosubNode);
+        assertInstanceOf(GoSubNode.class, program.getStatements().get(0));
     }
 
     @Test
     public void testReturn() throws IOException {
         ProgramNode program = parseStatements("RETURN");
         // Check that the first statement in the program is a ReturnNode
-        assertTrue(program.getStatements().get(0) instanceof ReturnNode);
+        assertInstanceOf(ReturnNode.class, program.getStatements().get(0));
     }
 
     @Test
     public void testFor() throws IOException {
         ProgramNode program = parseStatements("FOR I = 1 TO 10 STEP 2\nPRINT I\nNEXT I");
         // Check that the first statement in the program is a ForNode
-        assertTrue(program.getStatements().get(0) instanceof ForNode);
+        assertInstanceOf(ForNode.class, program.getStatements().get(0));
     }
 
     @Test
@@ -948,7 +948,33 @@ public class ParserTest {
         // TODO test the contents of While node
         ProgramNode program = parseStatements("WHILE x < 5 endWhileLabel\nx = x + 1\n endWhileLabel:");
         // Check that the first statement in the program is a WhileNode
-        assertTrue(program.getStatements().get(0) instanceof WhileNode);
+        assertInstanceOf(WhileNode.class, program.getStatements().get(0));
+    }
+
+    @Test
+    public void testIf() throws IOException {
+        // TODO test the contents of While node
+        ProgramNode program = parseStatements("x = 4\nIF x < 5 THEN xIsSmall\nxIsSmall: PRINT \"x is small\"\nPRINT \"HELLO\"");
+        System.out.println(program);
+        // Check that the first statement in the program is a WhileNode
+        assertInstanceOf(AssignmentNode.class, program.getStatements().get(0));
+        assertInstanceOf(IfNode.class, program.getStatements().get(1));
+        assertInstanceOf(LabeledStatementNode.class, program.getStatements().get(2));
+        assertInstanceOf(PrintNode.class, ((LabeledStatementNode) program.getStatements().get(2)).getStatementNode());
+
+        Interpreter interpreter = new Interpreter(program);
+        interpreter.interpret();
+    }
+
+    @Test
+    public void testInterpretPrint() throws IOException {
+        // TODO test the contents of While node
+        ProgramNode program = parseStatements("PRINT \"HELLO\"");
+        System.out.println(program);
+        // Check that the first statement in the program is a WhileNode
+
+        Interpreter interpreter = new Interpreter(program);
+        interpreter.interpret();
     }
 
 }

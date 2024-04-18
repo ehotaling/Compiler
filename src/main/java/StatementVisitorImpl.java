@@ -34,21 +34,9 @@ public class StatementVisitorImpl implements StatementVisitor {
         labels.put(labeledStatementNode.getLabel(), labeledStatementNode);
     }
 
-    public void visit(AssignmentNode assignmentNode) {
-        VariableNode variableNode = assignmentNode.getVariableNode();
-        String name = variableNode.getName();
-        InterpreterDataType type = variableNode.getType();
-        if (type.equals("int")) {
-            intVariables.put(name, null);
-        } else if (type.equals("float")) {
-            floatVariables.put(name, null);
-        } else if (type.equals("string")) {
-            stringVariables.put(name, null);
-        }
-    }
+    public void visit(AssignmentNode assignmentNode) {}
+
     public void visit (DataNode dataNode){
-        for (Node node: dataNode.getData()) {
-            this.dataNodes.add(node);
-        }
+        this.dataNodes.addAll(dataNode.getData());
     }
 }
