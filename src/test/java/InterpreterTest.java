@@ -36,7 +36,7 @@ public class InterpreterTest {
         interpreter.interpret();
 
         // Check that the data and labels were correctly stored
-        HashMap<String, LabeledStatementNode> labels = interpreter.getLabels();
+        Map<String, LabeledStatementNode> labels = interpreter.getLabels();
         Queue<Node> dataQueue = interpreter.getDataQueue();
 
         assertEquals(1, labels.size());
@@ -84,7 +84,7 @@ public class InterpreterTest {
         Interpreter interpreter = new Interpreter(actualProgram);
         interpreter.interpret();
 
-        HashMap<String, LabeledStatementNode> labels = interpreter.getLabels();
+        Map<String, LabeledStatementNode> labels = interpreter.getLabels();
 
         LabeledStatementNode labeledStatementNode = new LabeledStatementNode(
                 "beginning", new PrintNode(List.of(new StringNode("Hello!"))));
@@ -115,9 +115,9 @@ public class InterpreterTest {
         interpreter.interpret();
 
         // Check that the variables were correctly stored
-        HashMap<String, Integer> intVariables = interpreter.getIntVariables();
-        HashMap<String, Float> floatVariables = interpreter.getFloatVariables();
-        HashMap<String, String> stringVariables = interpreter.getStringVariables();
+        Map<String, Integer> intVariables = interpreter.getIntVariables();
+        Map<String, Float> floatVariables = interpreter.getFloatVariables();
+        Map<String, String> stringVariables = interpreter.getStringVariables();
 
         assertEquals(1, intVariables.size());
         assertEquals(1, floatVariables.size());
@@ -138,9 +138,9 @@ public class InterpreterTest {
         Interpreter interpreter = new Interpreter(actualProgram);
         interpreter.interpret();
 
-        HashMap<String, Integer> intVariables = interpreter.getIntVariables();
-        HashMap<String, Float> floatVariables = interpreter.getFloatVariables();
-        HashMap<String, String> stringVariables = interpreter.getStringVariables();
+        Map<String, Integer> intVariables = interpreter.getIntVariables();
+        Map<String, Float> floatVariables = interpreter.getFloatVariables();
+        Map<String, String> stringVariables = interpreter.getStringVariables();
 
 
         assertEquals(1, intVariables.size());
@@ -161,7 +161,7 @@ public class InterpreterTest {
         Interpreter interpreter = new Interpreter(actualProgram);
         interpreter.interpret();
 
-        HashMap<String, String> stringVariables = interpreter.getStringVariables();
+        Map<String, String> stringVariables = interpreter.getStringVariables();
 
         assertEquals(1, stringVariables.size());
         assertEquals("Eric", stringVariables.get("name$"));
@@ -177,7 +177,7 @@ public class InterpreterTest {
         Interpreter interpreter = new Interpreter(actualProgram);
         interpreter.interpret();
 
-        HashMap<String, Integer> intVariables = interpreter.getIntVariables();
+        Map<String, Integer> intVariables = interpreter.getIntVariables();
 
         assertEquals(4, intVariables.size());
         assertEquals(28, intVariables.get("age"));
@@ -196,9 +196,9 @@ public class InterpreterTest {
         Interpreter interpreter = new Interpreter(actualProgram);
         interpreter.interpret();
 
-        HashMap<String, Integer> intVariables = interpreter.getIntVariables();
-        HashMap<String, Float> floatVariables = interpreter.getFloatVariables();
-        HashMap<String, String> stringVariables = interpreter.getStringVariables();
+        Map<String, Integer> intVariables = interpreter.getIntVariables();
+        Map<String, Float> floatVariables = interpreter.getFloatVariables();
+        Map<String, String> stringVariables = interpreter.getStringVariables();
 
         // Testing RANDOM() function
         assertTrue(intVariables.containsKey("randomNumber"));
@@ -241,8 +241,8 @@ public class InterpreterTest {
         Interpreter interpreter = new Interpreter(actualProgram);
         interpreter.interpret();
 
-        HashMap<String, Integer> intVariables = interpreter.getIntVariables();
-        HashMap<String, Float> floatVariables = interpreter.getFloatVariables();
+        Map<String, Integer> intVariables = interpreter.getIntVariables();
+        Map<String, Float> floatVariables = interpreter.getFloatVariables();
 
         assertEquals(5.0f, floatVariables.get("floatVar%"));
         assertEquals(5, intVariables.get("intVar"));
@@ -266,8 +266,8 @@ public class InterpreterTest {
         Interpreter interpreter = new Interpreter(actualProgram);
         interpreter.interpret();
 
-        HashMap<String, Integer> intVariables = interpreter.getIntVariables();
-        HashMap<String, Float> floatVariables = interpreter.getFloatVariables();
+        Map<String, Integer> intVariables = interpreter.getIntVariables();
+        Map<String, Float> floatVariables = interpreter.getFloatVariables();
 
         assertEquals(10, intVariables.get("valPlusInt"));
         assertEquals(10, intVariables.get("valPlusVal"));
@@ -331,4 +331,31 @@ public class InterpreterTest {
         assertEquals(expectedPrint, actualPrint);
     }
 
+    @Test
+    public void testIf() {
+        LinkedList<Token> tokens = lexer.lex("src/test/resources/if_statement.bas");
+        ProgramNode actualProgram = new Parser(tokens).parse();
+        List<String> expectedPrint = List.of("y is small");
+
+        // Run Interpreter on it
+        Interpreter interpreter = new Interpreter(actualProgram);
+        interpreter.setTestMode(true);
+        interpreter.interpret();
+        List<String> actualPrint = interpreter.getOutput();
+        assertEquals(expectedPrint, actualPrint);
+    }
+
+    @Test
+    public void testEvaluateBoolean() {
+        LinkedList<Token> tokens = lexer.lex("src/test/resources/if_statement.bas");
+        ProgramNode actualProgram = new Parser(tokens).parse();
+        List<String> expectedPrint = List.of("y is small");
+
+        // Run Interpreter on it
+        Interpreter interpreter = new Interpreter(actualProgram);
+        interpreter.setTestMode(true);
+        interpreter.interpret();
+        List<String> actualPrint = interpreter.getOutput();
+        assertEquals(expectedPrint, actualPrint);
+    }
 }

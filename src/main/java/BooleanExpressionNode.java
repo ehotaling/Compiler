@@ -1,4 +1,4 @@
-public class BooleanExpressionNode {
+public class BooleanExpressionNode extends Node {
 
     public enum OPERATOR {
         GREATERTHAN,

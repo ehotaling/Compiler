@@ -103,6 +103,12 @@ public class Parser {
             // Only store the string without the ":" to simplify lookup
             label = label.substring(0, label.length() - 1);
 
+            // This label is used in a while statement and has no statement after colon
+            if (peekAndMatch(Token.TokenType.ENDOFLINE)) {
+                // TODO make an EndWhile node
+                return new LabeledStatementNode(label, null);
+            }
+
             StatementNode statementNode = statement();
             return new LabeledStatementNode(label, statementNode);
         } else if (peekAndMatch(Token.TokenType.READ)) {
@@ -157,36 +163,16 @@ public class Parser {
         }
 
         BooleanExpressionNode condition = booleanExpression();
-        if (!peekAndMatch(Token.TokenType.WORD)) {
-            throw new IllegalArgumentException("Expected WORD token");
-        }
-        tokenManager.matchAndRemove(Token.TokenType.WORD);
-
-        // WhileNode stores the body of the while loop
-        StatementsNode whileBody = new StatementsNode();
-
-        // Parse the body of the while loop
-        while(tokenManager.moreTokens() && !peekAndMatch(Token.TokenType.LABEL)) {
-            if (peekAndMatch(Token.TokenType.ENDOFLINE)) {
-                tokenManager.matchAndRemove(Token.TokenType.ENDOFLINE);
-                continue;
-            }
-            StatementNode statementNode = statement();
-            if (statementNode != null) {
-                whileBody.addStatement(statementNode);
-            }
-        }
 
         // Check if the next token is the end label of the while loop
-        if (!peekAndMatch(Token.TokenType.LABEL)) {
-            throw new IllegalArgumentException("Expected LABEL token");
+        if (!peekAndMatch(Token.TokenType.WORD)) {
+            throw new IllegalArgumentException("Expected a WORD token to create label for WhileNode");
         }
 
         // Remove the end label from the token stream, store it as the end label
-        String endLabel = tokenManager.matchAndRemove(Token.TokenType.LABEL).get().getVal();
+        String endLabel = tokenManager.matchAndRemove(Token.TokenType.WORD).get().getVal();
 
-
-        return new WhileNode(condition, whileBody, endLabel);
+        return new WhileNode(condition, endLabel);
     }
 
     /**

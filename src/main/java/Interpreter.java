@@ -4,22 +4,24 @@ import java.util.*;
 public class Interpreter {
     private final ProgramNode programNode;
     private final StatementVisitorImpl statementVisitor;
-    private HashMap<String, LabeledStatementNode> labels;
+    private Map<String, LabeledStatementNode> labels;
     private Queue<Node> dataQueue;
 
     private Stack<StatementNode> stack = new Stack<>();
 
-    private HashMap<String, Integer> intVariables = new HashMap<>();
-    private HashMap<String, String> stringVariables = new HashMap<>();
-    private HashMap<String, Float> floatVariables = new HashMap<>();
-    
+    private Map<String, Integer> intVariables = new HashMap<>();
+    private Map<String, String> stringVariables = new HashMap<>();
+    private Map<String, Float> floatVariables = new HashMap<>();
+
+    private Set<String> whileLabels = new HashSet<>();
+
     private final Scanner scanner = new Scanner(System.in);
 
     private boolean testMode = false;
     private List<String> testInput = new ArrayList<>();
     private final List<String> output = new ArrayList<>();
 
-    private boolean loop = false;
+    private boolean isDone = false;
 
     public Interpreter(ProgramNode programNode) {
         this.programNode = programNode;
@@ -54,8 +56,17 @@ public class Interpreter {
 
             // link the current statement to the previous one
             if (prev instanceof LabeledStatementNode) {
-                // TODO is there a better way to do this?
-                ((LabeledStatementNode) prev).getStatementNode().setNext(curr);
+                // TODO refactor this
+                StatementNode previousStatement = ((LabeledStatementNode) prev).getStatementNode();
+
+                // This means that the previous statement was a label that was the end of a while loop
+                // LabeledStatement("label", null)
+                if (previousStatement == null) {
+                    prev.setNext(curr);
+                } else {
+                    // Otherwise, connect the inner statement in LabeledStatement to the next node
+                    ((LabeledStatementNode) prev).getStatementNode().setNext(curr);
+                }
             } else if (prev != null) {
                 prev.setNext(curr);
             }
@@ -68,6 +79,7 @@ public class Interpreter {
         stringVariables = statementVisitor.getStringVariables();
         dataQueue = statementVisitor.getDataNodes();
         labels = statementVisitor.getLabels();
+        whileLabels = statementVisitor.getWhileLabels();
     }
 
     // Interprets the program
@@ -80,7 +92,7 @@ public class Interpreter {
 
         StatementNode curr = programNode.getStatements().get(0);
         StatementNode next;
-        while (!(curr instanceof EndNode)) {
+        while (!isDone) {
             next = interpretStatement(curr);
             curr = next;
         }
@@ -104,8 +116,16 @@ public class Interpreter {
             return goSubStatement((GoSubNode) statement);
         } else if (statement instanceof ReturnNode) {
             return returnStatement((ReturnNode) statement);
+        } else if (statement instanceof ForNode) {
+            return forStatement((ForNode) statement);
+        } else if (statement instanceof WhileNode) {
+            return whileStatement((WhileNode) statement);
+        } else if (statement instanceof NextNode) {
+            return nextStatement((NextNode) statement);
         } else if (statement instanceof LabeledStatementNode) {
             return labeledStatement((LabeledStatementNode) statement);
+        } else if (statement instanceof EndNode) {
+            return endStatement((EndNode) statement);
         }
 
         // TODO have to throw an exception here if the program does not end with "END" statement
@@ -211,55 +231,62 @@ public class Interpreter {
 
     private StatementNode ifStatement(IfNode ifNode) {
         String label = ifNode.getLabel();
-        Object left = evaluate(ifNode.getCondition().getLeft());
-        Object right = evaluate(ifNode.getCondition().getRight());
-        BooleanExpressionNode.OPERATOR operator = ifNode.getCondition().getOperator();
+
+        // Jump to this statement if any of the conditions are true
+        StatementNode labeledStatement = labels.get(label).getStatementNode();
+
+        return evaluateBoolean(ifNode.getCondition()) ? labeledStatement : ifNode.getNext();
+    }
+
+    private boolean evaluateBoolean(BooleanExpressionNode booleanExpressionNode) {
+        Object left = evaluate(booleanExpressionNode.getLeft());
+        Object right = evaluate(booleanExpressionNode.getRight());
+        BooleanExpressionNode.OPERATOR operator = booleanExpressionNode.getOperator();
 
         if (!isInteger(left, right) || !isNumeric(left, right)) {
             throw new RuntimeException(String.format("Unsupported comparison for operands: '%s' and '%s'", left, right));
         }
 
-        // Jump to this statement if any of the conditions are true
-        StatementNode labeledStatement = labels.get(label).getStatementNode();
-
         if (operator == BooleanExpressionNode.OPERATOR.LESSTHAN) {
-            if (isInteger(left, right) && (Integer) left < (Integer) right) {
-                return labeledStatement;
-            } else if (isNumeric(left, right) && ((Number) left).floatValue() < ((Number) right).floatValue()) {
-                return labeledStatement;
+            if (isInteger(left, right)) {
+                return (Integer) left < (Integer) right;
+            } else if (isNumeric(left, right)) {
+                return ((Number) left).floatValue() < ((Number) right).floatValue();
             }
         } else if (operator == BooleanExpressionNode.OPERATOR.LESSTHANEQUALTO) {
-            if (isInteger(left, right) && (Integer) left <= (Integer) right) {
-                return labeledStatement;
-            } else if (isNumeric(left, right) && ((Number) left).floatValue() <= ((Number) right).floatValue()) {
-                return labeledStatement;
+            if (isInteger(left, right)) {
+                return (Integer) left <= (Integer) right;
+            } else if (isNumeric(left, right)) {
+                return ((Number) left).floatValue() <= ((Number) right).floatValue();
             }
         } else if (operator == BooleanExpressionNode.OPERATOR.GREATERTHAN) {
-            if (isInteger(left, right) && (Integer) left > (Integer) right) {
-                return labeledStatement;
-            } else if (isNumeric(left, right) && ((Number) left).floatValue() > ((Number) right).floatValue()) {
-                return labeledStatement;
+            if (isInteger(left, right)) {
+                return (Integer) left > (Integer) right;
+            } else if (isNumeric(left, right)) {
+                return ((Number) left).floatValue() > ((Number) right).floatValue();
             }
         } else if (operator == BooleanExpressionNode.OPERATOR.GREATERTHANEQUALTO) {
-            if (isInteger(left, right) && (Integer) left >= (Integer) right) {
-                return labeledStatement;
-            } else if (isNumeric(left, right) && ((Number) left).floatValue() >= ((Number) right).floatValue()) {
-                return labeledStatement;
+            if (isInteger(left, right)) {
+                return (Integer) left >= (Integer) right;
+            } else if (isNumeric(left, right)) {
+                return ((Number) left).floatValue() >= ((Number) right).floatValue();
             }
         } else if (operator == BooleanExpressionNode.OPERATOR.NOTEQUALS) {
-            if (isInteger(left, right) && !left.equals(right)) {
-                return labeledStatement;
-            } else if (isNumeric(left, right) && ((Number) left).floatValue() != ((Number) right).floatValue()) {
-                return labeledStatement;
+            if (isInteger(left, right)) {
+                return !left.equals(right);
+            } else if (isNumeric(left, right)) {
+                return ((Number) left).floatValue() != ((Number) right).floatValue();
             }
         } else if (operator == BooleanExpressionNode.OPERATOR.EQUALS) {
-            if (isInteger(left, right) && left.equals(right)) {
-                return labeledStatement;
-            } else if (isNumeric(left, right) && ((Number) left).floatValue() == ((Number) right).floatValue()) {
-                return labeledStatement;
+            if (isInteger(left, right)) {
+                return left.equals(right);
+            } else if (isNumeric(left, right)) {
+                return ((Number) left).floatValue() == ((Number) right).floatValue();
             }
+        } else {
+            throw new RuntimeException(String.format("Unsupported comparison: %s", operator));
         }
-        return ifNode.getNext();
+        return false;
     }
 
     private StatementNode goSubStatement(GoSubNode goSubNode) {
@@ -272,13 +299,75 @@ public class Interpreter {
     }
 
     private StatementNode labeledStatement(LabeledStatementNode labeledStatementNode) {
+        // Check if this label marks the end of a while loop
+        if (whileLabels.contains(labeledStatementNode.getLabel())) {
+            return stack.pop();
+        }
+
+        // Otherwise, return the statement
         return labeledStatementNode.getStatementNode();
     }
 
-//    private StatementNode forStatement(ForNode forNode) {
-//        VariableNode variableNode = forNode.getVariable();
-//        intVariables.put(variableNode.getName(), forNode.getInitialValue())
-//    }
+    private StatementNode nextStatement(NextNode nextNode) {
+        return stack.pop();
+    }
+
+    private StatementNode endStatement(EndNode endNode) {
+        isDone = true;
+        return endNode.getNext();
+    }
+
+    private StatementNode forStatement(ForNode forNode) {
+        VariableNode variableNode = forNode.getVariable();
+        String counterName = variableNode.getName();
+        boolean firstIteration = false;
+
+        // Initialize the counter variable one the first iteration
+        if (!intVariables.containsKey(variableNode.getName())) {
+            firstIteration = true;
+            Integer startValue = (Integer) evaluate(forNode.getInitialValue());
+            intVariables.put(counterName, startValue);
+        }
+
+        Integer counter = intVariables.get(counterName);
+        Integer limit = (Integer) evaluate(forNode.getLimit());
+        Integer step = (Integer) evaluate(forNode.getIncrement());
+
+        // Keep iterating, increment counter and push the ForNode onto the stack
+        if (counter < limit) {
+            stack.push(forNode);
+            intVariables.put(counterName, firstIteration ? counter: counter + step);
+            return forNode.getNext();
+        }
+
+        // Otherwise, end the loop, skip to the first NEXT statement
+        StatementNode curr = forNode;
+        while (!(curr instanceof NextNode)) {
+            curr = curr.getNext();
+        }
+        return curr.getNext();
+    }
+
+    private StatementNode whileStatement(WhileNode whileNode) {
+        boolean shouldContinue = (Boolean) evaluate(whileNode.getCondition());
+        if (shouldContinue) {
+            stack.push(whileNode);
+            return whileNode.getNext();
+        }
+
+        // Otherwise, end the loop, skip to end label and return its next node
+        StatementNode curr = whileNode;
+        while (true) {
+            if (curr instanceof LabeledStatementNode) {
+                LabeledStatementNode labeledStatementNode = (LabeledStatementNode) curr;
+                if (whileLabels.contains(labeledStatementNode.getLabel())) {
+                    break;
+                }
+            }
+            curr = curr.getNext();
+        }
+        return curr.getNext();
+    }
 
     // Evaluates the node and returns the value
     private Object evaluate(Node node) {
@@ -296,6 +385,10 @@ public class Interpreter {
         if (node instanceof StringNode) {
             StringNode stringNode = (StringNode) node;
             return stringNode.getValue();
+        }
+
+        if (node instanceof BooleanExpressionNode) {
+            return evaluateBoolean((BooleanExpressionNode) node);
         }
 
         // Evaluates the variable and returns the value
@@ -401,7 +494,7 @@ public class Interpreter {
             return evaluate(termNode.getNode());
         }
         // Evaluates the factor and returns the value
-        if (node instanceof FactorNode) {
+        if (node instanceof FactorNode)  {
             FactorNode factorNode = (FactorNode) node;
             return evaluate(factorNode.getNode());
         }
@@ -419,19 +512,19 @@ public class Interpreter {
                 (right instanceof Float || right instanceof Integer);
     }
 
-    public HashMap<String, Integer> getIntVariables() {
+    public Map<String, Integer> getIntVariables() {
         return intVariables;
     }
 
-    public HashMap<String, String> getStringVariables() {
+    public Map<String, String> getStringVariables() {
         return stringVariables;
     }
 
-    public HashMap<String, Float> getFloatVariables() {
+    public Map<String, Float> getFloatVariables() {
         return floatVariables;
     }
 
-    public HashMap<String, LabeledStatementNode> getLabels() {
+    public Map<String, LabeledStatementNode> getLabels() {
         return labels;
     }
 

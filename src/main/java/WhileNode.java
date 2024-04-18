@@ -3,12 +3,10 @@ import java.util.Objects;
 public class WhileNode extends StatementNode {
     private final BooleanExpressionNode condition;
     private final String label;
-    private StatementsNode body;
 
-    public WhileNode(BooleanExpressionNode condition, StatementsNode body, String label) {
+    public WhileNode(BooleanExpressionNode condition, String label) {
         this.condition = condition;
         this.label = label;
-        this.body = body;
     }
 
     public BooleanExpressionNode getCondition() {
@@ -19,13 +17,9 @@ public class WhileNode extends StatementNode {
         return label;
     }
 
-    public StatementsNode getBody() {
-        return body;
-    }
-
     @Override
     public String toString() {
-        return String.format("WhileNode(%s, %s, %s)", condition, body, label);
+        return String.format("WhileNode(%s, %s)", condition, label);
     }
 
     @Override
@@ -43,5 +37,6 @@ public class WhileNode extends StatementNode {
 
     @Override
     public void accept(StatementVisitor visitor) {
+        visitor.visit(this);
     }
 }
