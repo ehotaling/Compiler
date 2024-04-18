@@ -5,7 +5,6 @@ public class ForNode extends StatementNode {
     private Node initialValue;
     private Node limit;
     private Node increment;
-    private StatementsNode body;
 
     public ForNode(VariableNode variable, Node initialValue, Node limit, Node increment) {
         this.variable = variable;
@@ -30,13 +29,9 @@ public class ForNode extends StatementNode {
         return increment;
     }
 
-    public StatementsNode getBody() {
-        return body;
-    }
-
     @Override
     public String toString() {
-        return String.format("ForNode(variable=%s, initialValue=%s, limit=%s, increment=%s, body=%s)", variable, initialValue, limit, increment, body);
+        return String.format("ForNode(variable=%s, initialValue=%s, limit=%s, increment=%s)", variable, initialValue, limit, increment);
     }
 
     @Override
@@ -47,13 +42,12 @@ public class ForNode extends StatementNode {
         return variable.equals(forNode.variable) &&
                 initialValue.equals(forNode.initialValue) &&
                 limit.equals(forNode.limit) &&
-                increment.equals(forNode.increment) &&
-                body.equals(forNode.body);
+                increment.equals(forNode.increment);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(variable, initialValue, limit, increment, body);
+        return Objects.hash(variable, initialValue, limit, increment);
     }
 
     @Override

@@ -286,27 +286,6 @@ public class Parser {
         if (matchAndRemove(Token.TokenType.STEP)) {
             increment = number(tokenManager.matchAndRemove(Token.TokenType.NUMBER).get(), false);
         }
-
-//        StatementsNode body = new StatementsNode();
-//        boolean nextFound = false;
-//        while (!nextFound && tokenManager.moreTokens()) {
-//            if (peekAndMatch(Token.TokenType.NEXT)) {
-//                matchAndRemove(Token.TokenType.NEXT);
-//                if (!peekAndMatch(Token.TokenType.WORD) || !tokenManager.peek(0).get().getVal().equals(variableNode.getName())) {
-//                    throw new IllegalArgumentException("Expected NEXT token followed by the loop variable");
-//                }
-//                tokenManager.matchAndRemove(Token.TokenType.WORD);
-//                nextFound = true;
-//            } else {
-//                StatementNode statementNode = statement();
-//                if (statementNode != null) {
-//                    body.addStatement(statementNode);
-//                }
-//            }
-//        }
-//        if (!nextFound) {
-//            throw new IllegalArgumentException("Expected NEXT token for the FOR loop");
-//        }
         return new ForNode(variableNode, initialValue, limit, increment);
     }
 
