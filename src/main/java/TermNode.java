@@ -17,7 +17,6 @@ public class TermNode extends Node {
         return String.format("TermNode: {%s}", this.node);
     }
 
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

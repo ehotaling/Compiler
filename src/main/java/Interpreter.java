@@ -15,7 +15,7 @@ public class Interpreter {
 
     private boolean testMode = false;
     private List<String> testInput = new ArrayList<>();
-    private List<String> output = new ArrayList<>();
+    private final List<String> output = new ArrayList<>();
 
     public Interpreter(ProgramNode programNode) {
         this.programNode = programNode;
@@ -26,10 +26,16 @@ public class Interpreter {
     public void setTestMode(boolean testMode) {
         this.testMode = testMode;
     }
+
     // Sets the input
-    public void setInput(List<String> input) {
+    public void setTestInput(List<String> input) {
         this.testInput = new ArrayList<>(input);
     }
+
+    public List<String> getTestInput() {
+        return this.testInput;
+    }
+
     // Gets the output
     public List<String> getOutput() {
         return output;
@@ -56,6 +62,7 @@ public class Interpreter {
         dataQueue = statementVisitor.getDataNodes();
         labels = statementVisitor.getLabels();
     }
+
     // Interprets the program
     public void interpret() {
         visitStatements();
@@ -185,6 +192,7 @@ public class Interpreter {
             StringNode stringNode = (StringNode) node;
             return stringNode.getValue();
         }
+
         // Evaluates the variable and returns the value
         if (node instanceof VariableNode) {
             VariableNode variableNode = (VariableNode) node;
@@ -200,6 +208,7 @@ public class Interpreter {
                 throw new IllegalArgumentException(String.format("Variable '%s' is not defined", name));
             }
         }
+
         // Evaluates the function and returns the value
         if (node instanceof FunctionNode) {
             // evaluate parameters and call the right function based on name
@@ -238,6 +247,7 @@ public class Interpreter {
                 return BuiltInFunctions.VALF(str);
             }
         }
+
         // Evaluates the math operation and returns the value
         if (node instanceof MathOpNode) {
             MathOpNode mathOpNode = (MathOpNode) node;
@@ -274,6 +284,7 @@ public class Interpreter {
                 }
             }
         }
+
         // Evaluates the expression and returns the value
         if (node instanceof ExpressionNode) {
             ExpressionNode expressionNode = (ExpressionNode) node;
@@ -287,9 +298,9 @@ public class Interpreter {
         // Evaluates the factor and returns the value
         if (node instanceof FactorNode) {
             FactorNode factorNode = (FactorNode) node;
-            return evaluate(factorNode.getInnerNode());
+            return evaluate(factorNode.getNode());
         }
-        throw new RuntimeException("Unknown node type: " + node.getClass());
+        throw new RuntimeException(String.format("Unsupported node: %s", node));
     }
 
     // Checks if both arguments are integers

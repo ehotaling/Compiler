@@ -452,7 +452,7 @@ public class Parser {
             Node node = factor();
             //Unwrap the FactorNode to get the actual inner node
             if (node instanceof FactorNode) {
-                node = ((FactorNode) node).getInnerNode();
+                node = ((FactorNode) node).getNode();
             }
             if (node instanceof IntegerNode || node instanceof FloatNode || node instanceof StringNode) {
                 data.add(node);

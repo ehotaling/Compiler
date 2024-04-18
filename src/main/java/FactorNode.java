@@ -13,7 +13,7 @@ public class FactorNode extends Node {
         return String.format("FactorNode: {%s}", node);
     }
 
-    public Node getInnerNode() {
+    public Node getNode() {
         return node;
     }
 

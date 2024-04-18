@@ -283,7 +283,7 @@ public class InterpreterTest {
 
         // Prepare the test input
         List<String> testInput = Arrays.asList("10", "20.5", "Hello");
-        interpreter.setInput(testInput);
+        interpreter.setTestInput(testInput);
 
         // Prepare the variables for the InputNode
         VariableNode intVar = new VariableNode("intVar");
