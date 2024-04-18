@@ -5,6 +5,5 @@ public class ReturnNode extends StatementNode {
     }
 
     @Override
-    public void accept(StatementVisitor visitor) {
-    }
+    public void accept(StatementVisitor visitor) {}
 }

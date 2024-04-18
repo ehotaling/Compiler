@@ -7,12 +7,11 @@ public class ForNode extends StatementNode {
     private Node increment;
     private StatementsNode body;
 
-    public ForNode(VariableNode variable, Node initialValue, Node limit, Node increment, StatementsNode body) {
+    public ForNode(VariableNode variable, Node initialValue, Node limit, Node increment) {
         this.variable = variable;
         this.initialValue = initialValue;
         this.limit = limit;
         this.increment = increment;
-        this.body = body;
     }
 
     public VariableNode getVariable() {

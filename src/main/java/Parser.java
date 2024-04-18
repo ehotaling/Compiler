@@ -99,6 +99,16 @@ public class Parser {
     public StatementNode statement() {
         if (peekAndMatch(Token.TokenType.LABEL)) {
             String label = tokenManager.matchAndRemove(Token.TokenType.LABEL).get().getVal();
+
+            // Only store the string without the ":" to simplify lookup
+            label = label.substring(0, label.length() - 1);
+
+            // This label is used in a while statement and has no statement after colon
+            if (peekAndMatch(Token.TokenType.ENDOFLINE)) {
+                // TODO make an EndWhile node
+                return new LabeledStatementNode(label, null);
+            }
+
             StatementNode statementNode = statement();
             return new LabeledStatementNode(label, statementNode);
         } else if (peekAndMatch(Token.TokenType.READ)) {
@@ -127,6 +137,8 @@ public class Parser {
             return ifStatement();
         } else if (peekAndMatch(Token.TokenType.WHILE)) {
             return whileStatement();
+        } else if (peekAndMatch(Token.TokenType.END)) {
+            return endStatement();
         } else {
             return null;
         }
@@ -151,36 +163,16 @@ public class Parser {
         }
 
         BooleanExpressionNode condition = booleanExpression();
-        if (!peekAndMatch(Token.TokenType.WORD)) {
-            throw new IllegalArgumentException("Expected WORD token");
-        }
-        tokenManager.matchAndRemove(Token.TokenType.WORD);
-
-        // WhileNode stores the body of the while loop
-        StatementsNode whileBody = new StatementsNode();
-
-        // Parse the body of the while loop
-        while(tokenManager.moreTokens() && !peekAndMatch(Token.TokenType.LABEL)) {
-            if (peekAndMatch(Token.TokenType.ENDOFLINE)) {
-                tokenManager.matchAndRemove(Token.TokenType.ENDOFLINE);
-                continue;
-            }
-            StatementNode statementNode = statement();
-            if (statementNode != null) {
-                whileBody.addStatement(statementNode);
-            }
-        }
 
         // Check if the next token is the end label of the while loop
-        if (!peekAndMatch(Token.TokenType.LABEL)) {
-            throw new IllegalArgumentException("Expected LABEL token");
+        if (!peekAndMatch(Token.TokenType.WORD)) {
+            throw new IllegalArgumentException("Expected a WORD token to create label for WhileNode");
         }
 
         // Remove the end label from the token stream, store it as the end label
-        String endLabel = tokenManager.matchAndRemove(Token.TokenType.LABEL).get().getVal();
+        String endLabel = tokenManager.matchAndRemove(Token.TokenType.WORD).get().getVal();
 
-
-        return new WhileNode(condition, whileBody, endLabel);
+        return new WhileNode(condition, endLabel);
     }
 
     /**
@@ -277,14 +269,13 @@ public class Parser {
             throw new IllegalArgumentException("Expected Variable Name");
         }
 
-        if(!matchAndRemove(Token.TokenType.EQUALS)) {
+        if (!matchAndRemove(Token.TokenType.EQUALS)) {
             throw new IllegalArgumentException("Expected EQUALS token");
         }
 
-        // TODO this can be a variable here as well
         FactorNode initialValue = (FactorNode) factor();
 
-        if(!matchAndRemove(Token.TokenType.TO)) {
+        if (!matchAndRemove(Token.TokenType.TO)) {
             throw new IllegalArgumentException("Expected TO token");
         }
 
@@ -296,28 +287,27 @@ public class Parser {
             increment = number(tokenManager.matchAndRemove(Token.TokenType.NUMBER).get(), false);
         }
 
-
-        StatementsNode body = new StatementsNode();
-        boolean nextFound = false;
-        while (!nextFound && tokenManager.moreTokens()) {
-            if (peekAndMatch(Token.TokenType.NEXT)) {
-                matchAndRemove(Token.TokenType.NEXT);
-                if (!peekAndMatch(Token.TokenType.WORD) || !tokenManager.peek(0).get().getVal().equals(variableNode.getName())) {
-                    throw new IllegalArgumentException("Expected NEXT token followed by the loop variable");
-                }
-                tokenManager.matchAndRemove(Token.TokenType.WORD);
-                nextFound = true;
-            } else {
-                StatementNode statementNode = statement();
-                if (statementNode != null) {
-                    body.addStatement(statementNode);
-                }
-            }
-        }
-        if (!nextFound) {
-            throw new IllegalArgumentException("Expected NEXT token for the FOR loop");
-        }
-        return new ForNode(variableNode, initialValue, limit, increment, body);
+//        StatementsNode body = new StatementsNode();
+//        boolean nextFound = false;
+//        while (!nextFound && tokenManager.moreTokens()) {
+//            if (peekAndMatch(Token.TokenType.NEXT)) {
+//                matchAndRemove(Token.TokenType.NEXT);
+//                if (!peekAndMatch(Token.TokenType.WORD) || !tokenManager.peek(0).get().getVal().equals(variableNode.getName())) {
+//                    throw new IllegalArgumentException("Expected NEXT token followed by the loop variable");
+//                }
+//                tokenManager.matchAndRemove(Token.TokenType.WORD);
+//                nextFound = true;
+//            } else {
+//                StatementNode statementNode = statement();
+//                if (statementNode != null) {
+//                    body.addStatement(statementNode);
+//                }
+//            }
+//        }
+//        if (!nextFound) {
+//            throw new IllegalArgumentException("Expected NEXT token for the FOR loop");
+//        }
+        return new ForNode(variableNode, initialValue, limit, increment);
     }
 
     /**
@@ -353,11 +343,14 @@ public class Parser {
             throw new IllegalArgumentException("Expected a label identifier after GOSUB");
         }
         String label = tokenManager.matchAndRemove(Token.TokenType.WORD).get().getVal();
-        return new GosubNode(label);
+        return new GoSubNode(label);
     }
 
     /**
      * This method is used to generate a return statement node.
+     * The return command is used with a matching gosub command, to return program
+     *   flow back to the main program at the end of the sub procedure.
+     * If a return command is used without a matching gosub beforehand, the program flow will crash.
      *
      * @return A StatementNode object representing a return statement.
      * @throws IllegalArgumentException if the RETURN statement is not followed by an end of line token.
