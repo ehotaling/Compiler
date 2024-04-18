@@ -117,7 +117,6 @@ public class Interpreter {
             return endStatement((EndNode) statement);
         }
 
-        // TODO have to throw an exception here if the program does not end with "END" statement
         return new EndNode();
     }
 

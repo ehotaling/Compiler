@@ -66,7 +66,7 @@ public class Basic {
     }
 
     private static void runInteractiveInterpreter() {
-        System.out.println("SimpleBASIC (0.9)");
+        System.out.println("SimpleBASIC (1.0)");
         printOptions();
 
         List<String> program = new ArrayList<>();
@@ -95,6 +95,16 @@ public class Basic {
                 System.out.printf("Writing to file '%s'%n", fileName);
 
                 writeToFile(fileName, String.join("\n", program));
+            } else if (input.split(" ")[0].equalsIgnoreCase("LOAD")) {
+                String[] loadCommand = input.split(" ");
+                if (loadCommand.length <= 1) {
+                    System.err.println("Expected a filename after LOAD command");
+                    continue;
+                }
+                String fileName = loadCommand[1];
+                System.out.printf("Loading file: '%s'%n", fileName);
+
+                program = loadFile(fileName);
             } else if (!input.isBlank()) {
                 program.add(input);
             }
@@ -108,6 +118,7 @@ public class Basic {
         System.out.println("OUTPUT         Output the current program");
         System.out.println("SAVE           Save current program to current directory as 'output.txt'");
         System.out.println("SAVE [file]    Save current program to current directory as 'file'");
+        System.out.println("LOAD [file]    Load a file");
         System.out.println("EXIT           Quit the interpreter");
     }
 
@@ -127,14 +138,23 @@ public class Basic {
         }
     }
 
-    private static boolean writeToFile(String fileName, String contents) {
+    private static List<String> loadFile(String fileName) {
+        try {
+            Path myPath = Paths.get(fileName);
+            String program = new String(Files.readAllBytes(myPath));
+            return new ArrayList<>(Arrays.asList(program.split("\n")));
+        } catch (IOException e) {
+            e.printStackTrace(System.err);
+            return new ArrayList<>();
+        }
+    }
+
+    private static void writeToFile(String fileName, String contents) {
         try {
             Path filePath = Paths.get(fileName);
             Files.write(filePath, String.join("\n", contents).getBytes());
-            return true;
         } catch (IOException e) {
             e.printStackTrace(System.err);
-            return false;
         }
     }
 
