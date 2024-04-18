@@ -119,6 +119,8 @@ public class Parser {
             return printStatement();
         } else if (peekAndMatch(Token.TokenType.INPUT)) {
             return inputStatement();
+        } else if (peekAndMatch(Token.TokenType.GOTO)) {
+            return gotoStatement();
         } else if (peekAndMatch(Token.TokenType.GOSUB)) {
             return gosubStatement();
         } else if (peekAndMatch(Token.TokenType.RETURN)) {
@@ -220,6 +222,17 @@ public class Parser {
         }
         String label = tokenManager.matchAndRemove(Token.TokenType.WORD).get().getVal();
         return new IfNode(condition, label);
+    }
+
+    public GoToNode gotoStatement() {
+        if (!matchAndRemove(Token.TokenType.GOTO)) {
+            throw new IllegalArgumentException("Expected GOTO token");
+        }
+        if (!peekAndMatch(Token.TokenType.WORD)) {
+            throw new IllegalArgumentException("Expected Label for GOTO token");
+        }
+
+        return new GoToNode(tokenManager.matchAndRemove(Token.TokenType.WORD).get().getVal());
     }
 
     /**

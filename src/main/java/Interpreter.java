@@ -54,20 +54,7 @@ public class Interpreter {
         for (StatementNode curr : statements) {
             curr.accept(statementVisitor);
 
-            // link the current statement to the previous one
-            if (prev instanceof LabeledStatementNode) {
-                // TODO refactor this
-                StatementNode previousStatement = ((LabeledStatementNode) prev).getStatementNode();
-
-                // This means that the previous statement was a label that was the end of a while loop
-                // LabeledStatement("label", null)
-                if (previousStatement == null) {
-                    prev.setNext(curr);
-                } else {
-                    // Otherwise, connect the inner statement in LabeledStatement to the next node
-                    ((LabeledStatementNode) prev).getStatementNode().setNext(curr);
-                }
-            } else if (prev != null) {
+            if (prev != null) {
                 prev.setNext(curr);
             }
 
@@ -114,6 +101,8 @@ public class Interpreter {
             return ifStatement((IfNode) statement);
         } else if (statement instanceof GoSubNode) {
             return goSubStatement((GoSubNode) statement);
+        } else if (statement instanceof GoToNode) {
+            return goToStatement((GoToNode) statement);
         } else if (statement instanceof ReturnNode) {
             return returnStatement((ReturnNode) statement);
         } else if (statement instanceof ForNode) {
@@ -291,7 +280,14 @@ public class Interpreter {
 
     private StatementNode goSubStatement(GoSubNode goSubNode) {
         stack.push(goSubNode.getNext());
-        return labels.get(goSubNode.getLabel()).getStatementNode();
+        return labels.get(goSubNode.getLabel());
+    }
+
+    private StatementNode goToStatement(GoToNode goToNode) {
+        if (!labels.containsKey(goToNode.getLabel())) {
+            throw new RuntimeException(String.format("No labeled statement for GOTO: %s", goToNode.getLabel()));
+        }
+        return labels.get(goToNode.getLabel());
     }
 
     private StatementNode returnStatement(ReturnNode returnNode) {
@@ -304,8 +300,16 @@ public class Interpreter {
             return stack.pop();
         }
 
-        // Otherwise, return the statement
-        return labeledStatementNode.getStatementNode();
+        // TODO this should maybe throw an error
+        StatementNode statementNode = labeledStatementNode.getStatementNode();
+        if (statementNode == null) {
+            return labeledStatementNode.getNext();
+        }
+
+        // Evaluate the inner statement null
+        interpretStatement(statementNode);
+
+        return labeledStatementNode.getNext();
     }
 
     private StatementNode nextStatement(NextNode nextNode) {

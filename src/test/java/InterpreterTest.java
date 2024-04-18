@@ -332,6 +332,34 @@ public class InterpreterTest {
     }
 
     @Test
+    public void testIfStatementWithMultipleBranches() {
+        LinkedList<Token> tokens = lexer.lex("src/test/resources/if_statement_two_labels.bas");
+        ProgramNode actualProgram = new Parser(tokens).parse();
+        List<String> expectedPrint = List.of("start", "myLabel");
+
+        // Run Interpreter on it
+        Interpreter interpreter = new Interpreter(actualProgram);
+        interpreter.setTestMode(true);
+        interpreter.interpret();
+        List<String> actualPrint = interpreter.getOutput();
+        assertEquals(expectedPrint, actualPrint);
+    }
+
+    @Test
+    public void testGoTo() {
+        LinkedList<Token> tokens = lexer.lex("src/test/resources/goto.bas");
+        ProgramNode actualProgram = new Parser(tokens).parse();
+        List<String> expectedPrint = List.of("Hello", "myLabel");
+
+        // Run Interpreter on it
+        Interpreter interpreter = new Interpreter(actualProgram);
+        interpreter.setTestMode(true);
+        interpreter.interpret();
+        List<String> actualPrint = interpreter.getOutput();
+        assertEquals(expectedPrint, actualPrint);
+    }
+
+    @Test
     public void testIf() {
         LinkedList<Token> tokens = lexer.lex("src/test/resources/if_statement.bas");
         ProgramNode actualProgram = new Parser(tokens).parse();
@@ -350,6 +378,20 @@ public class InterpreterTest {
         LinkedList<Token> tokens = lexer.lex("src/test/resources/if_statement.bas");
         ProgramNode actualProgram = new Parser(tokens).parse();
         List<String> expectedPrint = List.of("y is small");
+
+        // Run Interpreter on it
+        Interpreter interpreter = new Interpreter(actualProgram);
+        interpreter.setTestMode(true);
+        interpreter.interpret();
+        List<String> actualPrint = interpreter.getOutput();
+        assertEquals(expectedPrint, actualPrint);
+    }
+
+    @Test
+    public void testWhileLoop() {
+        LinkedList<Token> tokens = lexer.lex("src/test/resources/while_loop.bas");
+        ProgramNode actualProgram = new Parser(tokens).parse();
+        List<String> expectedPrint = List.of("0", "1", "2", "3", "done");
 
         // Run Interpreter on it
         Interpreter interpreter = new Interpreter(actualProgram);

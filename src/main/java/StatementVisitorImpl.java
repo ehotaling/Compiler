@@ -12,6 +12,8 @@ public class StatementVisitorImpl implements StatementVisitor {
 
     private final Set<String> whileLabels = new HashSet<>();
 
+    private final Set<String> goToLabels = new HashSet<>();
+
     public Map<String, Integer> getIntVariables() {
         return intVariables;
     }
@@ -48,5 +50,9 @@ public class StatementVisitorImpl implements StatementVisitor {
 
     public void visit(WhileNode whileNode){
         this.whileLabels.add(whileNode.getLabel());
+    }
+
+    public void visit(GoToNode goToNode) {
+        goToLabels.add(goToNode.getLabel());
     }
 }

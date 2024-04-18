@@ -97,7 +97,6 @@ public class Lexer {
         knownWords.put("next", Token.TokenType.NEXT);
         knownWords.put("return", Token.TokenType.RETURN);
         knownWords.put("then", Token.TokenType.THEN);
-        knownWords.put("function", Token.TokenType.FUNCTION);
         knownWords.put("while", Token.TokenType.WHILE);
         knownWords.put("end", Token.TokenType.END);
         knownWords.put("random", Token.TokenType.FUNCTIONNAME);
