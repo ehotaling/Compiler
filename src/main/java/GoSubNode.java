@@ -5,6 +5,11 @@ public class GoSubNode extends StatementNode {
         this.label = label;
     }
 
+    @Override
+    public StatementNode interpret(StatementVisitor statementVisitor) {
+        return statementVisitor.goSubStatement(this);
+    }
+
     public String getLabel() {
         return label;
     }
@@ -12,9 +17,5 @@ public class GoSubNode extends StatementNode {
     @Override
     public String toString() {
         return String.format("GoSubNode(%s)", label);
-    }
-
-    @Override
-    public void accept(StatementVisitor visitor) {
     }
 }

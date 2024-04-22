@@ -1,6 +1,8 @@
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -9,16 +11,28 @@ public class InterpreterTest {
 
     Lexer lexer = new Lexer();
 
+    private LinkedList<Token> lexTokens(String text) throws IOException {
+        Path tempFilePath = Files.createTempFile("temp.bas", ".txt");
+        Files.writeString(tempFilePath, text);
+        return lexer.lex(tempFilePath.toString());
+    }
+
+    private ProgramNode parseStatements(String text) throws IOException {
+        return new Parser(lexTokens(text)).parse();
+    }
+
     // Tests the ability to store labels and data
     @Test
     public void testDataAndLabelProcessing() throws IOException {
         // Create a mock ProgramNode with some DATA statements and labels
         ProgramNode programNode = new ProgramNode();
         StatementsNode statementsNode = new StatementsNode();
+
         List<Node> data =  new ArrayList<>();
         data.add(new IntegerNode(1));
         data.add(new IntegerNode(2));
         data.add(new IntegerNode(3));
+
         DataNode dataNode = new DataNode(data);
         statementsNode.addStatement(dataNode);
 
@@ -26,6 +40,7 @@ public class InterpreterTest {
         printList.add(new StringNode("Hello World"));
         PrintNode printNode = new PrintNode(printList);
         statementsNode.addStatement(printNode);
+
         LabeledStatementNode labeledStatementNode = new LabeledStatementNode(
                 "label:", statementsNode.getStatements().get(1));
         statementsNode.addStatement(labeledStatementNode);
@@ -33,6 +48,7 @@ public class InterpreterTest {
 
         // Run Interpreter on it
         Interpreter interpreter = new Interpreter(programNode);
+        interpreter.setTestMode(true);
         interpreter.interpret();
 
         // Check that the data and labels were correctly stored
@@ -82,6 +98,7 @@ public class InterpreterTest {
 
         // Run Interpreter on it
         Interpreter interpreter = new Interpreter(actualProgram);
+        interpreter.setTestMode(true);
         interpreter.interpret();
 
         Map<String, LabeledStatementNode> labels = interpreter.getLabels();
@@ -99,6 +116,7 @@ public class InterpreterTest {
         // Create a mock ProgramNode with some variable assignments
         ProgramNode programNode = new ProgramNode();
         StatementsNode statementsNode = new StatementsNode();
+
         AssignmentNode intAssignment = new AssignmentNode(
                 new VariableNode("x"), new IntegerNode(5));
         AssignmentNode floatAssignment = new AssignmentNode(
@@ -108,10 +126,12 @@ public class InterpreterTest {
         statementsNode.addStatement(intAssignment);
         statementsNode.addStatement(floatAssignment);
         statementsNode.addStatement(stringAssignment);
+
         programNode.addStatements(statementsNode);
 
         // Run Interpreter on it
         Interpreter interpreter = new Interpreter(programNode);
+        interpreter.setTestMode(true);
         interpreter.interpret();
 
         // Check that the variables were correctly stored
@@ -136,6 +156,7 @@ public class InterpreterTest {
 
         // Run Interpreter on it
         Interpreter interpreter = new Interpreter(actualProgram);
+        interpreter.setTestMode(true);
         interpreter.interpret();
 
         Map<String, Integer> intVariables = interpreter.getIntVariables();
@@ -261,9 +282,11 @@ public class InterpreterTest {
     public void testFunctionMathOperations() throws IOException {
         LinkedList<Token> tokens = lexer.lex("src/test/resources/function_math_ops.bas");
         ProgramNode actualProgram = new Parser(tokens).parse();
+        List<String> expectedPrint = Arrays.asList("10", "10");
 
         // Run Interpreter on it
         Interpreter interpreter = new Interpreter(actualProgram);
+        interpreter.setTestMode(true);
         interpreter.interpret();
 
         Map<String, Integer> intVariables = interpreter.getIntVariables();
@@ -271,6 +294,10 @@ public class InterpreterTest {
 
         assertEquals(10, intVariables.get("valPlusInt"));
         assertEquals(10, intVariables.get("valPlusVal"));
+        assertTrue(floatVariables.isEmpty());
+
+        List<String> actualPrint = interpreter.getOutput();
+        assertEquals(expectedPrint, actualPrint);
     }
 
     @Test
@@ -293,7 +320,7 @@ public class InterpreterTest {
 
         // Create an InputNode and call the input method
         InputNode inputNode = new InputNode(new StringNode("Enter values:"), variables);
-        interpreter.input(inputNode);
+        interpreter.inputStatement(inputNode);
 
         // Check if the variables have the expected values
         assertEquals(Integer.valueOf(10), interpreter.getIntVariables().get("intVar"));
@@ -312,6 +339,7 @@ public class InterpreterTest {
         Interpreter interpreter = new Interpreter(actualProgram);
         interpreter.setTestMode(true);
         interpreter.interpret();
+
         List<String> actualPrint = interpreter.getOutput();
         assertEquals(expectedPrint, actualPrint);
     }
@@ -327,6 +355,7 @@ public class InterpreterTest {
         Interpreter interpreter = new Interpreter(actualProgram);
         interpreter.setTestMode(true);
         interpreter.interpret();
+
         List<String> actualPrint = interpreter.getOutput();
         assertEquals(expectedPrint, actualPrint);
     }
@@ -335,12 +364,13 @@ public class InterpreterTest {
     public void testIfStatementWithMultipleBranches() {
         LinkedList<Token> tokens = lexer.lex("src/test/resources/if_statement_two_labels.bas");
         ProgramNode actualProgram = new Parser(tokens).parse();
-        List<String> expectedPrint = List.of("start", "myLabel");
+        List<String> expectedPrint = List.of("start", "myLabel", "exiting myLabel");
 
         // Run Interpreter on it
         Interpreter interpreter = new Interpreter(actualProgram);
         interpreter.setTestMode(true);
         interpreter.interpret();
+
         List<String> actualPrint = interpreter.getOutput();
         assertEquals(expectedPrint, actualPrint);
     }
@@ -355,6 +385,7 @@ public class InterpreterTest {
         Interpreter interpreter = new Interpreter(actualProgram);
         interpreter.setTestMode(true);
         interpreter.interpret();
+
         List<String> actualPrint = interpreter.getOutput();
         assertEquals(expectedPrint, actualPrint);
     }
@@ -369,6 +400,7 @@ public class InterpreterTest {
         Interpreter interpreter = new Interpreter(actualProgram);
         interpreter.setTestMode(true);
         interpreter.interpret();
+
         List<String> actualPrint = interpreter.getOutput();
         assertEquals(expectedPrint, actualPrint);
     }
@@ -383,6 +415,7 @@ public class InterpreterTest {
         Interpreter interpreter = new Interpreter(actualProgram);
         interpreter.setTestMode(true);
         interpreter.interpret();
+
         List<String> actualPrint = interpreter.getOutput();
         assertEquals(expectedPrint, actualPrint);
     }
@@ -395,6 +428,111 @@ public class InterpreterTest {
 
         // Run Interpreter on it
         Interpreter interpreter = new Interpreter(actualProgram);
+        interpreter.setTestMode(true);
+        interpreter.interpret();
+
+        List<String> actualPrint = interpreter.getOutput();
+        assertEquals(expectedPrint, actualPrint);
+    }
+
+    @Test
+    public void testIfWithLabels() throws IOException {
+        LinkedList<Token> tokens = lexer.lex("src/test/resources/if_statement_one_label.bas");
+        ProgramNode program = new Parser(tokens).parse();
+        List<String> expectedPrint = List.of("x is small", "HELLO");
+
+        // Check that the first statement in the program is a WhileNode
+        assertInstanceOf(AssignmentNode.class, program.getStatements().get(0));
+        assertInstanceOf(IfNode.class, program.getStatements().get(1));
+        assertInstanceOf(LabeledStatementNode.class, program.getStatements().get(2));
+        assertInstanceOf(PrintNode.class, ((LabeledStatementNode) program.getStatements().get(2)).getStatementNode());
+
+        Interpreter interpreter = new Interpreter(program);
+        interpreter.setTestMode(true);
+        interpreter.interpret();
+
+        List<String> actualPrint = interpreter.getOutput();
+        assertEquals(expectedPrint, actualPrint);
+    }
+
+    @Test
+    public void testReadData() throws IOException {
+        LinkedList<Token> tokens = lexer.lex("src/test/resources/read_and_data.bas");
+        ProgramNode program = new Parser(tokens).parse();
+        List<String> expectedPrint = List.of("6", "6.0", "Hello", "World", "!");
+
+        // Check that the first statement in the program is a WhileNode
+        assertInstanceOf(DataNode.class, program.getStatements().get(0));
+        assertInstanceOf(ReadNode.class, program.getStatements().get(1));
+        assertInstanceOf(AssignmentNode.class, program.getStatements().get(2));
+        assertInstanceOf(ReadNode.class, program.getStatements().get(3));
+        assertInstanceOf(AssignmentNode.class, program.getStatements().get(4));
+        assertInstanceOf(ReadNode.class, program.getStatements().get(5));
+        assertInstanceOf(PrintNode.class, program.getStatements().get(6));
+        assertInstanceOf(PrintNode.class, program.getStatements().get(7));
+        assertInstanceOf(PrintNode.class, program.getStatements().get(8));
+        assertInstanceOf(PrintNode.class, program.getStatements().get(9));
+        assertInstanceOf(PrintNode.class, program.getStatements().get(10));
+
+        Interpreter interpreter = new Interpreter(program);
+        interpreter.setTestMode(true);
+        interpreter.interpret();
+
+        List<String> actualPrint = interpreter.getOutput();
+        assertEquals(expectedPrint, actualPrint);
+    }
+
+    @Test
+    public void testReadDataAndPrint() throws IOException {
+        LinkedList<Token> tokens = lexer.lex("src/test/resources/data_test_read_and_print.bas");
+        ProgramNode program = new Parser(tokens).parse();
+        List<String> expectedPrint = List.of("10", "mphipps", "10.0");
+
+        // Check that the first statement in the program is a WhileNode
+        assertInstanceOf(DataNode.class, program.getStatements().get(0));
+        assertInstanceOf(ReadNode.class, program.getStatements().get(1));
+        assertInstanceOf(PrintNode.class, program.getStatements().get(2));
+
+        Interpreter interpreter = new Interpreter(program);
+        interpreter.setTestMode(true);
+        interpreter.interpret();
+
+        List<String> actualPrint = interpreter.getOutput();
+        assertEquals(expectedPrint, actualPrint);
+    }
+
+    @Test
+    public void testForLoopAndGoSub() throws IOException {
+        LinkedList<Token> tokens = lexer.lex("src/test/resources/for_loop_2.bas");
+        ProgramNode program = new Parser(tokens).parse();
+        List<String> expectedPrint = List.of("0.0", "37.77778", "100.0", "10.0", "-17.777779");
+
+        // Check that the first statement in the program is a WhileNode
+        assertInstanceOf(AssignmentNode.class, program.getStatements().get(0));
+        assertInstanceOf(ForNode.class, program.getStatements().get(1));
+        assertInstanceOf(ReadNode.class, program.getStatements().get(2));
+        assertInstanceOf(GoSubNode.class, program.getStatements().get(3));
+        assertInstanceOf(PrintNode.class, program.getStatements().get(4));
+        assertInstanceOf(NextNode.class, program.getStatements().get(5));
+        assertInstanceOf(EndNode.class, program.getStatements().get(6));
+        assertInstanceOf(LabeledStatementNode.class, program.getStatements().get(7));
+        assertInstanceOf(ReturnNode.class, program.getStatements().get(8));
+        assertInstanceOf(DataNode.class, program.getStatements().get(9));
+
+        Interpreter interpreter = new Interpreter(program);
+        interpreter.setTestMode(true);
+        interpreter.interpret();
+
+        List<String> actualPrint = interpreter.getOutput();
+        assertEquals(expectedPrint, actualPrint);
+    }
+
+    @Test
+    public void testInterpretPrint() throws IOException {
+        ProgramNode program = parseStatements("PRINT \"HELLO\"");
+        List<String> expectedPrint = List.of("HELLO");
+
+        Interpreter interpreter = new Interpreter(program);
         interpreter.setTestMode(true);
         interpreter.interpret();
         List<String> actualPrint = interpreter.getOutput();

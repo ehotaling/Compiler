@@ -25,6 +25,11 @@ public class AssignmentNode extends StatementNode {
     }
 
     @Override
+    public StatementNode interpret(StatementVisitor statementVisitor) {
+        return statementVisitor.assignmentStatement(this);
+    }
+
+    @Override
     public int hashCode() {
         return Objects.hash(variableNode, value);
     }
@@ -35,10 +40,5 @@ public class AssignmentNode extends StatementNode {
 
     public Node getValue() {
         return value;
-    }
-
-    @Override
-    public void accept(StatementVisitor visitor) {
-        visitor.visit(this);
     }
 }

@@ -10,6 +10,16 @@ public class DataNode extends StatementNode {
     }
 
     @Override
+    public void accept(StatementVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    @Override
+    public StatementNode interpret(StatementVisitor statementVisitor) {
+        return this.getNext();
+    }
+
+    @Override
     public String toString() {
         return String.format("DataNode(%s)", data);
     }
@@ -17,7 +27,6 @@ public class DataNode extends StatementNode {
     public List<Node> getData() {
         return data;
     }
-
 
     @Override
     public boolean equals(Object o) {
@@ -31,10 +40,4 @@ public class DataNode extends StatementNode {
     public int hashCode() {
         return Objects.hash(data);
     }
-
-    @Override
-    public void accept(StatementVisitor visitor) {
-        visitor.visit(this);
-    }
-
 }

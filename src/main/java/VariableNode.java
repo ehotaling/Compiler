@@ -1,6 +1,6 @@
 import java.util.Objects;
 
-public class VariableNode extends StatementNode {
+public class VariableNode extends Node {
     private final String name;
 
     private final InterpreterDataType type;
@@ -41,10 +41,5 @@ public class VariableNode extends StatementNode {
     @Override
     public int hashCode() {
         return Objects.hash(name);
-    }
-
-    @Override
-    public void accept(StatementVisitor visitor) {
-
     }
 }

@@ -511,35 +511,6 @@ public List<Node> printList() {
         return null;
     }
 
-    /**
-     * This method is responsible for parsing an expression from the token stream.
-     * It first checks if the next token is a function name. If it is, it calls the functionInvocation() method to parse the function invocation.
-     * If the next token is not a function name, it calls the term() method to parse a term.
-     * It then enters a loop where it checks if the next token is a PLUS or MINUS token. If it is, it creates a new MathOpNode with the parsed term and the term parsed from the next call to the term() method.
-     * The loop continues until the next token is not a PLUS or MINUS token.
-     * Finally, it returns a new ExpressionNode with the parsed term.
-     *
-     * @return An ExpressionNode representing the parsed expression.
-     */
-//    public Node expression() {
-//        if (peekAndMatch(Token.TokenType.FUNCTIONNAME)) {
-//            return functionInvocation();
-//        }
-//        Node term = term();
-//        while (true) {
-//            if (matchAndRemove(Token.TokenType.PLUS)) {
-//                term = new MathOpNode(MathOpNode.OPERATION.ADD, term, term());
-//            } else if (matchAndRemove(Token.TokenType.MINUS)) {
-//                term = new MathOpNode(MathOpNode.OPERATION.SUBTRACT, term, term());
-//            } else {
-//                break;
-//            }
-//        }
-//        return new ExpressionNode(term);
-//    }
-
-
-    // TODO I just made this new version of expression below trying to figure out how to solve the issue
     public Node expression() {
         Node term;
         if (peekAndMatch(Token.TokenType.FUNCTIONNAME)) {
