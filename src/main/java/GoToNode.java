@@ -1,9 +1,10 @@
-public class GosubNode extends StatementNode {
+public class GoToNode extends StatementNode {
     private String label;
 
-    public GosubNode(String label) {
+    public GoToNode(String label) {
         this.label = label;
     }
+
 
     public String getLabel() {
         return label;
@@ -11,10 +12,11 @@ public class GosubNode extends StatementNode {
 
     @Override
     public String toString() {
-        return String.format("GosubNode(%s)", label);
+        return String.format("GoToNode(%s)", label);
     }
 
     @Override
     public void accept(StatementVisitor visitor) {
+        visitor.visit(this);
     }
 }

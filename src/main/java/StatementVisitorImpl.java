@@ -4,21 +4,25 @@ public class StatementVisitorImpl implements StatementVisitor {
 
     private final Queue<Node> dataNodes = new LinkedList<>();
 
-    private final HashMap<String, Integer> intVariables = new HashMap<>();
-    private final HashMap<String, Float> floatVariables = new HashMap<>();
-    private final HashMap<String, String> stringVariables = new HashMap<>();
+    private final Map<String, Integer> intVariables = new HashMap<>();
+    private final Map<String, Float> floatVariables = new HashMap<>();
+    private final Map<String, String> stringVariables = new HashMap<>();
 
-    private final HashMap<String, LabeledStatementNode> labels = new HashMap<>();
+    private final Map<String, LabeledStatementNode> labels = new HashMap<>();
 
-    public HashMap<String, Integer> getIntVariables() {
+    private final Set<String> whileLabels = new HashSet<>();
+
+    private final Set<String> goToLabels = new HashSet<>();
+
+    public Map<String, Integer> getIntVariables() {
         return intVariables;
     }
 
-    public HashMap<String, Float> getFloatVariables() {
+    public Map<String, Float> getFloatVariables() {
         return floatVariables;
     }
 
-    public HashMap<String, String> getStringVariables() {
+    public Map<String, String> getStringVariables() {
         return stringVariables;
     }
 
@@ -26,29 +30,29 @@ public class StatementVisitorImpl implements StatementVisitor {
         return dataNodes;
     }
 
-    public HashMap<String, LabeledStatementNode> getLabels() {
+    public Map<String, LabeledStatementNode> getLabels() {
         return labels;
+    }
+
+    public Set<String> getWhileLabels() {
+        return whileLabels;
     }
 
     public void visit(LabeledStatementNode labeledStatementNode) {
         labels.put(labeledStatementNode.getLabel(), labeledStatementNode);
     }
 
-    public void visit(AssignmentNode assignmentNode) {
-        VariableNode variableNode = assignmentNode.getVariableNode();
-        String name = variableNode.getName();
-        InterpreterDataType type = variableNode.getType();
-        if (type.equals("int")) {
-            intVariables.put(name, null);
-        } else if (type.equals("float")) {
-            floatVariables.put(name, null);
-        } else if (type.equals("string")) {
-            stringVariables.put(name, null);
-        }
+    public void visit(AssignmentNode assignmentNode) {}
+
+    public void visit(DataNode dataNode){
+        this.dataNodes.addAll(dataNode.getData());
     }
-    public void visit (DataNode dataNode){
-        for (Node node: dataNode.getData()) {
-            this.dataNodes.add(node);
-        }
+
+    public void visit(WhileNode whileNode){
+        this.whileLabels.add(whileNode.getLabel());
+    }
+
+    public void visit(GoToNode goToNode) {
+        goToLabels.add(goToNode.getLabel());
     }
 }
