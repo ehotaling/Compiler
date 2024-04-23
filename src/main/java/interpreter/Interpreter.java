@@ -167,7 +167,7 @@ public class Interpreter implements StatementVisitor {
         Object right = evaluate(booleanExpressionNode.getRight());
         BooleanExpressionNode.OPERATOR operator = booleanExpressionNode.getOperator();
 
-        if (!isInteger(left, right) || !isNumeric(left, right)) {
+        if (!isInteger(left, right) && !isNumeric(left, right)) {
             throw new RuntimeException(String.format("Unsupported comparison for operands: '%s' and '%s'", left, right));
         }
 
